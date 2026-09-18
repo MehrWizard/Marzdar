@@ -47,7 +47,7 @@ export const TransferOwnerModal: FC<TransferOwnerModalProps> = ({
   const { t } = useTranslation();
   const toast = useToast();
   const { refetchUsers } = useDashboard();
-  const { data: admins, isLoading: adminsLoading } = useAdminsQuery();
+  const { data: admins, isLoading: adminsLoading } = useAdminsQuery(isOpen);
 
   const [selectedAdmin, setSelectedAdmin] = useState<string>("");
 

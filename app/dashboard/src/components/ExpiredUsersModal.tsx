@@ -54,16 +54,16 @@ export const ExpiredUsersModal: FC = () => {
 
   const expiredBefore = useMemo(() => {
     if (preset === "now") {
-      return dayjs().utc().format("YYYY-MM-DDTHH:mm:ss");
+      return dayjs().utc().toISOString();
     } else if (preset === "7days") {
-      return dayjs().subtract(7, "day").utc().format("YYYY-MM-DDTHH:mm:ss");
+      return dayjs().subtract(7, "day").utc().toISOString();
     } else if (preset === "14days") {
-      return dayjs().subtract(14, "day").utc().format("YYYY-MM-DDTHH:mm:ss");
+      return dayjs().subtract(14, "day").utc().toISOString();
     } else if (preset === "30days") {
-      return dayjs().subtract(30, "day").utc().format("YYYY-MM-DDTHH:mm:ss");
+      return dayjs().subtract(30, "day").utc().toISOString();
     } else {
       return customDate
-        ? dayjs(customDate).endOf("day").utc().format("YYYY-MM-DDTHH:mm:ss")
+        ? dayjs(customDate).endOf("day").utc().toISOString()
         : "";
     }
   }, [preset, customDate]);

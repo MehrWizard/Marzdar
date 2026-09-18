@@ -15,13 +15,7 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  Popover,
-  PopoverArrow,
-  PopoverBody,
-  PopoverContent,
-  PopoverTrigger,
   Portal,
-  Select,
   Spinner,
   Tag,
   TagCloseButton,
@@ -38,12 +32,12 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import classNames from "classnames";
-import { useAdminsQuery } from "contexts/AdminsContext";
 import { useDashboard } from "contexts/DashboardContext";
 import useGetUser from "hooks/useGetUser";
 import debounce from "lodash.debounce";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { FilterAdminModal } from "./FilterAdminModal";
 
 const iconProps = {
   baseStyle: {
@@ -78,7 +72,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
   const { t } = useTranslation();
   const { userData } = useGetUser();
   const isSudo = userData?.is_sudo;
-  const { data: admins } = useAdminsQuery();
+  const [isFilterAdminOpen, setIsFilterAdminOpen] = useState(false);
 
   const [search, setSearch] = useState("");
 
@@ -144,76 +138,6 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
             </InputRightElement>
           </InputGroup>
 
-          {/* Filter Button (Filter by Admin for Sudoers) */}
-          {isSudo && (
-            <Popover placement="bottom-start" isLazy>
-              <PopoverTrigger>
-                <Box position="relative">
-                  <IconButton
-                    size="md"
-                    variant={filters.admin ? "solid" : "outline"}
-                    colorScheme={filters.admin ? "primary" : "gray"}
-                    aria-label={t("filters.filter")}
-                    icon={<FunnelIcon width="18px" height="18px" />}
-                  />
-                  {filters.admin && (
-                    <Box
-                      position="absolute"
-                      top="-1"
-                      right="-1"
-                      w="2.5"
-                      h="2.5"
-                      rounded="full"
-                      bg="primary.500"
-                    />
-                  )}
-                </Box>
-              </PopoverTrigger>
-              <Portal>
-                <PopoverContent p={3} w="260px" zIndex={99999} _focus={{ boxShadow: "none" }}>
-                  <PopoverArrow />
-                  <PopoverBody p={0}>
-                    <VStack align="stretch" spacing={2.5}>
-                      <HStack justify="space-between">
-                        <Text fontSize="xs" fontWeight="semibold">
-                          {t("filters.filterByAdmin")}
-                        </Text>
-                        {filters.admin && (
-                          <Button
-                            size="2xs"
-                            variant="ghost"
-                            colorScheme="red"
-                            onClick={() => onFilterChange({ admin: undefined, offset: 0 })}
-                          >
-                            {t("clear")}
-                          </Button>
-                        )}
-                      </HStack>
-                      <Select
-                        size="sm"
-                        borderRadius="md"
-                        value={filters.admin || ""}
-                        onChange={(e) =>
-                          onFilterChange({
-                            admin: e.target.value || undefined,
-                            offset: 0,
-                          })
-                        }
-                      >
-                        <option value="">{t("all")}</option>
-                        {admins?.map((admin) => (
-                          <option key={admin.username} value={admin.username}>
-                            {admin.username} {admin.is_sudo ? `(${t("admins.sudo")})` : ""}
-                          </option>
-                        ))}
-                      </Select>
-                    </VStack>
-                  </PopoverBody>
-                </PopoverContent>
-              </Portal>
-            </Popover>
-          )}
-
           {filters.admin && (
             <Tag size="md" colorScheme="primary" borderRadius="full" flexShrink={0}>
               <TagLabel fontSize="xs">
@@ -253,12 +177,22 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
             <MenuButton
               as={IconButton}
               size="sm"
-              variant="outline"
+              variant={filters.admin ? "solid" : "outline"}
+              colorScheme={filters.admin ? "primary" : "gray"}
               aria-label="More actions"
               icon={<EllipsisVerticalIcon width="18px" height="18px" />}
             />
             <Portal>
-              <MenuList minW="180px" zIndex={99999}>
+              <MenuList minW="200px" zIndex={99999}>
+                {isSudo && (
+                  <MenuItem
+                    fontSize="sm"
+                    icon={<FunnelIcon width="16px" height="16px" color={filters.admin ? "var(--chakra-colors-primary-500)" : undefined} />}
+                    onClick={() => setIsFilterAdminOpen(true)}
+                  >
+                    {filters.admin ? `${t("filters.filterByAdmin")}: ${filters.admin}` : t("filters.filterByAdmin")}
+                  </MenuItem>
+                )}
                 <MenuItem
                   fontSize="sm"
                   icon={<TrashIcon width="16px" height="16px" color="var(--chakra-colors-red-500)" />}
@@ -271,6 +205,14 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
           </Menu>
         </HStack>
       </GridItem>
+      {isSudo && (
+        <FilterAdminModal
+          isOpen={isFilterAdminOpen}
+          onClose={() => setIsFilterAdminOpen(false)}
+          currentAdmin={filters.admin}
+          onSelectAdmin={(admin) => onFilterChange({ admin, offset: 0 })}
+        />
+      )}
     </Grid>
   );
 };

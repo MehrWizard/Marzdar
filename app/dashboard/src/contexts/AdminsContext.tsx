@@ -66,12 +66,13 @@ export const useAdmins = create<AdminStore>((set, get) => ({
   },
 }));
 
-export const useAdminsQuery = () => {
+export const useAdminsQuery = (enabled?: boolean) => {
   const { isManagingAdmins } = useDashboard();
+  const shouldEnable = enabled !== undefined ? enabled : isManagingAdmins;
   return useQuery({
     queryKey: FetchAdminsQueryKey,
     queryFn: useAdmins.getState().fetchAdmins,
-    enabled: isManagingAdmins,
+    enabled: shouldEnable,
     refetchInterval: isManagingAdmins ? 5000 : false,
     refetchOnWindowFocus: false,
   });

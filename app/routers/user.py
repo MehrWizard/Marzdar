@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app import logger, xray
 from app.db import Session, crud, get_db
-from app.dependencies import get_expired_users_list, get_validated_user, validate_dates
+from app.dependencies import get_expired_users_list, get_validated_user, validate_dates, validate_expired_dates
 from app.models.admin import Admin
 from app.models.user import (
     UserCreate,
@@ -349,7 +349,7 @@ def get_expired_users(
     - If both are omitted, returns all expired users
     """
 
-    expired_after, expired_before = validate_dates(expired_after, expired_before)
+    expired_after, expired_before = validate_expired_dates(expired_after, expired_before)
 
     expired_users = get_expired_users_list(db, admin, expired_after, expired_before)
     return [u.username for u in expired_users]
@@ -370,7 +370,12 @@ def delete_expired_users(
     - **expired_before** UTC datetime (optional)
     - At least one of expired_after or expired_before must be provided
     """
-    expired_after, expired_before = validate_dates(expired_after, expired_before)
+    if not expired_after and not expired_before:
+        raise HTTPException(
+            status_code=400,
+            detail="At least one of expired_after or expired_before must be provided"
+        )
+    expired_after, expired_before = validate_expired_dates(expired_after, expired_before)
 
     expired_users = get_expired_users_list(db, admin, expired_after, expired_before)
     removed_users = [u.username for u in expired_users]
