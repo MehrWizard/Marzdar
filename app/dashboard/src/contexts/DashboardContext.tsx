@@ -12,6 +12,7 @@ export type FilterType = {
   offset?: number;
   sort: string;
   status?: "active" | "disabled" | "limited" | "expired" | "on_hold";
+  admin?: string;
 };
 export type ProtocolType = "vmess" | "vless" | "trojan" | "shadowsocks";
 
@@ -51,6 +52,8 @@ type DashboardStateType = {
   resetUsageUser: User | null;
   revokeSubscriptionUser: User | null;
   isEditingCore: boolean;
+  isCleaningExpiredUsers: boolean;
+  onCleaningExpiredUsers: (isCleaningExpiredUsers: boolean) => void;
   onManagingAdmins: (isManagingAdmins: boolean) => void;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: User | null) => void;
@@ -116,6 +119,7 @@ export const useDashboard = create(
     isEditingHosts: false,
     isEditingNodes: false,
     isManagingAdmins: false,
+    isCleaningExpiredUsers: false,
     isShowingNodesUsage: false,
     resetUsageUser: null,
     revokeSubscriptionUser: null,
@@ -193,6 +197,9 @@ export const useDashboard = create(
     },
     onManagingAdmins: (isManagingAdmins: boolean) => {
       set({ isManagingAdmins });
+    },
+    onCleaningExpiredUsers: (isCleaningExpiredUsers: boolean) => {
+      set({ isCleaningExpiredUsers });
     },
     onShowingNodesUsage: (isShowingNodesUsage: boolean) => {
       set({ isShowingNodesUsage });

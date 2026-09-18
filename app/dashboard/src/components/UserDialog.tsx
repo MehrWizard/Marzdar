@@ -60,6 +60,8 @@ import { Input } from "./Input";
 import { RadioGroup } from "./RadioGroup";
 import { UsageFilter, createUsageConfig } from "./UsageFilter";
 import { ReloadIcon } from "./Filters";
+import { TransferOwnerModal } from "./TransferOwnerModal";
+import useGetUser from "hooks/useGetUser";
 import classNames from "classnames";
 
 const AddUserIcon = chakra(UserPlusIcon, {
@@ -232,6 +234,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const { t, i18n } = useTranslation();
 
   const { colorMode } = useColorMode();
+  const { userData } = useGetUser();
+  const isSudo = userData?.is_sudo;
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
 
   const [usageVisible, setUsageVisible] = useState(false);
   const handleUsageToggle = () => {
@@ -841,6 +846,16 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       <Button onClick={handleRevokeSubscription} size="sm">
                         {t("userDialog.revokeSubscription")}
                       </Button>
+                      {isSudo && (
+                        <Button
+                          onClick={() => setIsTransferOpen(true)}
+                          size="sm"
+                          variant="outline"
+                          colorScheme="purple"
+                        >
+                          {t("userDialog.transferOwnership")}
+                        </Button>
+                      )}
                     </>
                   )}
                 </HStack>
@@ -865,6 +880,16 @@ export const UserDialog: FC<UserDialogProps> = () => {
           </form>
         </ModalContent>
       </FormProvider>
+      <TransferOwnerModal
+        user={editingUser || null}
+        isOpen={isTransferOpen}
+        onClose={() => setIsTransferOpen(false)}
+        onTransferred={(newOwner) => {
+          if (editingUser) {
+            editingUser.admin = { username: newOwner, is_sudo: false };
+          }
+        }}
+      />
     </Modal>
   );
 };
