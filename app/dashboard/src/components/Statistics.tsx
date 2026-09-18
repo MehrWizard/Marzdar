@@ -1,7 +1,16 @@
-import { Box, BoxProps, Card, chakra, HStack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  BoxProps,
+  Card,
+  chakra,
+  HStack,
+  SimpleGrid,
+  Text,
+} from "@chakra-ui/react";
 import {
   ChartBarIcon,
   ChartPieIcon,
+  CpuChipIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
@@ -29,6 +38,15 @@ const NetworkIcon = chakra(ChartBarIcon, {
   },
 });
 
+const CpuIcon = chakra(CpuChipIcon, {
+  baseStyle: {
+    w: 5,
+    h: 5,
+    position: "relative",
+    zIndex: "2",
+  },
+});
+
 const MemoryIcon = chakra(ChartPieIcon, {
   baseStyle: {
     w: 5,
@@ -41,17 +59,19 @@ const MemoryIcon = chakra(ChartPieIcon, {
 type StatisticCardProps = {
   title: string;
   content: ReactNode;
+  subContent?: ReactNode;
   icon: ReactElement;
 };
 
 const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
   title,
   content,
+  subContent,
   icon,
 }) => {
   return (
     <Card
-      p={6}
+      p={{ base: 3, sm: 4, md: 5 }}
       borderWidth="1px"
       borderColor="light-border"
       bg="#F9FAFB"
@@ -61,10 +81,14 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
       borderRadius="12px"
       width="full"
       display="flex"
+      flexDirection="column"
       justifyContent="space-between"
-      flexDirection="row"
     >
-      <HStack alignItems="center" columnGap="4">
+      <HStack
+        alignItems="center"
+        columnGap={{ base: 2, md: 3 }}
+        mb={{ base: 2, md: 3 }}
+      >
         <Box
           p="2"
           position="relative"
@@ -105,18 +129,32 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
           }}
           fontWeight="medium"
           textTransform="capitalize"
-          fontSize="sm"
+          fontSize={{ base: "xs", md: "sm" }}
+          noOfLines={1}
         >
           {title}
         </Text>
       </HStack>
-      <Box fontSize="3xl" fontWeight="semibold" mt="2">
-        {content}
+      <Box>
+        <Box
+          fontSize={{ base: "xl", sm: "2xl", xl: "3xl" }}
+          fontWeight="semibold"
+          lineHeight="short"
+        >
+          {content}
+        </Box>
+        {subContent && (
+          <Box mt={1} fontSize="xs" fontWeight="medium">
+            {subContent}
+          </Box>
+        )}
       </Box>
     </Card>
   );
 };
+
 export const StatisticsQueryKey = "statistics-query-key";
+
 export const Statistics: FC<BoxProps> = (props) => {
   const { version } = useDashboard();
   const { data: systemData } = useQuery({
@@ -129,36 +167,54 @@ export const Statistics: FC<BoxProps> = (props) => {
     },
   });
   const { t } = useTranslation();
+
   return (
-    <HStack
-      justifyContent="space-between"
-      gap={0}
-      columnGap={{ lg: 4, md: 0 }}
-      rowGap={{ lg: 0, base: 4 }}
-      display="flex"
-      flexDirection={{ lg: "row", base: "column" }}
+    <SimpleGrid
+      columns={{ base: 2, lg: 4 }}
+      spacing={{ base: 3, md: 4 }}
+      w="full"
       {...props}
     >
+      {/* 1. Active Users + Online Users */}
       <StatisticCard
         title={t("activeUsers")}
         content={
           systemData && (
-            <HStack alignItems="flex-end">
+            <HStack alignItems="flex-end" spacing={1}>
               <Text>{numberWithCommas(systemData.users_active)}</Text>
               <Text
                 fontWeight="normal"
-                fontSize="lg"
+                fontSize={{ base: "xs", sm: "md" }}
                 as="span"
                 display="inline-block"
-                pb="5px"
+                pb={{ base: "1px", sm: "3px" }}
+                color="gray.500"
+                _dark={{ color: "gray.400" }}
               >
                 / {numberWithCommas(systemData.total_user)}
               </Text>
             </HStack>
           )
         }
+        subContent={
+          systemData && (
+            <HStack
+              spacing={1.5}
+              alignItems="center"
+              color="green.500"
+              _dark={{ color: "green.400" }}
+            >
+              <Box w="2" h="2" rounded="full" bg="green.500" />
+              <Text fontSize="xs" fontWeight="medium">
+                {numberWithCommas(systemData.online_users)} {t("online")}
+              </Text>
+            </HStack>
+          )
+        }
         icon={<TotalUsersIcon />}
       />
+
+      {/* 2. Data Usage + Real-time Speeds */}
       <StatisticCard
         title={t("dataUsage")}
         content={
@@ -167,20 +223,75 @@ export const Statistics: FC<BoxProps> = (props) => {
             systemData.incoming_bandwidth + systemData.outgoing_bandwidth
           )
         }
+        subContent={
+          systemData && (
+            <HStack
+              spacing={{ base: 1.5, sm: 2.5 }}
+              fontSize="xs"
+              color="gray.500"
+              _dark={{ color: "gray.400" }}
+              fontWeight="medium"
+              flexWrap="wrap"
+            >
+              <Text as="span" title="Download speed">
+                <chakra.span color="green.500" fontWeight="bold">
+                  ↓
+                </chakra.span>{" "}
+                {formatBytes(systemData.incoming_bandwidth_speed || 0)}/s
+              </Text>
+              <Text as="span" title="Upload speed">
+                <chakra.span color="blue.400" fontWeight="bold">
+                  ↑
+                </chakra.span>{" "}
+                {formatBytes(systemData.outgoing_bandwidth_speed || 0)}/s
+              </Text>
+            </HStack>
+          )
+        }
         icon={<NetworkIcon />}
       />
+
+      {/* 3. CPU Usage */}
+      <StatisticCard
+        title={t("cpuUsage")}
+        content={
+          systemData && (
+            <HStack alignItems="flex-end" spacing={1}>
+              <Text>{(systemData.cpu_usage ?? 0).toFixed(1)}%</Text>
+            </HStack>
+          )
+        }
+        subContent={
+          systemData && (
+            <Text
+              fontSize="xs"
+              color="gray.500"
+              _dark={{ color: "gray.400" }}
+              fontWeight="medium"
+            >
+              {systemData.cpu_cores}{" "}
+              {systemData.cpu_cores > 1 ? t("cores") : t("core")}
+            </Text>
+          )
+        }
+        icon={<CpuIcon />}
+      />
+
+      {/* 4. Memory Usage */}
       <StatisticCard
         title={t("memoryUsage")}
         content={
           systemData && (
-            <HStack alignItems="flex-end">
+            <HStack alignItems="flex-end" spacing={1}>
               <Text>{formatBytes(systemData.mem_used, 1, true)[0]}</Text>
               <Text
                 fontWeight="normal"
-                fontSize="lg"
+                fontSize={{ base: "xs", sm: "md" }}
                 as="span"
                 display="inline-block"
-                pb="5px"
+                pb={{ base: "1px", sm: "3px" }}
+                color="gray.500"
+                _dark={{ color: "gray.400" }}
               >
                 {formatBytes(systemData.mem_used, 1, true)[1]} /{" "}
                 {formatBytes(systemData.mem_total, 1)}
@@ -188,8 +299,25 @@ export const Statistics: FC<BoxProps> = (props) => {
             </HStack>
           )
         }
+        subContent={
+          systemData && (
+            <Text
+              fontSize="xs"
+              color="gray.500"
+              _dark={{ color: "gray.400" }}
+              fontWeight="medium"
+            >
+              {systemData.mem_total
+                ? Math.round(
+                    (systemData.mem_used / systemData.mem_total) * 100
+                  )
+                : 0}
+              % {t("used")}
+            </Text>
+          )
+        }
         icon={<MemoryIcon />}
       />
-    </HStack>
+    </SimpleGrid>
   );
 };
