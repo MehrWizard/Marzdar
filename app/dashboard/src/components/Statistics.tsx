@@ -1,11 +1,19 @@
 import {
+  Badge,
   Box,
   BoxProps,
   Card,
   chakra,
+  Divider,
   HStack,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverContent,
+  PopoverTrigger,
   SimpleGrid,
   Text,
+  VStack,
 } from "@chakra-ui/react";
 import {
   ChartBarIcon,
@@ -61,6 +69,7 @@ type StatisticCardProps = {
   content: ReactNode;
   subContent?: ReactNode;
   icon: ReactElement;
+  popoverContent?: ReactNode;
 };
 
 const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
@@ -68,8 +77,9 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
   content,
   subContent,
   icon,
+  popoverContent,
 }) => {
-  return (
+  const cardElement = (
     <Card
       p={{ base: 3, sm: 4, md: 5 }}
       borderWidth="1px"
@@ -83,6 +93,17 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
       display="flex"
       flexDirection="column"
       justifyContent="space-between"
+      cursor={popoverContent ? "pointer" : "default"}
+      transition="all 0.2s ease"
+      _hover={
+        popoverContent
+          ? {
+              borderColor: "primary.400",
+              transform: "translateY(-2px)",
+              shadow: "md",
+            }
+          : undefined
+      }
     >
       <HStack
         alignItems="center"
@@ -151,6 +172,40 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
       </Box>
     </Card>
   );
+
+  if (!popoverContent) {
+    return cardElement;
+  }
+
+  return (
+    <Popover
+      trigger="hover"
+      placement="bottom"
+      openDelay={100}
+      closeDelay={200}
+      isLazy
+    >
+      <PopoverTrigger>
+        <Box w="full" outline="none">
+          {cardElement}
+        </Box>
+      </PopoverTrigger>
+      <PopoverContent
+        zIndex={9999}
+        _focus={{ boxShadow: "none" }}
+        bg="white"
+        _dark={{ bg: "gray.800", borderColor: "gray.600" }}
+        borderRadius="12px"
+        p={3}
+        shadow="xl"
+        minW={{ base: "250px", sm: "280px" }}
+        w="auto"
+      >
+        <PopoverArrow bg="white" _dark={{ bg: "gray.800" }} />
+        <PopoverBody p={1}>{popoverContent}</PopoverBody>
+      </PopoverContent>
+    </Popover>
+  );
 };
 
 export const StatisticsQueryKey = "statistics-query-key";
@@ -175,7 +230,7 @@ export const Statistics: FC<BoxProps> = (props) => {
       w="full"
       {...props}
     >
-      {/* 1. Active Users + Online Users */}
+      {/* 1. Active Users + Online Users (With Breakdown on hover/click) */}
       <StatisticCard
         title={t("activeUsers")}
         content={
@@ -211,10 +266,124 @@ export const Statistics: FC<BoxProps> = (props) => {
             </HStack>
           )
         }
+        popoverContent={
+          systemData && (
+            <VStack spacing={2} align="stretch" fontSize="xs">
+              <Text
+                fontWeight="semibold"
+                pb={1}
+                borderBottomWidth="1px"
+                borderColor="light-border"
+                color="gray.700"
+                _dark={{ borderColor: "gray.700", color: "gray.200" }}
+              >
+                {t("usersBreakdown")}
+              </Text>
+
+              {/* Active */}
+              <HStack justify="space-between">
+                <HStack spacing={2}>
+                  <Box w="2" h="2" rounded="full" bg="green.500" />
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("status.active")}
+                  </Text>
+                </HStack>
+                <Badge colorScheme="green" rounded="md" px={2}>
+                  {numberWithCommas(systemData.users_active)}
+                </Badge>
+              </HStack>
+
+              {/* On Hold */}
+              <HStack justify="space-between">
+                <HStack spacing={2}>
+                  <Box w="2" h="2" rounded="full" bg="purple.500" />
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("status.on_hold")}
+                  </Text>
+                </HStack>
+                <Badge colorScheme="purple" rounded="md" px={2}>
+                  {numberWithCommas(systemData.users_on_hold)}
+                </Badge>
+              </HStack>
+
+              {/* Limited */}
+              <HStack justify="space-between">
+                <HStack spacing={2}>
+                  <Box w="2" h="2" rounded="full" bg="red.500" />
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("status.limited")}
+                  </Text>
+                </HStack>
+                <Badge colorScheme="red" rounded="md" px={2}>
+                  {numberWithCommas(systemData.users_limited)}
+                </Badge>
+              </HStack>
+
+              {/* Expired */}
+              <HStack justify="space-between">
+                <HStack spacing={2}>
+                  <Box w="2" h="2" rounded="full" bg="orange.500" />
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("status.expired")}
+                  </Text>
+                </HStack>
+                <Badge colorScheme="orange" rounded="md" px={2}>
+                  {numberWithCommas(systemData.users_expired)}
+                </Badge>
+              </HStack>
+
+              {/* Disabled */}
+              <HStack justify="space-between">
+                <HStack spacing={2}>
+                  <Box w="2" h="2" rounded="full" bg="gray.500" />
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("status.disabled")}
+                  </Text>
+                </HStack>
+                <Badge colorScheme="gray" rounded="md" px={2}>
+                  {numberWithCommas(systemData.users_disabled)}
+                </Badge>
+              </HStack>
+
+              <Divider
+                my={1}
+                borderColor="light-border"
+                _dark={{ borderColor: "gray.700" }}
+              />
+
+              {/* Online */}
+              <HStack justify="space-between">
+                <HStack spacing={2}>
+                  <Box w="2" h="2" rounded="full" bg="green.400" />
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("online")}
+                  </Text>
+                </HStack>
+                <Text fontWeight="semibold" color="green.500">
+                  {numberWithCommas(systemData.online_users)}
+                </Text>
+              </HStack>
+
+              {/* Total */}
+              <HStack justify="space-between">
+                <Text
+                  fontWeight="semibold"
+                  color="gray.700"
+                  _dark={{ color: "gray.200" }}
+                >
+                  {t("total")}
+                </Text>
+                <Text fontWeight="semibold">
+                  {numberWithCommas(systemData.total_user)}
+                </Text>
+              </HStack>
+            </VStack>
+          )
+        }
         icon={<TotalUsersIcon />}
       />
 
-      {/* 2. Data Usage + Real-time Speeds */}
+      {/* 2. Data Usage + Real-time Speeds (With Breakdown on hover/click) */}
       <StatisticCard
         title={t("dataUsage")}
         content={
@@ -248,10 +417,119 @@ export const Statistics: FC<BoxProps> = (props) => {
             </HStack>
           )
         }
+        popoverContent={
+          systemData && (
+            <VStack spacing={2} align="stretch" fontSize="xs">
+              <Text
+                fontWeight="semibold"
+                pb={1}
+                borderBottomWidth="1px"
+                borderColor="light-border"
+                color="gray.700"
+                _dark={{ borderColor: "gray.700", color: "gray.200" }}
+              >
+                {t("bandwidthBreakdown")}
+              </Text>
+
+              {/* Total Download */}
+              <HStack justify="space-between">
+                <HStack spacing={1.5}>
+                  <chakra.span color="green.500" fontWeight="bold">
+                    ↓
+                  </chakra.span>
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("download")}
+                  </Text>
+                </HStack>
+                <Text fontWeight="semibold">
+                  {formatBytes(systemData.outgoing_bandwidth)}
+                </Text>
+              </HStack>
+
+              {/* Total Upload */}
+              <HStack justify="space-between">
+                <HStack spacing={1.5}>
+                  <chakra.span color="blue.400" fontWeight="bold">
+                    ↑
+                  </chakra.span>
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("upload")}
+                  </Text>
+                </HStack>
+                <Text fontWeight="semibold">
+                  {formatBytes(systemData.incoming_bandwidth)}
+                </Text>
+              </HStack>
+
+              {/* Total Cumulative */}
+              <HStack justify="space-between">
+                <Text
+                  fontWeight="semibold"
+                  color="gray.700"
+                  _dark={{ color: "gray.200" }}
+                >
+                  {t("total")}
+                </Text>
+                <Text fontWeight="semibold">
+                  {formatBytes(
+                    systemData.incoming_bandwidth +
+                      systemData.outgoing_bandwidth
+                  )}
+                </Text>
+              </HStack>
+
+              <Divider
+                my={1}
+                borderColor="light-border"
+                _dark={{ borderColor: "gray.700" }}
+              />
+
+              <Text
+                fontSize="2xs"
+                textTransform="uppercase"
+                fontWeight="bold"
+                color="gray.400"
+                letterSpacing="wider"
+              >
+                {t("realtimeSpeed")}
+              </Text>
+
+              {/* Real-time Download */}
+              <HStack justify="space-between">
+                <HStack spacing={1.5}>
+                  <chakra.span color="green.500" fontWeight="bold">
+                    ↓
+                  </chakra.span>
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("download")}
+                  </Text>
+                </HStack>
+                <Badge colorScheme="green" rounded="md" px={2}>
+                  {formatBytes(systemData.incoming_bandwidth_speed || 0)}/s
+                </Badge>
+              </HStack>
+
+              {/* Real-time Upload */}
+              <HStack justify="space-between">
+                <HStack spacing={1.5}>
+                  <chakra.span color="blue.400" fontWeight="bold">
+                    ↑
+                  </chakra.span>
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("upload")}
+                  </Text>
+                </HStack>
+                <Badge colorScheme="blue" rounded="md" px={2}>
+                  {formatBytes(systemData.outgoing_bandwidth_speed || 0)}/s
+                </Badge>
+              </HStack>
+            </VStack>
+          )
+        }
         icon={<NetworkIcon />}
       />
 
-      {/* 3. CPU Usage */}
+      {/* 3. CPU Usage (Untouched, complete) */}
       <StatisticCard
         title={t("cpuUsage")}
         content={
@@ -277,7 +555,7 @@ export const Statistics: FC<BoxProps> = (props) => {
         icon={<CpuIcon />}
       />
 
-      {/* 4. Memory Usage */}
+      {/* 4. Memory Usage (Untouched, complete) */}
       <StatisticCard
         title={t("memoryUsage")}
         content={
