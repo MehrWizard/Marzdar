@@ -255,15 +255,13 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
               icon={<EllipsisVerticalIcon width="18px" height="18px" />}
             />
             <MenuList minW="180px" zIndex={9999}>
-              {isSudo && (
-                <MenuItem
-                  fontSize="sm"
-                  icon={<TrashIcon width="16px" height="16px" color="var(--chakra-colors-red-500)" />}
-                  onClick={() => onCleaningExpiredUsers(true)}
-                >
-                  {t("expiredUsers.menuAction")}
-                </MenuItem>
-              )}
+              <MenuItem
+                fontSize="sm"
+                icon={<TrashIcon width="16px" height="16px" color="var(--chakra-colors-red-500)" />}
+                onClick={() => onCleaningExpiredUsers(true)}
+              >
+                {t("expiredUsers.menuAction")}
+              </MenuItem>
             </MenuList>
           </Menu>
         </HStack>
