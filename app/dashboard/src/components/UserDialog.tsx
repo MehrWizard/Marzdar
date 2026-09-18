@@ -785,6 +785,14 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           type="donut"
                         />
                       </Box>
+                      <Button
+                        onClick={handleResetUsage}
+                        size="sm"
+                        variant="outline"
+                        colorScheme="red"
+                      >
+                        {t("userDialog.resetUsage")}
+                      </Button>
                     </VStack>
                   </GridItem>
                 )}
@@ -840,9 +848,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           <UserUsageIcon />
                         </IconButton>
                       </Tooltip>
-                      <Button onClick={handleResetUsage} size="sm">
-                        {t("userDialog.resetUsage")}
-                      </Button>
                       <Button onClick={handleRevokeSubscription} size="sm">
                         {t("userDialog.revokeSubscription")}
                       </Button>

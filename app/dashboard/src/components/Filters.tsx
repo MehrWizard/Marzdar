@@ -20,6 +20,7 @@ import {
   PopoverBody,
   PopoverContent,
   PopoverTrigger,
+  Portal,
   Select,
   Spinner,
   Tag,
@@ -114,7 +115,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
       }}
       bg="var(--chakra-colors-chakra-body-bg)"
       py={4}
-      zIndex="docked"
+      zIndex="sticky"
       {...props}
     >
       <GridItem colSpan={{ base: 1, md: 2, lg: 1 }} order={{ base: 2, md: 1 }}>
@@ -168,46 +169,48 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
                   )}
                 </Box>
               </PopoverTrigger>
-              <PopoverContent p={3} w="260px" zIndex={9999} _focus={{ boxShadow: "none" }}>
-                <PopoverArrow />
-                <PopoverBody p={0}>
-                  <VStack align="stretch" spacing={2.5}>
-                    <HStack justify="space-between">
-                      <Text fontSize="xs" fontWeight="semibold">
-                        {t("filters.filterByAdmin")}
-                      </Text>
-                      {filters.admin && (
-                        <Button
-                          size="2xs"
-                          variant="ghost"
-                          colorScheme="red"
-                          onClick={() => onFilterChange({ admin: undefined, offset: 0 })}
-                        >
-                          {t("clear")}
-                        </Button>
-                      )}
-                    </HStack>
-                    <Select
-                      size="sm"
-                      borderRadius="md"
-                      value={filters.admin || ""}
-                      onChange={(e) =>
-                        onFilterChange({
-                          admin: e.target.value || undefined,
-                          offset: 0,
-                        })
-                      }
-                    >
-                      <option value="">{t("filters.allAdmins")}</option>
-                      {admins?.map((admin) => (
-                        <option key={admin.username} value={admin.username}>
-                          {admin.username} {admin.is_sudo ? `(${t("admins.sudo")})` : ""}
-                        </option>
-                      ))}
-                    </Select>
-                  </VStack>
-                </PopoverBody>
-              </PopoverContent>
+              <Portal>
+                <PopoverContent p={3} w="260px" zIndex={99999} _focus={{ boxShadow: "none" }}>
+                  <PopoverArrow />
+                  <PopoverBody p={0}>
+                    <VStack align="stretch" spacing={2.5}>
+                      <HStack justify="space-between">
+                        <Text fontSize="xs" fontWeight="semibold">
+                          {t("filters.filterByAdmin")}
+                        </Text>
+                        {filters.admin && (
+                          <Button
+                            size="2xs"
+                            variant="ghost"
+                            colorScheme="red"
+                            onClick={() => onFilterChange({ admin: undefined, offset: 0 })}
+                          >
+                            {t("clear")}
+                          </Button>
+                        )}
+                      </HStack>
+                      <Select
+                        size="sm"
+                        borderRadius="md"
+                        value={filters.admin || ""}
+                        onChange={(e) =>
+                          onFilterChange({
+                            admin: e.target.value || undefined,
+                            offset: 0,
+                          })
+                        }
+                      >
+                        <option value="">{t("all")}</option>
+                        {admins?.map((admin) => (
+                          <option key={admin.username} value={admin.username}>
+                            {admin.username} {admin.is_sudo ? `(${t("admins.sudo")})` : ""}
+                          </option>
+                        ))}
+                      </Select>
+                    </VStack>
+                  </PopoverBody>
+                </PopoverContent>
+              </Portal>
             </Popover>
           )}
 
@@ -246,7 +249,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
           </Button>
 
           {/* More Actions Menu */}
-          <Menu>
+          <Menu isLazy>
             <MenuButton
               as={IconButton}
               size="sm"
@@ -254,15 +257,17 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
               aria-label="More actions"
               icon={<EllipsisVerticalIcon width="18px" height="18px" />}
             />
-            <MenuList minW="180px" zIndex={9999}>
-              <MenuItem
-                fontSize="sm"
-                icon={<TrashIcon width="16px" height="16px" color="var(--chakra-colors-red-500)" />}
-                onClick={() => onCleaningExpiredUsers(true)}
-              >
-                {t("expiredUsers.menuAction")}
-              </MenuItem>
-            </MenuList>
+            <Portal>
+              <MenuList minW="180px" zIndex={99999}>
+                <MenuItem
+                  fontSize="sm"
+                  icon={<TrashIcon width="16px" height="16px" color="var(--chakra-colors-red-500)" />}
+                  onClick={() => onCleaningExpiredUsers(true)}
+                >
+                  {t("expiredUsers.menuAction")}
+                </MenuItem>
+              </MenuList>
+            </Portal>
           </Menu>
         </HStack>
       </GridItem>
