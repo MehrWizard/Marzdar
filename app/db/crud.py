@@ -515,15 +515,18 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     if modify.on_hold_expire_duration is not None:
         dbuser.on_hold_expire_duration = modify.on_hold_expire_duration
 
-    if modify.next_plan is not None:
-        dbuser.next_plan = NextPlan(
-            data_limit=modify.next_plan.data_limit,
-            expire=modify.next_plan.expire,
-            add_remaining_traffic=modify.next_plan.add_remaining_traffic,
-            fire_on_either=modify.next_plan.fire_on_either,
-        )
-    elif dbuser.next_plan is not None:
-        db.delete(dbuser.next_plan)
+    fields_set = getattr(modify, "model_fields_set", getattr(modify, "__fields_set__", set()))
+    if "next_plan" in fields_set:
+        if modify.next_plan is not None:
+            dbuser.next_plan = NextPlan(
+                data_limit=modify.next_plan.data_limit,
+                expire=modify.next_plan.expire,
+                add_remaining_traffic=modify.next_plan.add_remaining_traffic,
+                fire_on_either=modify.next_plan.fire_on_either,
+            )
+        elif dbuser.next_plan is not None:
+            db.delete(dbuser.next_plan)
+            dbuser.next_plan = None
 
     dbuser.edit_at = datetime.utcnow()
 
@@ -588,9 +591,18 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
     dbuser.node_usages.clear()
     dbuser.status = UserStatus.active.value
 
-    dbuser.data_limit = dbuser.next_plan.data_limit + \
-        (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
-    dbuser.expire = dbuser.next_plan.expire
+    remaining_traffic = (
+        max(0, (dbuser.data_limit or 0) - (dbuser.used_traffic or 0))
+        if dbuser.next_plan.add_remaining_traffic
+        else 0
+    )
+    if dbuser.next_plan.expire:
+        if dbuser.next_plan.expire < 1000000000:
+            dbuser.expire = int(datetime.utcnow().timestamp()) + dbuser.next_plan.expire
+        else:
+            dbuser.expire = dbuser.next_plan.expire
+    else:
+        dbuser.expire = None
 
     dbuser.used_traffic = 0
     db.delete(dbuser.next_plan)

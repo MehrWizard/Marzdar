@@ -2,6 +2,7 @@ from typing import Optional, Union, Tuple
 from app.models.admin import AdminInDB, AdminValidationResult, Admin
 from app.models.user import UserResponse, UserStatus
 from app.db import Session, crud, get_db
+from app.db.models import User
 from config import SUDOERS
 from fastapi import Depends, HTTPException
 from datetime import datetime, timezone, timedelta
@@ -117,20 +118,19 @@ def get_validated_user(
 
     return dbuser
 
-
 def get_expired_users_list(db: Session, admin: Admin, expired_after: Optional[datetime] = None,
                            expired_before: Optional[datetime] = None):
     expired_before = expired_before or datetime.now(timezone.utc)
     expired_after = expired_after or datetime.min.replace(tzinfo=timezone.utc)
 
     dbadmin = crud.get_admin(db, admin.username)
-    dbusers = crud.get_users(
-        db=db,
-        status=[UserStatus.expired, UserStatus.limited],
-        admin=dbadmin if not admin.is_sudo else None
+    query = db.query(User).filter(
+        User.status.in_([UserStatus.expired, UserStatus.limited]),
+        User.expire.isnot(None),
+        User.expire >= int(expired_after.timestamp()),
+        User.expire <= int(expired_before.timestamp()),
     )
+    if not admin.is_sudo and dbadmin:
+        query = query.filter(User.admin_id == dbadmin.id)
 
-    return [
-        u for u in dbusers
-        if u.expire and expired_after.timestamp() <= u.expire <= expired_before.timestamp()
-    ]
+    return query.all()

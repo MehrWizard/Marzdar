@@ -25,6 +25,7 @@ import {
 } from "@chakra-ui/react";
 import {
   ArrowPathIcon,
+  DocumentDuplicateIcon,
   EllipsisVerticalIcon,
   FunnelIcon,
   MagnifyingGlassIcon,
@@ -68,6 +69,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
     refetchUsers,
     onCreateUser,
     onCleaningExpiredUsers,
+    onManagingTemplates,
   } = useDashboard();
   const { t } = useTranslation();
   const { userData } = useGetUser();
@@ -191,6 +193,15 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
                     onClick={() => setIsFilterAdminOpen(true)}
                   >
                     {filters.admin ? `${t("filters.filterByAdmin")}: ${filters.admin}` : t("filters.filterByAdmin")}
+                  </MenuItem>
+                )}
+                {isSudo && (
+                  <MenuItem
+                    fontSize="sm"
+                    icon={<DocumentDuplicateIcon width="16px" height="16px" color="var(--chakra-colors-primary-500)" />}
+                    onClick={() => onManagingTemplates(true)}
+                  >
+                    {t("templates.title")}
                   </MenuItem>
                 )}
                 <MenuItem

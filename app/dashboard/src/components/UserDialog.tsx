@@ -33,12 +33,14 @@ import {
 } from "@chakra-ui/react";
 import {
   ChartPieIcon,
+  ClockIcon,
   PencilIcon,
   UserPlusIcon,
 } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resetStrategy } from "constants/UserSettings";
 import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
+import { useUserTemplatesQuery } from "contexts/UserTemplatesContext";
 import dayjs from "dayjs";
 import { FC, useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
@@ -225,9 +227,11 @@ export const UserDialog: FC<UserDialogProps> = () => {
     onEditingUser,
     createUser,
     onDeletingUser,
+    onNextPlanUser,
   } = useDashboard();
   const isEditing = !!editingUser;
   const isOpen = isCreatingNewUser || isEditing;
+  const { data: templates } = useUserTemplatesQuery(isCreatingNewUser);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
   const toast = useToast();
@@ -241,6 +245,70 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const [usageVisible, setUsageVisible] = useState(false);
   const handleUsageToggle = () => {
     setUsageVisible((current) => !current);
+  };
+
+  const handleApplyTemplate = (templateId: string) => {
+    if (!templateId) return;
+    const template = templates?.find((tmpl) => String(tmpl.id) === templateId);
+    if (!template) return;
+
+    if (template.data_limit !== null && template.data_limit !== undefined) {
+      const gb =
+        template.data_limit > 0
+          ? Math.round((template.data_limit / 1073741824) * 100) / 100
+          : 0;
+      form.setValue("data_limit", gb);
+    }
+
+    if (template.expire_duration) {
+      const currentStatus = form.getValues("status");
+      if (currentStatus === "on_hold") {
+        form.setValue(
+          "on_hold_expire_duration",
+          Math.round(template.expire_duration / 86400)
+        );
+      } else {
+        const expireTs =
+          Math.floor(Date.now() / 1000) + template.expire_duration;
+        form.setValue("expire", expireTs);
+      }
+    }
+
+    if (template.username_prefix || template.username_suffix) {
+      const currentUsername = form.getValues("username") || "";
+      let newName = currentUsername;
+      if (
+        template.username_prefix &&
+        !newName.startsWith(template.username_prefix)
+      ) {
+        newName = template.username_prefix + newName;
+      }
+      if (
+        template.username_suffix &&
+        !newName.endsWith(template.username_suffix)
+      ) {
+        newName = newName + template.username_suffix;
+      }
+      if (newName) {
+        form.setValue("username", newName);
+      }
+    }
+
+    if (template.inbounds && Object.keys(template.inbounds).length > 0) {
+      form.setValue("inbounds", template.inbounds);
+      form.setValue(
+        "selected_proxies",
+        Object.keys(template.inbounds) as ProxyKeys
+      );
+    }
+
+    toast({
+      title: t("templates.applied", { name: template.name }),
+      status: "info",
+      duration: 2500,
+      isClosable: true,
+      position: "top",
+    });
   };
 
   const form = useForm<FormType>({
@@ -422,6 +490,44 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       gridAutoRows="min-content"
                       w="full"
                     >
+                      {!isEditing && templates && templates.length > 0 && (
+                        <FormControl mb={"10px"}>
+                          <FormLabel fontSize="xs">
+                            {t("templates.applyTemplate")}
+                          </FormLabel>
+                          <Select
+                            size="sm"
+                            placeholder={t("templates.selectTemplate")}
+                            onChange={(e) => handleApplyTemplate(e.target.value)}
+                            sx={{
+                              option: {
+                                backgroundColor:
+                                  colorMode === "dark" ? "#222C3B" : "white",
+                              },
+                            }}
+                          >
+                            {templates.map((tmpl) => {
+                              const dataGB = tmpl.data_limit
+                                ? `${
+                                    Math.round(
+                                      (tmpl.data_limit / 1073741824) * 100
+                                    ) / 100
+                                  } GB`
+                                : "∞";
+                              const durationDays = tmpl.expire_duration
+                                ? `${Math.round(
+                                    tmpl.expire_duration / 86400
+                                  )}d`
+                                : "∞";
+                              return (
+                                <option key={tmpl.id} value={tmpl.id}>
+                                  {tmpl.name} ({dataGB} / {durationDays})
+                                </option>
+                              );
+                            })}
+                          </Select>
+                        </FormControl>
+                      )}
                       <Flex flexDirection="row" w="full" gap={2}>
                         <FormControl mb={"10px"}>
                           <FormLabel>
@@ -850,6 +956,17 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       </Tooltip>
                       <Button onClick={handleRevokeSubscription} size="sm">
                         {t("userDialog.revokeSubscription")}
+                      </Button>
+                      <Button
+                        onClick={() => onNextPlanUser(editingUser)}
+                        size="sm"
+                        variant={editingUser?.next_plan ? "solid" : "outline"}
+                        colorScheme="purple"
+                        leftIcon={<ClockIcon width="16px" height="16px" />}
+                      >
+                        {editingUser?.next_plan
+                          ? t("nextPlan.hasQueuedPlan")
+                          : t("nextPlan.manageQueuedPlan")}
                       </Button>
                       {isSudo && (
                         <Button

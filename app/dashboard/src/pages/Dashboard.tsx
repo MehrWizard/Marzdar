@@ -14,6 +14,8 @@ import { ResetAllUsageModal } from "components/ResetAllUsageModal";
 import { ResetUserUsageModal } from "components/ResetUserUsageModal";
 import { RevokeSubscriptionModal } from "components/RevokeSubscriptionModal";
 import { UserDialog } from "components/UserDialog";
+import { UserTemplatesModal } from "components/UserTemplatesModal";
+import { NextPlanModal } from "components/NextPlanModal";
 import { UsersTable } from "components/UsersTable";
 import { fetchInbounds, useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect } from "react";
@@ -41,6 +43,8 @@ export const Dashboard: FC = () => {
         <NodesUsage />
         <AdminsDialog />
         <ExpiredUsersModal />
+        <UserTemplatesModal />
+        <NextPlanModal />
         <ResetAllUsageModal />
         <CoreSettingsModal />
       </Box>

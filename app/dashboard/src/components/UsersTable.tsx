@@ -30,6 +30,7 @@ import {
   CheckIcon,
   ChevronDownIcon,
   ClipboardIcon,
+  ClockIcon,
   LinkIcon,
   PencilIcon,
   QrCodeIcon,
@@ -193,6 +194,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
     users: totalUsers,
     onEditingUser,
     onFilterChange,
+    onNextPlanUser,
   } = useDashboard();
 
   const { t } = useTranslation();
@@ -356,6 +358,20 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                         <div className="flex-status">
                           <OnlineBadge lastOnline={user.online_at} />
                           <Text isTruncated>{user.username}</Text>
+                          {user.next_plan && (
+                            <Box
+                              as="span"
+                              display="inline-flex"
+                              alignItems="center"
+                              color="purple.500"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onNextPlanUser(user);
+                              }}
+                            >
+                              <ClockIcon width="14px" height="14px" />
+                            </Box>
+                          )}
                         </div>
                       </Td>
                       <Td borderBottom={0} minW="50px" pl={0} pr={0}>
@@ -595,6 +611,23 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       <OnlineBadge lastOnline={user.online_at} />
                       {user.username}
                       <OnlineStatus lastOnline={user.online_at} />
+                      {user.next_plan && (
+                        <Tooltip label={t("nextPlan.hasQueuedPlan")} placement="top">
+                          <Box
+                            as="span"
+                            display="inline-flex"
+                            alignItems="center"
+                            color="purple.500"
+                            cursor="pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onNextPlanUser(user);
+                            }}
+                          >
+                            <ClockIcon width="14px" height="14px" />
+                          </Box>
+                        </Tooltip>
+                      )}
                     </div>
                   </Td>
                   <Td width="400px" minW="150px">
