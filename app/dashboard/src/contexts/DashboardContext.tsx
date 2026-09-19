@@ -47,6 +47,8 @@ type DashboardStateType = {
   isEditingHosts: boolean;
   isEditingNodes: boolean;
   isManagingAdmins: boolean;
+  activeTab: "users" | "admins";
+  setActiveTab: (activeTab: "users" | "admins") => void;
   isShowingNodesUsage: boolean;
   isShowingUsersUsage: boolean;
   isResetingAllUsage: boolean;
@@ -126,6 +128,7 @@ export const useDashboard = create(
     isEditingHosts: false,
     isEditingNodes: false,
     isManagingAdmins: false,
+    activeTab: "users",
     isCleaningExpiredUsers: false,
     isManagingTemplates: false,
     isShowingNodesUsage: false,
@@ -206,7 +209,10 @@ export const useDashboard = create(
       set({ isEditingNodes });
     },
     onManagingAdmins: (isManagingAdmins: boolean) => {
-      set({ isManagingAdmins });
+      set({ isManagingAdmins, activeTab: isManagingAdmins ? "admins" : "users" });
+    },
+    setActiveTab: (activeTab: "users" | "admins") => {
+      set({ activeTab });
     },
     onCleaningExpiredUsers: (isCleaningExpiredUsers: boolean) => {
       set({ isCleaningExpiredUsers });

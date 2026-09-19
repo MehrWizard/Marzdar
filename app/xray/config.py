@@ -226,11 +226,16 @@ class XRayConfig(dict):
                                 f"You need to provide privateKey in realitySettings of {inbound['tag']}")
 
                         try:
-                            from app.xray import core
-                            x25519 = core.get_x25519(pvk)
-                            settings['pbk'] = x25519['public_key']
-                        except ImportError:
-                            pass
+                            from app.utils.crypto import get_x25519_public_key
+                            settings['pbk'] = get_x25519_public_key(pvk)
+                        except Exception:
+                            try:
+                                from app.xray import core
+                                x25519 = core.get_x25519(pvk)
+                                if x25519 and 'public_key' in x25519:
+                                    settings['pbk'] = x25519['public_key']
+                            except Exception:
+                                pass
 
                         if not settings.get('pbk'):
                             raise ValueError(

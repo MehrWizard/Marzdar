@@ -85,7 +85,7 @@ Use the following command:
 Then, navigate to {click.style(f'http://127.0.0.1:{UVICORN_PORT}', bold=True)} on your computer.
             """)
 
-            bind_args['host'] = '127.0.0.1'
+            bind_args['host'] = UVICORN_HOST if UVICORN_HOST else '127.0.0.1'
             bind_args['port'] = UVICORN_PORT
 
     if DEBUG:

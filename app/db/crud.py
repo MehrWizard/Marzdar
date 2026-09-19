@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
-from sqlalchemy import and_, delete, func, or_
+from sqlalchemy import and_, case, delete, func, or_
 from sqlalchemy.orm import Query, Session, joinedload
 from sqlalchemy.sql.functions import coalesce
 
@@ -321,15 +321,26 @@ def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -
             used_traffic=0
         )
 
-    cond = and_(NodeUserUsage.user_id == dbuser.id,
-                NodeUserUsage.created_at >= start,
-                NodeUserUsage.created_at <= end)
+    cond = and_(
+        NodeUserUsage.user_id == dbuser.id,
+        NodeUserUsage.created_at >= start,
+        NodeUserUsage.created_at <= end,
+    )
 
-    for v in db.query(NodeUserUsage).filter(cond):
-        try:
-            usages[v.node_id or 0].used_traffic += v.used_traffic
-        except KeyError:
-            pass
+    results = (
+        db.query(
+            NodeUserUsage.node_id,
+            func.coalesce(func.sum(NodeUserUsage.used_traffic), 0),
+        )
+        .filter(cond)
+        .group_by(NodeUserUsage.node_id)
+        .all()
+    )
+
+    for node_id, total_used in results:
+        target_id = node_id or 0
+        if target_id in usages:
+            usages[target_id].used_traffic = int(total_used)
 
     return list(usages.values())
 
@@ -810,19 +821,32 @@ def get_all_users_usages(
             used_traffic=0
         )
 
-    admin_users = set(user.id for user in get_users(db=db, admins=admin))
-
-    cond = and_(
+    filters = [
         NodeUserUsage.created_at >= start,
         NodeUserUsage.created_at <= end,
-        NodeUserUsage.user_id.in_(admin_users)
+    ]
+
+    if admin:
+        admin_ids = [a.id for a in db.query(Admin.id).filter(Admin.username.in_(admin)).all()]
+        if admin_ids:
+            user_ids_subquery = db.query(User.id).filter(User.admin_id.in_(admin_ids))
+            filters.append(NodeUserUsage.user_id.in_(user_ids_subquery))
+        else:
+            return list(usages.values())
+
+    query = (
+        db.query(
+            NodeUserUsage.node_id,
+            func.coalesce(func.sum(NodeUserUsage.used_traffic), 0),
+        )
+        .filter(and_(*filters))
+        .group_by(NodeUserUsage.node_id)
     )
 
-    for v in db.query(NodeUserUsage).filter(cond):
-        try:
-            usages[v.node_id or 0].used_traffic += v.used_traffic
-        except KeyError:
-            pass
+    for node_id, total_used in query.all():
+        target_id = node_id or 0
+        if target_id in usages:
+            usages[target_id].used_traffic = int(total_used)
 
     return list(usages.values())
 
@@ -934,7 +958,19 @@ def get_admin(db: Session, username: str) -> Admin:
     Returns:
         Admin: The admin object.
     """
-    return db.query(Admin).filter(Admin.username == username).first()
+    admin = db.query(Admin).filter(Admin.username == username).first()
+    if admin:
+        res = (
+            db.query(
+                func.count(User.id),
+                coalesce(func.sum(case((User.status == UserStatus.active, 1), else_=0)), 0),
+            )
+            .filter(User.admin_id == admin.id)
+            .first()
+        )
+        admin.users_count = res[0] if res else 0
+        admin.active_users_count = int(res[1]) if res else 0
+    return admin
 
 
 def create_admin(db: Session, admin: AdminCreate) -> Admin:
@@ -1082,7 +1118,25 @@ def get_admins(db: Session,
         query = query.offset(offset)
     if limit:
         query = query.limit(limit)
-    return query.all()
+    admins = query.all()
+
+    stats_rows = (
+        db.query(
+            User.admin_id,
+            func.count(User.id),
+            coalesce(func.sum(case((User.status == UserStatus.active, 1), else_=0)), 0),
+        )
+        .filter(User.admin_id.isnot(None))
+        .group_by(User.admin_id)
+        .all()
+    )
+    stats = {row[0]: (row[1], int(row[2])) for row in stats_rows}
+    for admin in admins:
+        admin_stat = stats.get(admin.id, (0, 0))
+        admin.users_count = admin_stat[0]
+        admin.active_users_count = admin_stat[1]
+
+    return admins
 
 
 def reset_admin_usage(db: Session, dbadmin: Admin) -> int:
@@ -1305,12 +1359,22 @@ def get_nodes_usage(db: Session, start: datetime, end: datetime) -> List[NodeUsa
 
     cond = and_(NodeUsage.created_at >= start, NodeUsage.created_at <= end)
 
-    for v in db.query(NodeUsage).filter(cond):
-        try:
-            usages[v.node_id or 0].uplink += v.uplink
-            usages[v.node_id or 0].downlink += v.downlink
-        except KeyError:
-            pass
+    results = (
+        db.query(
+            NodeUsage.node_id,
+            func.coalesce(func.sum(NodeUsage.uplink), 0),
+            func.coalesce(func.sum(NodeUsage.downlink), 0),
+        )
+        .filter(cond)
+        .group_by(NodeUsage.node_id)
+        .all()
+    )
+
+    for node_id, total_up, total_down in results:
+        target_id = node_id or 0
+        if target_id in usages:
+            usages[target_id].uplink = int(total_up)
+            usages[target_id].downlink = int(total_down)
 
     return list(usages.values())
 

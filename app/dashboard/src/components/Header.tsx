@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   chakra,
   HStack,
   IconButton,
@@ -20,6 +21,7 @@ import {
   LinkIcon,
   SquaresPlusIcon,
   UserGroupIcon,
+  UsersIcon,
 } from "@heroicons/react/24/outline";
 import { DONATION_URL, REPO_URL } from "constants/Project";
 import { useDashboard } from "contexts/DashboardContext";
@@ -52,7 +54,6 @@ const HostsIcon = chakra(LinkIcon, iconProps);
 const NodesIcon = chakra(SquaresPlusIcon, iconProps);
 const NodesUsageIcon = chakra(ChartPieIcon, iconProps);
 const ResetUsageIcon = chakra(DocumentMinusIcon, iconProps);
-const AdminsIcon = chakra(UserGroupIcon, iconProps);
 const NotificationCircle = chakra(Box, {
   baseStyle: {
     bg: "yellow.500",
@@ -91,6 +92,8 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
   };
 
   const {
+    activeTab,
+    setActiveTab,
     onEditingHosts,
     onResetAllUsage,
     onEditingNodes,
@@ -126,9 +129,46 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
       }}
       position="relative"
     >
-      <Text as="h1" fontWeight="semibold" fontSize="2xl">
-        {t("users")}
-      </Text>
+      {isSudo() ? (
+        <HStack
+          bg="blackAlpha.100"
+          _dark={{ bg: "whiteAlpha.100" }}
+          p="1"
+          borderRadius="xl"
+          spacing={1}
+        >
+          <Button
+            size="sm"
+            variant={activeTab === "users" ? "solid" : "ghost"}
+            colorScheme={activeTab === "users" ? "primary" : "gray"}
+            borderRadius="lg"
+            fontWeight="semibold"
+            fontSize="sm"
+            px={3.5}
+            leftIcon={<UsersIcon width="16px" height="16px" />}
+            onClick={() => setActiveTab("users")}
+          >
+            {t("users")}
+          </Button>
+          <Button
+            size="sm"
+            variant={activeTab === "admins" ? "solid" : "ghost"}
+            colorScheme={activeTab === "admins" ? "primary" : "gray"}
+            borderRadius="lg"
+            fontWeight="semibold"
+            fontSize="sm"
+            px={3.5}
+            leftIcon={<UserGroupIcon width="16px" height="16px" />}
+            onClick={() => setActiveTab("admins")}
+          >
+            {t("admins.title", "Admins")}
+          </Button>
+        </HStack>
+      ) : (
+        <Text as="h1" fontWeight="semibold" fontSize="2xl">
+          {t("users")}
+        </Text>
+      )}
       {showDonationNotif && (
         <NotificationCircle top="0" right="0" zIndex={9999} />
       )}
@@ -149,14 +189,6 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
             <MenuList minW="170px" zIndex={99999} className="menuList">
               {isSudo() && (
                 <>
-                  <MenuItem
-                    maxW="170px"
-                    fontSize="sm"
-                    icon={<AdminsIcon />}
-                    onClick={onManagingAdmins.bind(null, true)}
-                  >
-                    {t("header.adminSettings")}
-                  </MenuItem>
                   <MenuItem
                     maxW="170px"
                     fontSize="sm"
@@ -191,7 +223,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                   </MenuItem>
                 </>
               )}
-              <Link to={DONATION_URL} target="_blank">
+              <chakra.a href={DONATION_URL} target="_blank" rel="noopener noreferrer">
                 <MenuItem
                   maxW="170px"
                   fontSize="sm"
@@ -204,7 +236,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                     <NotificationCircle top="3" right="2" />
                   )}
                 </MenuItem>
-              </Link>
+              </chakra.a>
               <Link to="/login">
                 <MenuItem maxW="170px" fontSize="sm" icon={<LogoutIcon />}>
                   {t("header.logout")}

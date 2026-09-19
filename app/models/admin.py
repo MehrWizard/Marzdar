@@ -24,6 +24,8 @@ class Admin(BaseModel):
     telegram_id: Optional[int] = None
     discord_webhook: Optional[str] = None
     users_usage: Optional[int] = None
+    users_count: Optional[int] = 0
+    active_users_count: Optional[int] = 0
     model_config = ConfigDict(from_attributes=True)
 
     @field_validator("users_usage",  mode='before')

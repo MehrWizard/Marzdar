@@ -19,14 +19,25 @@ import {
   ChartBarIcon,
   ChartPieIcon,
   CpuChipIcon,
+  UserGroupIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
+import { useAdminsQuery } from "contexts/AdminsContext";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import { fetch } from "service/http";
 import { formatBytes, numberWithCommas } from "utils/formatByte";
+
+const TotalAdminsIcon = chakra(UserGroupIcon, {
+  baseStyle: {
+    w: 5,
+    h: 5,
+    position: "relative",
+    zIndex: "2",
+  },
+});
 
 const TotalUsersIcon = chakra(UsersIcon, {
   baseStyle: {
@@ -212,7 +223,28 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
 export const StatisticsQueryKey = "statistics-query-key";
 
 export const Statistics: FC<BoxProps> = (props) => {
-  const { version } = useDashboard();
+  const { version, activeTab } = useDashboard();
+  const { data: admins = [] } = useAdminsQuery(activeTab === "admins");
+
+  const totalAdmins = admins.length;
+  const sudoAdmins = admins.filter((a) => a.is_sudo);
+  const regularAdmins = admins.filter((a) => !a.is_sudo);
+  const activeAdmins = admins.filter((a) => (a.active_users_count ?? 0) > 0);
+  const adminsWithUsers = admins.filter((a) => (a.users_count ?? 0) > 0);
+  const adminsWithoutUsers = admins.filter((a) => (a.users_count ?? 0) === 0);
+  const totalResellerTraffic = admins.reduce(
+    (acc, a) => acc + (a.users_usage || 0),
+    0
+  );
+  const totalUsersManaged = admins.reduce(
+    (acc, a) => acc + (a.users_count || 0),
+    0
+  );
+  const totalActiveUsersManaged = admins.reduce(
+    (acc, a) => acc + (a.active_users_count || 0),
+    0
+  );
+
   const { data: systemData } = useQuery({
     queryKey: StatisticsQueryKey,
     queryFn: () => fetch("/system"),
@@ -233,9 +265,175 @@ export const Statistics: FC<BoxProps> = (props) => {
       w="full"
       {...props}
     >
-      {/* 1. Active Users + Online Users (With Breakdown on hover/click) */}
-      <StatisticCard
-        title={t("activeUsers")}
+      {/* 1. Active Users (Users view) OR Active Admins (Admins view) */}
+      {activeTab === "admins" ? (
+        <StatisticCard
+          title={t("admins.activeAdmins", "Active Admins")}
+          content={
+            <HStack alignItems="flex-end" spacing={1}>
+              <Text>{numberWithCommas(activeAdmins.length)}</Text>
+              <Text
+                fontWeight="normal"
+                fontSize={{ base: "xs", sm: "md" }}
+                as="span"
+                display="inline-block"
+                pb={{ base: "1px", sm: "3px" }}
+                color="gray.500"
+                _dark={{ color: "gray.400" }}
+              >
+                / {numberWithCommas(totalAdmins)}
+              </Text>
+            </HStack>
+          }
+          subContent={
+            <HStack
+              spacing={1.5}
+              alignItems="center"
+              color="green.500"
+              _dark={{ color: "green.400" }}
+            >
+              <Box w="2" h="2" rounded="full" bg="green.500" />
+              <Text fontSize="xs" fontWeight="medium">
+                {sudoAdmins.length} {t("admins.sudo", "Sudo")} • {regularAdmins.length} {t("admins.regular", "Regular")}
+              </Text>
+            </HStack>
+          }
+          popoverContent={
+            <VStack spacing={2} align="stretch" fontSize="xs">
+              <Text
+                fontWeight="semibold"
+                pb={1}
+                borderBottomWidth="1px"
+                borderColor="light-border"
+                color="gray.700"
+                _dark={{ borderColor: "gray.700", color: "gray.200" }}
+              >
+                {t("admins.breakdown", "Admins Breakdown")}
+              </Text>
+
+              {/* Active Admins */}
+              <HStack justify="space-between">
+                <HStack spacing={2}>
+                  <Box w="2" h="2" rounded="full" bg="green.500" />
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("admins.activeAdmins", "Active Admins")}
+                  </Text>
+                </HStack>
+                <Badge colorScheme="green" rounded="md" px={2}>
+                  {numberWithCommas(activeAdmins.length)}
+                </Badge>
+              </HStack>
+
+              {/* Sudo Admins */}
+              <HStack justify="space-between">
+                <HStack spacing={2}>
+                  <Box w="2" h="2" rounded="full" bg="purple.500" />
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("admins.sudoAdmins", "Sudo Admins")}
+                  </Text>
+                </HStack>
+                <Badge colorScheme="purple" rounded="md" px={2}>
+                  {numberWithCommas(sudoAdmins.length)}
+                </Badge>
+              </HStack>
+
+              {/* Regular Admins */}
+              <HStack justify="space-between">
+                <HStack spacing={2}>
+                  <Box w="2" h="2" rounded="full" bg="blue.500" />
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("admins.regularOnly", "Regular Admins")}
+                  </Text>
+                </HStack>
+                <Badge colorScheme="blue" rounded="md" px={2}>
+                  {numberWithCommas(regularAdmins.length)}
+                </Badge>
+              </HStack>
+
+              {/* Admins with Users */}
+              <HStack justify="space-between">
+                <HStack spacing={2}>
+                  <Box w="2" h="2" rounded="full" bg="teal.500" />
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("admins.withUsers", "With Users")}
+                  </Text>
+                </HStack>
+                <Badge colorScheme="teal" rounded="md" px={2}>
+                  {numberWithCommas(adminsWithUsers.length)}
+                </Badge>
+              </HStack>
+
+              {/* Admins without Users */}
+              <HStack justify="space-between">
+                <HStack spacing={2}>
+                  <Box w="2" h="2" rounded="full" bg="gray.500" />
+                  <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                    {t("admins.noUsers", "Without Users")}
+                  </Text>
+                </HStack>
+                <Badge colorScheme="gray" rounded="md" px={2}>
+                  {numberWithCommas(adminsWithoutUsers.length)}
+                </Badge>
+              </HStack>
+
+              <Divider
+                my={1}
+                borderColor="light-border"
+                _dark={{ borderColor: "gray.700" }}
+              />
+
+              {/* Total Managed Users */}
+              <HStack justify="space-between">
+                <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                  {t("admins.totalManagedUsers", "Total Managed Users")}
+                </Text>
+                <Text fontWeight="semibold">
+                  {numberWithCommas(totalUsersManaged)}
+                </Text>
+              </HStack>
+
+              {/* Active Managed Users */}
+              <HStack justify="space-between">
+                <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                  {t("admins.activeUsers", "Active Managed Users")}
+                </Text>
+                <Text fontWeight="semibold" color="green.500">
+                  {numberWithCommas(totalActiveUsersManaged)}
+                </Text>
+              </HStack>
+
+              {/* Total Reseller Bandwidth */}
+              <HStack justify="space-between">
+                <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                  {t("admins.resellerTraffic", "Reseller Traffic")}
+                </Text>
+                <Text fontWeight="semibold" color="orange.500">
+                  {formatBytes(totalResellerTraffic)}
+                </Text>
+              </HStack>
+
+              {/* Total Admins */}
+              <HStack
+                justify="space-between"
+                pt={1}
+                borderTopWidth="1px"
+                borderColor="light-border"
+                _dark={{ borderColor: "gray.700" }}
+              >
+                <Text fontWeight="semibold" color="gray.700" _dark={{ color: "gray.200" }}>
+                  {t("total")}
+                </Text>
+                <Text fontWeight="semibold">
+                  {numberWithCommas(totalAdmins)}
+                </Text>
+              </HStack>
+            </VStack>
+          }
+          icon={<TotalAdminsIcon />}
+        />
+      ) : (
+        <StatisticCard
+          title={t("activeUsers")}
         content={
           systemData && (
             <HStack alignItems="flex-end" spacing={1}>
@@ -385,6 +583,7 @@ export const Statistics: FC<BoxProps> = (props) => {
         }
         icon={<TotalUsersIcon />}
       />
+      )}
 
       {/* 2. Data Usage + Real-time Speeds (With Breakdown on hover/click) */}
       <StatisticCard

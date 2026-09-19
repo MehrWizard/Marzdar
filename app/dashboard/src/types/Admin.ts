@@ -6,6 +6,8 @@ export const AdminSchema = z.object({
   telegram_id: z.number().nullable().optional(),
   discord_webhook: z.string().nullable().optional(),
   users_usage: z.number().nullable().optional(),
+  users_count: z.number().nullable().optional(),
+  active_users_count: z.number().nullable().optional(),
 });
 
 export type Admin = z.infer<typeof AdminSchema>;
