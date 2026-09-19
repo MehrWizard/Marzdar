@@ -308,5 +308,17 @@
   "nextPlan.dataLimit": "حجم طرح بعدی (گیگابایت)",
   "nextPlan.expireDays": "مدت زمان طرح بعدی (روز)",
   "nextPlan.addRemainingTraffic": "اضافه کردن حجم باقیمانده فعلی به طرح جدید",
-  "nextPlan.fireOnEither": "فعال‌سازی به محض اتمام حجم یا پایان زمان (هرکدام زودتر)"
+  "nextPlan.fireOnEither": "فعال‌سازی به محض اتمام حجم یا پایان زمان (هرکدام زودتر)",
+  "userDialog.subscriptionActivity": "فعالیت اشتراک",
+  "userDialog.clientApp": "برنامه کلاینت",
+  "userDialog.noClientApp": "متصل نشده",
+  "userDialog.lastSubUpdate": "آخرین بروزرسانی",
+  "userDialog.neverUpdated": "هرگز",
+  "userDialog.lifetimeUsage": "مصرف کل کاربر",
+  "usersUsage.title": "نمودار مصرف کاربران",
+  "usersUsage.totalTraffic": "ترافیک کل",
+  "usersUsage.node": "سرور (نود)",
+  "usersUsage.usage": "مصرف",
+  "usersUsage.percentage": "سهم",
+  "usersUsage.noUsage": "هیچ ترافیکی در این بازه ثبت نشده است."
 }

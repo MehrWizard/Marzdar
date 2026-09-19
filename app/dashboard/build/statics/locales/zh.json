@@ -264,5 +264,17 @@
   "usersTable.noUserMatched": "没有找到您搜索的用户",
   "usersTable.status": "状态",
   "usersTable.sortByExpire": "按过期时间排序",
-  "usersTable.total": "总共"
+  "usersTable.total": "总共",
+  "userDialog.subscriptionActivity": "订阅活动",
+  "userDialog.clientApp": "客户端",
+  "userDialog.noClientApp": "未连接",
+  "userDialog.lastSubUpdate": "最后更新",
+  "userDialog.neverUpdated": "从不",
+  "userDialog.lifetimeUsage": "历史总用量",
+  "usersUsage.title": "用户用量图表",
+  "usersUsage.totalTraffic": "总流量",
+  "usersUsage.node": "节点",
+  "usersUsage.usage": "用量",
+  "usersUsage.percentage": "占比",
+  "usersUsage.noUsage": "在此期间无用量记录。"
 }

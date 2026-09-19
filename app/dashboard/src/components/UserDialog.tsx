@@ -63,6 +63,7 @@ import {
   UserInbounds,
 } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
+import { formatBytes } from "utils/formatByte";
 import { z } from "zod";
 import { DeleteIcon } from "./DeleteUserModal";
 import { Icon } from "./Icon";
@@ -822,6 +823,78 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           {form.formState.errors?.note?.message}
                         </FormErrorMessage>
                       </FormControl>
+                      {isEditing && (
+                        <Box
+                          mt={1}
+                          mb={"10px"}
+                          p={3}
+                          borderRadius="md"
+                          borderWidth="1px"
+                          bg={colorMode === "dark" ? "whiteAlpha.50" : "blackAlpha.50"}
+                          borderColor={colorMode === "dark" ? "whiteAlpha.200" : "blackAlpha.200"}
+                          fontSize="xs"
+                        >
+                          <Text
+                            fontWeight="bold"
+                            mb={2}
+                            fontSize="xs"
+                            color={colorMode === "dark" ? "gray.300" : "gray.600"}
+                            textTransform="uppercase"
+                            letterSpacing="wider"
+                          >
+                            {t("userDialog.subscriptionActivity")}
+                          </Text>
+                          <VStack align="stretch" gap={1.5}>
+                            <Flex justify="space-between" align="center">
+                              <Text color="gray.500">{t("userDialog.clientApp")}:</Text>
+                              {editingUser?.sub_last_user_agent ? (
+                                <Badge
+                                  colorScheme="blue"
+                                  variant="subtle"
+                                  fontSize="2xs"
+                                  px={2}
+                                  py={0.5}
+                                  borderRadius="md"
+                                  maxW="180px"
+                                  isTruncated
+                                  title={editingUser.sub_last_user_agent}
+                                >
+                                  {editingUser.sub_last_user_agent}
+                                </Badge>
+                              ) : (
+                                <Text color="gray.400" fontStyle="italic">
+                                  {t("userDialog.noClientApp")}
+                                </Text>
+                              )}
+                            </Flex>
+                            <Flex justify="space-between" align="center">
+                              <Text color="gray.500">{t("userDialog.lastSubUpdate")}:</Text>
+                              {editingUser?.sub_updated_at ? (
+                                <Tooltip
+                                  label={dayjs(editingUser.sub_updated_at).format("YYYY-MM-DD HH:mm:ss")}
+                                  placement="top"
+                                >
+                                  <Text fontWeight="medium" cursor="help">
+                                    {dayjs(editingUser.sub_updated_at).fromNow()}
+                                  </Text>
+                                </Tooltip>
+                              ) : (
+                                <Text color="gray.400" fontStyle="italic">
+                                  {t("userDialog.neverUpdated")}
+                                </Text>
+                              )}
+                            </Flex>
+                            {editingUser?.lifetime_used_traffic !== undefined && (
+                              <Flex justify="space-between" align="center">
+                                <Text color="gray.500">{t("userDialog.lifetimeUsage")}:</Text>
+                                <Text fontWeight="medium">
+                                  {formatBytes(editingUser.lifetime_used_traffic)}
+                                </Text>
+                              </Flex>
+                            )}
+                          </VStack>
+                        </Box>
+                      )}
                     </Flex>
                     {error && (
                       <Alert

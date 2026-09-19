@@ -263,5 +263,17 @@
   "usersTable.noUser": "В системе нет созданных пользователей",
   "usersTable.noUserMatched": "Похоже, нет пользователя, соответствующего вашему запросу",
   "usersTable.status": "Статус",
-  "usersTable.total": "Всего"
+  "usersTable.total": "Всего",
+  "userDialog.subscriptionActivity": "Активность подписки",
+  "userDialog.clientApp": "Клиентское приложение",
+  "userDialog.noClientApp": "Не подключался",
+  "userDialog.lastSubUpdate": "Последнее обновление",
+  "userDialog.neverUpdated": "Никогда",
+  "userDialog.lifetimeUsage": "Общий трафик",
+  "usersUsage.title": "Использование пользователей",
+  "usersUsage.totalTraffic": "Общий трафик",
+  "usersUsage.node": "Узел",
+  "usersUsage.usage": "Использование",
+  "usersUsage.percentage": "Доля",
+  "usersUsage.noUsage": "Нет данных об использовании за этот период."
 }

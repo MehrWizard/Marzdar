@@ -48,6 +48,7 @@ type DashboardStateType = {
   isEditingNodes: boolean;
   isManagingAdmins: boolean;
   isShowingNodesUsage: boolean;
+  isShowingUsersUsage: boolean;
   isResetingAllUsage: boolean;
   resetUsageUser: User | null;
   revokeSubscriptionUser: User | null;
@@ -75,6 +76,7 @@ type DashboardStateType = {
   onEditingHosts: (isEditingHosts: boolean) => void;
   onEditingNodes: (isEditingHosts: boolean) => void;
   onShowingNodesUsage: (isShowingNodesUsage: boolean) => void;
+  onShowingUsersUsage: (isShowingUsersUsage: boolean) => void;
   resetDataUsage: (user: User) => Promise<void>;
   revokeSubscription: (user: User) => Promise<void>;
   activeNextPlan: (user: User) => Promise<User>;
@@ -127,6 +129,7 @@ export const useDashboard = create(
     isCleaningExpiredUsers: false,
     isManagingTemplates: false,
     isShowingNodesUsage: false,
+    isShowingUsersUsage: false,
     resetUsageUser: null,
     revokeSubscriptionUser: null,
     nextPlanUser: null,
@@ -216,6 +219,9 @@ export const useDashboard = create(
     },
     onShowingNodesUsage: (isShowingNodesUsage: boolean) => {
       set({ isShowingNodesUsage });
+    },
+    onShowingUsersUsage: (isShowingUsersUsage: boolean) => {
+      set({ isShowingUsersUsage });
     },
     setSubLink: (subscribeUrl) => {
       set({ subscribeUrl });

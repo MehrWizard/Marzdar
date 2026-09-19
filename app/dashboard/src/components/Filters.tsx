@@ -27,6 +27,7 @@ import {
 } from "@chakra-ui/react";
 import {
   ArrowPathIcon,
+  ChartPieIcon,
   CheckCircleIcon,
   DocumentDuplicateIcon,
   DocumentMinusIcon,
@@ -78,6 +79,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
     onCleaningExpiredUsers,
     onManagingTemplates,
     onResetAllUsage,
+    onShowingUsersUsage,
   } = useDashboard();
   const { t } = useTranslation();
   const { userData } = useGetUser();
@@ -254,6 +256,13 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
                     {t("templates.title")}
                   </MenuItem>
                 )}
+                <MenuItem
+                  fontSize="sm"
+                  icon={<ChartPieIcon width="16px" height="16px" color="var(--chakra-colors-blue-500)" />}
+                  onClick={() => onShowingUsersUsage(true)}
+                >
+                  {filters.admin ? `${t("usersUsage.title")} (${filters.admin})` : t("usersUsage.title")}
+                </MenuItem>
                 <MenuDivider />
                 <MenuItem
                   fontSize="sm"

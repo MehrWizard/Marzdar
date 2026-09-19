@@ -302,5 +302,17 @@
   "nextPlan.dataLimit": "Next Plan Data Limit (GB)",
   "nextPlan.expireDays": "Next Plan Duration (Days)",
   "nextPlan.addRemainingTraffic": "Add remaining traffic to next plan",
-  "nextPlan.fireOnEither": "Activate when either quota or time is exhausted"
+  "nextPlan.fireOnEither": "Activate when either quota or time is exhausted",
+  "userDialog.subscriptionActivity": "Subscription Activity",
+  "userDialog.clientApp": "Client App",
+  "userDialog.noClientApp": "Never connected",
+  "userDialog.lastSubUpdate": "Last Update",
+  "userDialog.neverUpdated": "Never",
+  "userDialog.lifetimeUsage": "Lifetime Usage",
+  "usersUsage.title": "Users Usage",
+  "usersUsage.totalTraffic": "Total Traffic",
+  "usersUsage.node": "Node",
+  "usersUsage.usage": "Usage",
+  "usersUsage.percentage": "Share",
+  "usersUsage.noUsage": "No usage recorded for this period."
 }
