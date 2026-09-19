@@ -286,8 +286,10 @@ table thead {
 }
 
 // Black (AMOLED / OLED) Theme
-html[data-theme="black"],
-body[data-theme="black"] {
+html[data-theme-mode="black"],
+body[data-theme-mode="black"],
+html.theme-black,
+body.theme-black {
   color-scheme: dark !important;
 
   --chakra-colors-chakra-body-bg: #000000 !important;
@@ -308,7 +310,7 @@ body[data-theme="black"] {
 
   background-color: #000000 !important;
 
-  body {
+  &, body {
     background-color: #000000 !important;
   }
 
@@ -339,7 +341,7 @@ body[data-theme="black"] {
     border: 1px solid #262626 !important;
   }
 
-  // Form Inputs, Textareas, Selects
+  // Form Inputs, Textareas, Selects & Options
   .chakra-input,
   .chakra-select,
   .chakra-textarea {
@@ -349,6 +351,11 @@ body[data-theme="black"] {
     &[data-focus] {
       border-color: var(--chakra-colors-primary-500) !important;
     }
+  }
+
+  option {
+    background-color: #09090b !important;
+    color: #ffffff !important;
   }
 
   // Buttons with default dark background

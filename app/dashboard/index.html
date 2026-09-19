@@ -34,6 +34,60 @@
     <meta name="msapplication-TileColor" content="#2b5797" />
     <meta name="msapplication-config" content="/statics/favicon/browserconfig.xml" />
     <meta name="theme-color" content="#3B81F6" />
+    <style id="theme-preload">
+      html, body {
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+      html.chakra-ui-dark, body.chakra-ui-dark {
+        background-color: #1A202C !important;
+        color: #edf2f7;
+      }
+      html.theme-black, html.theme-black body,
+      html[data-theme-mode="black"], body[data-theme-mode="black"],
+      html[data-theme-mode="black"] body {
+        background-color: #000000 !important;
+        color: #f4f4f5;
+      }
+      html.chakra-ui-light, body.chakra-ui-light {
+        background-color: #ffffff;
+        color: #1a202c;
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          var mode = localStorage.getItem("marzdar-theme-mode");
+          if (!mode) {
+            var chakraMode = localStorage.getItem("chakra-ui-color-mode");
+            mode = chakraMode === "dark" ? "dark" : "light";
+          }
+          var doc = document.documentElement;
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (mode === "black") {
+            doc.classList.add("chakra-ui-dark", "theme-black");
+            doc.classList.remove("chakra-ui-light");
+            doc.setAttribute("data-theme", "dark");
+            doc.setAttribute("data-theme-mode", "black");
+            doc.style.colorScheme = "dark";
+            if (meta) meta.setAttribute("content", "#000000");
+          } else if (mode === "dark") {
+            doc.classList.add("chakra-ui-dark");
+            doc.classList.remove("chakra-ui-light", "theme-black");
+            doc.setAttribute("data-theme", "dark");
+            doc.removeAttribute("data-theme-mode");
+            doc.style.colorScheme = "dark";
+            if (meta) meta.setAttribute("content", "#1A202C");
+          } else {
+            doc.classList.add("chakra-ui-light");
+            doc.classList.remove("chakra-ui-dark", "theme-black");
+            doc.setAttribute("data-theme", "light");
+            doc.removeAttribute("data-theme-mode");
+            doc.style.colorScheme = "light";
+            if (meta) meta.setAttribute("content", "#3B81F6");
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

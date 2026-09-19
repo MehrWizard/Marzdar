@@ -511,7 +511,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             sx={{
                               option: {
                                 backgroundColor:
-                                  colorMode === "dark" ? "#222C3B" : "white",
+                                  colorMode === "dark"
+                                    ? "var(--chakra-colors-gray-750)"
+                                    : "white",
                               },
                             }}
                           >
@@ -683,8 +685,11 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                   }}
                                   sx={{
                                     option: {
-                                      backgroundColor: colorMode === "dark" ? "#222C3B" : "white"
-                                    }
+                                      backgroundColor:
+                                        colorMode === "dark"
+                                          ? "var(--chakra-colors-gray-750)"
+                                          : "white",
+                                    },
                                   }}
                                 >
                                   {resetStrategy.map((s) => {
