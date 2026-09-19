@@ -114,6 +114,14 @@ marzban update
 
 ---
 
+## 赞助支持 (Donation)
+
+如果您觉得 Marzdar 对您有所帮助并希望支持项目的持续开发：
+
+- [通过 MehrNet 支付网关赞助](https://gateway.mehrnet.com/product/1DE5C11019E2)
+
+---
+
 ## 开源协议
 
 Marzdar 遵循 [GNU Affero General Public License v3.0 (AGPL-3.0)](./LICENSE) 开源协议。

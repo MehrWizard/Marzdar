@@ -114,6 +114,14 @@ marzban update
 
 ---
 
+## حمایت مالی (Donation)
+
+اگر مرزدار برای شما مفید واقع شده و مایل به حمایت از توسعه آن هستید:
+
+- [حمایت مالی از طریق درگاه پرداخت مهرنت](https://gateway.mehrnet.com/product/1DE5C11019E2)
+
+---
+
 ## لایسنس
 
 مرزدار تحت لایسنس [GNU Affero General Public License v3.0 (AGPL-3.0)](./LICENSE) منتشر شده است.

@@ -114,6 +114,14 @@ marzban update
 
 ---
 
+## Пожертвование (Donation)
+
+Если вы находите Marzdar полезным и хотите поддержать развитие проекта:
+
+- [Поддержать проект через платежный шлюз MehrNet](https://gateway.mehrnet.com/product/1DE5C11019E2)
+
+---
+
 ## Лицензия
 
 Marzdar распространяется под лицензией [GNU Affero General Public License v3.0 (AGPL-3.0)](./LICENSE).

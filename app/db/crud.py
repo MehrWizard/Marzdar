@@ -354,6 +354,16 @@ def get_users_count(db: Session, status: UserStatus = None, admin: Admin = None)
     return query.count()
 
 
+def get_users_status_counts(db: Session, admin: Admin = None) -> Dict[str, int]:
+    """
+    Retrieves a dictionary of user counts grouped by status.
+    """
+    query = db.query(User.status, func.count(User.id))
+    if admin:
+        query = query.filter(User.admin == admin)
+    return dict(query.group_by(User.status).all())
+
+
 def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
     """
     Creates a new user with provided details.

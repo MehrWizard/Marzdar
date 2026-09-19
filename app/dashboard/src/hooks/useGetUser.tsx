@@ -3,14 +3,20 @@ import { fetch } from "service/http";
 import { UserApi, UseGetUserReturn } from "types/User";
 import { useQuery } from "react-query";
 
+export const CurrentAdminUserQueryKey = "current-admin-user";
+
 const fetchUser = async () => {
-    return await fetch("/admin");
+    return await fetch<UserApi>("/admin");
 }
 
 const useGetUser = (): UseGetUserReturn => {
     const { data, isError, isLoading, isSuccess, error } = useQuery<UserApi, Error>({
-        queryFn: () => fetchUser()
-    })
+        queryKey: CurrentAdminUserQueryKey,
+        queryFn: fetchUser,
+        staleTime: 5 * 60 * 1000,
+        cacheTime: 10 * 60 * 1000,
+        refetchOnWindowFocus: false,
+    });
 
     const userDataEmpty: UserApi =  {
         discord_webook: "",

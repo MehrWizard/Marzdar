@@ -24,22 +24,15 @@ def get_system_stats(
     system = crud.get_system_usage(db)
     dbadmin: Union[Admin, None] = crud.get_admin(db, admin.username)
 
-    total_user = crud.get_users_count(db, admin=dbadmin if not admin.is_sudo else None)
-    users_active = crud.get_users_count(
-        db, status=UserStatus.active, admin=dbadmin if not admin.is_sudo else None
+    status_counts = crud.get_users_status_counts(
+        db, admin=dbadmin if not admin.is_sudo else None
     )
-    users_disabled = crud.get_users_count(
-        db, status=UserStatus.disabled, admin=dbadmin if not admin.is_sudo else None
-    )
-    users_on_hold = crud.get_users_count(
-        db, status=UserStatus.on_hold, admin=dbadmin if not admin.is_sudo else None
-    )
-    users_expired = crud.get_users_count(
-        db, status=UserStatus.expired, admin=dbadmin if not admin.is_sudo else None
-    )
-    users_limited = crud.get_users_count(
-        db, status=UserStatus.limited, admin=dbadmin if not admin.is_sudo else None
-    )
+    users_active = status_counts.get(UserStatus.active, 0)
+    users_disabled = status_counts.get(UserStatus.disabled, 0)
+    users_on_hold = status_counts.get(UserStatus.on_hold, 0)
+    users_expired = status_counts.get(UserStatus.expired, 0)
+    users_limited = status_counts.get(UserStatus.limited, 0)
+    total_user = sum(status_counts.values())
     online_users = crud.count_online_users(
         db, seconds=60, admin=dbadmin if not admin.is_sudo else None
     )

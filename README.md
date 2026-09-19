@@ -111,6 +111,14 @@ Finally run `marzban update` in order to complete the `marzdar` setup.
 
 ---
 
+## Donation
+
+If you find Marzdar useful, you can support its ongoing development:
+
+- [Donate via MehrNet Gateway](https://gateway.mehrnet.com/product/1DE5C11019E2)
+
+---
+
 ## License
 
 Marzdar is licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](./LICENSE).

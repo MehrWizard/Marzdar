@@ -217,6 +217,8 @@ export const Statistics: FC<BoxProps> = (props) => {
     queryKey: StatisticsQueryKey,
     queryFn: () => fetch("/system"),
     refetchInterval: 5000,
+    staleTime: 4000,
+    refetchOnWindowFocus: false,
     onSuccess: ({ version: currentVersion }) => {
       if (version !== currentVersion)
         useDashboard.setState({ version: currentVersion });
