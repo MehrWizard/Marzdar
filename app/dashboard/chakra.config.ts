@@ -100,48 +100,48 @@ export const theme = extendTheme({
           borderSpacing: 0,
         },
         thead: {
-          borderBottomColor: "light-border",
+          borderBottomColor: "var(--theme-table-th-border, light-border)",
         },
         th: {
-          background: "#F9FAFB",
-          borderColor: "light-border !important",
-          borderBottomColor: "light-border !important",
+          background: "var(--theme-table-th-bg, #F9FAFB)",
+          borderColor: "var(--theme-table-th-border, light-border) !important",
+          borderBottomColor: "var(--theme-table-th-border, light-border) !important",
           borderTop: "1px solid ",
-          borderTopColor: "light-border !important",
+          borderTopColor: "var(--theme-table-th-border, light-border) !important",
           _first: {
             borderLeft: "1px solid",
-            borderColor: "light-border !important",
+            borderColor: "var(--theme-table-th-border, light-border) !important",
           },
           _last: {
             borderRight: "1px solid",
-            borderColor: "light-border !important",
+            borderColor: "var(--theme-table-th-border, light-border) !important",
           },
           _dark: {
-            borderColor: "gray.600 !important",
-            background: "gray.750",
+            borderColor: "var(--theme-table-th-border, gray.600) !important",
+            background: "var(--theme-table-th-bg, gray.750)",
           },
         },
         td: {
           transition: "all .1s ease-out",
-          borderColor: "light-border",
-          borderBottomColor: "light-border !important",
+          borderColor: "var(--theme-table-th-border, light-border)",
+          borderBottomColor: "var(--theme-table-th-border, light-border) !important",
           _first: {
             borderLeft: "1px solid",
-            borderColor: "light-border",
+            borderColor: "var(--theme-table-th-border, light-border)",
             _dark: {
-              borderColor: "gray.600",
+              borderColor: "var(--theme-table-th-border, gray.600)",
             },
           },
           _last: {
             borderRight: "1px solid",
-            borderColor: "light-border",
+            borderColor: "var(--theme-table-th-border, light-border)",
             _dark: {
-              borderColor: "gray.600",
+              borderColor: "var(--theme-table-th-border, gray.600)",
             },
           },
           _dark: {
-            borderColor: "gray.600",
-            borderBottomColor: "gray.600 !important",
+            borderColor: "var(--theme-table-th-border, gray.600)",
+            borderBottomColor: "var(--theme-table-th-border, gray.600) !important",
           },
         },
         tr: {
@@ -149,11 +149,11 @@ export const theme = extendTheme({
             cursor: "pointer",
             _hover: {
               "& > td": {
-                bg: "gray.200",
+                bg: "var(--theme-table-tr-hover, gray.200)",
               },
               _dark: {
                 "& > td": {
-                  bg: "gray.750",
+                  bg: "var(--theme-table-tr-hover, gray.750)",
                 },
               },
             },

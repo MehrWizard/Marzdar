@@ -530,10 +530,10 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               <HStack position="relative" gap={"5px"}>
                 <Text
                   _dark={{
-                    bg: "gray.750",
+                    bg: "var(--theme-table-th-bg)",
                   }}
                   _light={{
-                    bg: "#F9FAFB",
+                    bg: "var(--theme-table-th-bg)",
                   }}
                   userSelect="none"
                   pointerEvents="none"

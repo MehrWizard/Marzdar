@@ -58,23 +58,23 @@ const InboundCard: FC<
         cursor="pointer"
         borderRadius="sm"
         border="1px solid"
-        borderColor={"gray.200"}
+        borderColor={"var(--theme-card-border)"}
         _dark={{
-          borderColor: "gray.600",
+          borderColor: "var(--theme-card-border)",
         }}
         display="flex"
         alignItems="center"
         justifyContent="space-between"
         overflow="hidden"
         _checked={{
-          bg: "gray.50",
+          bg: "var(--theme-subtle-bg)",
           outline: "2px",
           boxShadow: "outline",
           outlineColor: "primary.500",
           borderColor: "transparent",
           fontWeight: "medium",
           _dark: {
-            bg: "gray.750",
+            bg: "var(--theme-card-bg)",
             borderColor: "transparent",
           },
           "& p": {
@@ -194,20 +194,20 @@ const RadioCard: FC<
       borderRadius="md"
       borderStyle="solid"
       border="1px"
-      borderColor="gray.200"
-      bg={shouldBeDisabled ? "gray.100" : "transparent"}
+      borderColor="var(--theme-card-border)"
+      bg={shouldBeDisabled ? "var(--theme-subtle-bg)" : "transparent"}
       _dark={{
-        borderColor: "gray.600",
-        bg: shouldBeDisabled ? "gray.800" : "transparent",
+        borderColor: "var(--theme-card-border)",
+        bg: shouldBeDisabled ? "var(--theme-subtle-bg)" : "transparent",
       }}
       _checked={{
-        bg: "gray.50",
+        bg: "var(--theme-subtle-bg)",
         outline: "2px",
         boxShadow: "outline",
         outlineColor: "primary.500",
         borderColor: "transparent",
         _dark: {
-          bg: "gray.750",
+          bg: "var(--theme-card-bg)",
           borderColor: "transparent",
         },
       }}

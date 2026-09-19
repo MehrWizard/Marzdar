@@ -83,9 +83,9 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
     <Card
       p={{ base: 3, sm: 4, md: 5 }}
       borderWidth="1px"
-      borderColor="light-border"
-      bg="#F9FAFB"
-      _dark={{ borderColor: "gray.600", bg: "gray.750" }}
+      borderColor="var(--theme-card-border)"
+      bg="var(--theme-card-bg)"
+      _dark={{ borderColor: "var(--theme-card-border)", bg: "var(--theme-card-bg)" }}
       borderStyle="solid"
       boxShadow="none"
       borderRadius="12px"
@@ -94,11 +94,11 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
       flexDirection="column"
       justifyContent="space-between"
       cursor={popoverContent ? "pointer" : "default"}
-      transition="all 0.2s ease"
+      transition="all 0.2s ease, background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease"
       _hover={
         popoverContent
           ? {
-              borderColor: "primary.400",
+              borderColor: "var(--theme-card-hover-border, primary.400)",
               transform: "translateY(-2px)",
               shadow: "md",
             }
@@ -193,15 +193,16 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
       <PopoverContent
         zIndex={9999}
         _focus={{ boxShadow: "none" }}
-        bg="white"
-        _dark={{ bg: "gray.800", borderColor: "gray.600" }}
+        bg="var(--theme-card-bg)"
+        borderColor="var(--theme-card-border)"
+        _dark={{ bg: "var(--theme-card-bg)", borderColor: "var(--theme-card-border)" }}
         borderRadius="12px"
         p={3}
         shadow="xl"
         minW={{ base: "250px", sm: "280px" }}
         w="auto"
       >
-        <PopoverArrow bg="white" _dark={{ bg: "gray.800" }} />
+        <PopoverArrow bg="var(--theme-card-bg)" _dark={{ bg: "var(--theme-card-bg)" }} />
         <PopoverBody p={1}>{popoverContent}</PopoverBody>
       </PopoverContent>
     </Popover>

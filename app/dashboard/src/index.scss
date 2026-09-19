@@ -345,10 +345,58 @@ table thead {
 
 :root {
   --theme-menu-bg: #ffffff;
+  --theme-card-bg: #ffffff;
+  --theme-card-border: #e2e8f0;
+  --theme-card-hover-border: var(--chakra-colors-primary-400);
+  --theme-subtle-bg: #f8fafc;
+  --theme-table-th-bg: #f8fafc;
+  --theme-table-th-border: #e2e8f0;
+  --theme-table-tr-hover: #f1f5f9;
 }
 
 .chakra-ui-dark {
-  --theme-menu-bg: #2d3748;
+  --theme-menu-bg: #1a202c;
+  --theme-card-bg: #1f293d;
+  --theme-card-border: #2e3d5b;
+  --theme-card-hover-border: var(--chakra-colors-primary-400);
+  --theme-subtle-bg: #182236;
+  --theme-table-th-bg: #182236;
+  --theme-table-th-border: #2e3d5b;
+  --theme-table-tr-hover: #22304e;
+}
+
+// Global Cards & Surfaces styling
+.chakra-card,
+[class*="chakra-card"] {
+  background-color: var(--theme-card-bg) !important;
+  border-color: var(--theme-card-border) !important;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+// Table styling
+table thead th,
+.chakra-table thead th {
+  background-color: var(--theme-table-th-bg) !important;
+  border-color: var(--theme-table-th-border) !important;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease !important;
+}
+
+table td,
+.chakra-table td {
+  border-color: var(--theme-table-th-border) !important;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease !important;
+}
+
+table tr.interactive:hover > td,
+.chakra-table tr.interactive:hover > td {
+  background-color: var(--theme-table-tr-hover) !important;
+}
+
+// Protocol & host cards
+.protocol-card,
+.host-config-card {
+  border-color: var(--theme-card-border) !important;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease !important;
 }
 
 // Black (AMOLED / OLED) Theme

@@ -112,14 +112,14 @@
           var meta = document.querySelector('meta[name="theme-color"]');
 
           var accents = {
-            cyan: { rgb:"57, 111, 228", bgLight:"#f4f7fc", bgDark:"#101522", 50:"#9cb7f2",100:"#88a9ef",200:"#749aec",300:"#618ce9",400:"#4d7de7",500:"#396fe4",600:"#3364cd",700:"#2e59b6",800:"#284ea0",900:"#224389" },
-            blue: { rgb:"37, 99, 235", bgLight:"#f3f6fc", bgDark:"#0e1422", 50:"#eff6ff",100:"#dbeafe",200:"#bfdbfe",300:"#93c5fd",400:"#60a5fa",500:"#2563eb",600:"#1d4ed8",700:"#1e40af",800:"#1e3a8a",900:"#172554" },
-            violet: { rgb:"139, 92, 246", bgLight:"#f7f5fc", bgDark:"#141122", 50:"#f5f3ff",100:"#ede9fe",200:"#ddd6fe",300:"#c4b5fd",400:"#a78bfa",500:"#8b5cf6",600:"#7c3aed",700:"#6d28d9",800:"#5b21b6",900:"#4c1d95" },
-            pink: { rgb:"236, 72, 153", bgLight:"#fcf5f8", bgDark:"#1c1118", 50:"#fdf2f8",100:"#fce7f3",200:"#fbcfe8",300:"#f9a8d4",400:"#f472b6",500:"#ec4899",600:"#db2777",700:"#be185d",800:"#9d174d",900:"#831843" },
-            red: { rgb:"239, 68, 68", bgLight:"#fcf5f5", bgDark:"#1d1112", 50:"#fef2f2",100:"#fee2e2",200:"#fecaca",300:"#fca5a5",400:"#f87171",500:"#ef4444",600:"#dc2626",700:"#b91c1c",800:"#991b1b",900:"#7f1d1d" },
-            orange: { rgb:"249, 115, 22", bgLight:"#fcf6f3", bgDark:"#1d1410", 50:"#fff7ed",100:"#ffedd5",200:"#fed7aa",300:"#fdba74",400:"#fb923c",500:"#f97316",600:"#ea580c",700:"#c2410c",800:"#9a3412",900:"#7c2d12" },
-            yellow: { rgb:"234, 179, 8", bgLight:"#fcf8f2", bgDark:"#1c170f", 50:"#fefce8",100:"#fef9c3",200:"#fef08a",300:"#fde047",400:"#facc15",500:"#eab308",600:"#ca8a04",700:"#a16207",800:"#854d0e",900:"#713f12" },
-            green: { rgb:"16, 185, 129", bgLight:"#f3fbf6", bgDark:"#0e1a14", 50:"#ecfdf5",100:"#d1fae5",200:"#a7f3d0",300:"#6ee7b7",400:"#34d399",500:"#10b981",600:"#059669",700:"#047857",800:"#065f46",900:"#064e3b" }
+            cyan: { rgb:"57, 111, 228", bgLight:"#f4f7fc", bgDark:"#101522", bgBlack:"#000000", cardBgLight:"#ffffff", cardBgDark:"#161e30", cardBgBlack:"#0c0f16", cardBorderLight:"#e2e8f4", cardBorderDark:"#24304c", cardBorderBlack:"#1d2538", subtleBgLight:"#edf3fa", subtleBgDark:"#131a2a", subtleBgBlack:"#080a10", borderLight:"#dbe3f1", borderDark:"#202b44", borderBlack:"#1a2234", hoverBgLight:"#e6effa", hoverBgDark:"#1c273e", hoverBgBlack:"#121622", 50:"#9cb7f2",100:"#88a9ef",200:"#749aec",300:"#618ce9",400:"#4d7de7",500:"#396fe4",600:"#3364cd",700:"#2e59b6",800:"#284ea0",900:"#224389" },
+            blue: { rgb:"37, 99, 235", bgLight:"#f3f6fc", bgDark:"#0e1422", bgBlack:"#000000", cardBgLight:"#ffffff", cardBgDark:"#151d32", cardBgBlack:"#0a0e18", cardBorderLight:"#e1e7f5", cardBorderDark:"#223050", cardBorderBlack:"#1c2438", subtleBgLight:"#edf2fa", subtleBgDark:"#121a2c", subtleBgBlack:"#080b13", borderLight:"#dae2f3", borderDark:"#1e2a46", borderBlack:"#192134", hoverBgLight:"#e6effb", hoverBgDark:"#1b253e", hoverBgBlack:"#121828", 50:"#eff6ff",100:"#dbeafe",200:"#bfdbfe",300:"#93c5fd",400:"#60a5fa",500:"#2563eb",600:"#1d4ed8",700:"#1e40af",800:"#1e3a8a",900:"#172554" },
+            violet: { rgb:"139, 92, 246", bgLight:"#f7f5fc", bgDark:"#141122", bgBlack:"#000000", cardBgLight:"#ffffff", cardBgDark:"#1e1932", cardBgBlack:"#0e0c18", cardBorderLight:"#e9e4f7", cardBorderDark:"#332a52", cardBorderBlack:"#241d3a", subtleBgLight:"#f2eefa", subtleBgDark:"#19152b", subtleBgBlack:"#0a0912", borderLight:"#e2dbf4", borderDark:"#2c2447", borderBlack:"#201a34", hoverBgLight:"#ede7fa", hoverBgDark:"#262040", hoverBgBlack:"#161324", 50:"#f5f3ff",100:"#ede9fe",200:"#ddd6fe",300:"#c4b5fd",400:"#a78bfa",500:"#8b5cf6",600:"#7c3aed",700:"#6d28d9",800:"#5b21b6",900:"#4c1d95" },
+            pink: { rgb:"236, 72, 153", bgLight:"#fcf5f8", bgDark:"#1c1118", bgBlack:"#000000", cardBgLight:"#ffffff", cardBgDark:"#291823", cardBgBlack:"#140b10", cardBorderLight:"#f8e2ed", cardBorderDark:"#442438", cardBorderBlack:"#301827", subtleBgLight:"#faecf3", subtleBgDark:"#23141e", subtleBgBlack:"#0e070b", borderLight:"#f5d7e6", borderDark:"#3b1f31", borderBlack:"#2a1522", hoverBgLight:"#f8e4ee", hoverBgDark:"#341e2c", hoverBgBlack:"#1e1018", 50:"#fdf2f8",100:"#fce7f3",200:"#fbcfe8",300:"#f9a8d4",400:"#f472b6",500:"#ec4899",600:"#db2777",700:"#be185d",800:"#9d174d",900:"#831843" },
+            red: { rgb:"239, 68, 68", bgLight:"#fcf5f5", bgDark:"#1d1112", bgBlack:"#000000", cardBgLight:"#ffffff", cardBgDark:"#2b181a", cardBgBlack:"#140a0b", cardBorderLight:"#f9e2e2", cardBorderDark:"#472427", cardBorderBlack:"#321619", subtleBgLight:"#faebeb", subtleBgDark:"#241416", subtleBgBlack:"#0e0708", borderLight:"#f6d7d7", borderDark:"#3e1f22", borderBlack:"#2c1316", hoverBgLight:"#f9e4e4", hoverBgDark:"#351e20", hoverBgBlack:"#1e0f11", 50:"#fef2f2",100:"#fee2e2",200:"#fecaca",300:"#fca5a5",400:"#f87171",500:"#ef4444",600:"#dc2626",700:"#b91c1c",800:"#991b1b",900:"#7f1d1d" },
+            orange: { rgb:"249, 115, 22", bgLight:"#fcf6f3", bgDark:"#1d1410", bgBlack:"#000000", cardBgLight:"#ffffff", cardBgDark:"#2b1c15", cardBgBlack:"#140d09", cardBorderLight:"#fae5db", cardBorderDark:"#462b1e", cardBorderBlack:"#321d13", subtleBgLight:"#faede6", subtleBgDark:"#241712", subtleBgBlack:"#0e0906", borderLight:"#f7dad0", borderDark:"#3d251a", borderBlack:"#2c1a11", hoverBgLight:"#fae7dd", hoverBgDark:"#362319", hoverBgBlack:"#1e130d", 50:"#fff7ed",100:"#ffedd5",200:"#fed7aa",300:"#fdba74",400:"#fb923c",500:"#f97316",600:"#ea580c",700:"#c2410c",800:"#9a3412",900:"#7c2d12" },
+            yellow: { rgb:"234, 179, 8", bgLight:"#fcf8f2", bgDark:"#1c170f", bgBlack:"#000000", cardBgLight:"#ffffff", cardBgDark:"#292113", cardBgBlack:"#131008", cardBorderLight:"#f9ecd7", cardBorderDark:"#44351d", cardBorderBlack:"#302513", subtleBgLight:"#faf2e3", subtleBgDark:"#231c10", subtleBgBlack:"#0e0b05", borderLight:"#f6e4c7", borderDark:"#3a2d18", borderBlack:"#291f0e", hoverBgLight:"#f9eedc", hoverBgDark:"#332817", hoverBgBlack:"#1b1509", 50:"#fefce8",100:"#fef9c3",200:"#fef08a",300:"#fde047",400:"#facc15",500:"#eab308",600:"#ca8a04",700:"#a16207",800:"#854d0e",900:"#713f12" },
+            green: { rgb:"16, 185, 129", bgLight:"#f3fbf6", bgDark:"#0e1a14", bgBlack:"#000000", cardBgLight:"#ffffff", cardBgDark:"#14261d", cardBgBlack:"#0a130e", cardBorderLight:"#dcf3e4", cardBorderDark:"#1f3d2f", cardBorderBlack:"#152b20", subtleBgLight:"#ebf8f0", subtleBgDark:"#112018", subtleBgBlack:"#070d0a", borderLight:"#d1eedc", borderDark:"#1a3327", borderBlack:"#12251c", hoverBgLight:"#e3f6ea", hoverBgDark:"#183125", hoverBgBlack:"#0e1c15", 50:"#ecfdf5",100:"#d1fae5",200:"#a7f3d0",300:"#6ee7b7",400:"#34d399",500:"#10b981",600:"#059669",700:"#047857",800:"#065f46",900:"#064e3b" }
           };
 
           var savedAccent = localStorage.getItem("marzdar-accent-color") || "cyan";
@@ -133,10 +133,10 @@
           }
 
           var rules = "";
-          for (var shade in palette) {
-            if (shade !== "rgb" && shade !== "bgLight" && shade !== "bgDark") {
-              rules += "--chakra-colors-primary-" + shade + ": " + palette[shade] + " !important;\n";
-              doc.style.setProperty("--chakra-colors-primary-" + shade, palette[shade], "important");
+          for (var key in palette) {
+            if (/^\d+$/.test(key)) {
+              rules += "--chakra-colors-primary-" + key + ": " + palette[key] + " !important;\n";
+              doc.style.setProperty("--chakra-colors-primary-" + key, palette[key], "important");
             }
           }
           rules += "--chakra-colors-primary-500-rgb: " + palette.rgb + " !important;\n";
@@ -147,9 +147,9 @@
           doc.style.setProperty("--theme-accent-bg-dark", palette.bgDark, "important");
 
           var fullRules = ":root, :host, html, body, #root, [data-theme], [data-theme=\"light\"], [data-theme=\"dark\"], .chakra-ui-light, .chakra-ui-dark, .chakra-portal {\n" + rules + "}\n";
-          fullRules += "html.chakra-ui-light, body.chakra-ui-light, html[data-theme=\"light\"], body[data-theme=\"light\"] { background-color: " + palette.bgLight + " !important; --chakra-colors-chakra-body-bg: " + palette.bgLight + " !important; }\n";
-          fullRules += "html.chakra-ui-dark:not(.theme-black):not([data-theme-mode=\"black\"]), body.chakra-ui-dark:not(.theme-black):not([data-theme-mode=\"black\"]), html[data-theme=\"dark\"]:not(.theme-black):not([data-theme-mode=\"black\"]), body[data-theme=\"dark\"]:not(.theme-black):not([data-theme-mode=\"black\"]) { background-color: " + palette.bgDark + " !important; --chakra-colors-chakra-body-bg: " + palette.bgDark + " !important; }\n";
-          fullRules += "html.theme-black, body.theme-black, html[data-theme-mode=\"black\"], body[data-theme-mode=\"black\"] { background-color: #000000 !important; --chakra-colors-chakra-body-bg: #000000 !important; }\n";
+          fullRules += "html.chakra-ui-light, body.chakra-ui-light, html[data-theme=\"light\"], body[data-theme=\"light\"] { background-color: " + palette.bgLight + " !important; --chakra-colors-chakra-body-bg: " + palette.bgLight + " !important; --theme-card-bg: " + palette.cardBgLight + " !important; --theme-card-border: " + palette.cardBorderLight + " !important; --theme-subtle-bg: " + palette.subtleBgLight + " !important; --theme-table-th-bg: " + palette.subtleBgLight + " !important; --theme-table-th-border: " + palette.borderLight + " !important; --chakra-colors-gray-750: " + palette.cardBgLight + " !important; --chakra-colors-light-border: " + palette.borderLight + " !important; }\n";
+          fullRules += "html.chakra-ui-dark:not(.theme-black):not([data-theme-mode=\"black\"]), body.chakra-ui-dark:not(.theme-black):not([data-theme-mode=\"black\"]), html[data-theme=\"dark\"]:not(.theme-black):not([data-theme-mode=\"black\"]), body[data-theme=\"dark\"]:not(.theme-black):not([data-theme-mode=\"black\"]) { background-color: " + palette.bgDark + " !important; --chakra-colors-chakra-body-bg: " + palette.bgDark + " !important; --theme-card-bg: " + palette.cardBgDark + " !important; --theme-card-border: " + palette.cardBorderDark + " !important; --theme-subtle-bg: " + palette.subtleBgDark + " !important; --theme-table-th-bg: " + palette.subtleBgDark + " !important; --theme-table-th-border: " + palette.borderDark + " !important; --chakra-colors-gray-750: " + palette.cardBgDark + " !important; --chakra-colors-gray-700: " + palette.cardBgDark + " !important; --chakra-colors-gray-600: " + palette.borderDark + " !important; }\n";
+          fullRules += "html.theme-black, body.theme-black, html[data-theme-mode=\"black\"], body[data-theme-mode=\"black\"] { background-color: #000000 !important; --chakra-colors-chakra-body-bg: #000000 !important; --theme-card-bg: " + palette.cardBgBlack + " !important; --theme-card-border: " + palette.cardBorderBlack + " !important; --theme-subtle-bg: " + palette.subtleBgBlack + " !important; --theme-table-th-bg: " + palette.subtleBgBlack + " !important; --theme-table-th-border: " + palette.borderBlack + " !important; --chakra-colors-gray-750: " + palette.cardBgBlack + " !important; }\n";
 
           styleEl.textContent = fullRules;
           doc.setAttribute("data-accent", savedAccent);
@@ -162,6 +162,9 @@
             doc.style.colorScheme = "dark";
             doc.style.backgroundColor = "#000000";
             doc.style.setProperty("--chakra-colors-chakra-body-bg", "#000000", "important");
+            doc.style.setProperty("--theme-card-bg", palette.cardBgBlack, "important");
+            doc.style.setProperty("--theme-card-border", palette.cardBorderBlack, "important");
+            doc.style.setProperty("--theme-table-th-bg", palette.subtleBgBlack, "important");
             if (meta) meta.setAttribute("content", "#000000");
           } else if (mode === "dark") {
             doc.classList.add("chakra-ui-dark");
@@ -171,6 +174,9 @@
             doc.style.colorScheme = "dark";
             doc.style.backgroundColor = palette.bgDark;
             doc.style.setProperty("--chakra-colors-chakra-body-bg", palette.bgDark, "important");
+            doc.style.setProperty("--theme-card-bg", palette.cardBgDark, "important");
+            doc.style.setProperty("--theme-card-border", palette.cardBorderDark, "important");
+            doc.style.setProperty("--theme-table-th-bg", palette.subtleBgDark, "important");
             if (meta) meta.setAttribute("content", palette.bgDark);
           } else {
             doc.classList.add("chakra-ui-light");
@@ -180,6 +186,9 @@
             doc.style.colorScheme = "light";
             doc.style.backgroundColor = palette.bgLight;
             doc.style.setProperty("--chakra-colors-chakra-body-bg", palette.bgLight, "important");
+            doc.style.setProperty("--theme-card-bg", palette.cardBgLight, "important");
+            doc.style.setProperty("--theme-card-border", palette.cardBorderLight, "important");
+            doc.style.setProperty("--theme-table-th-bg", palette.subtleBgLight, "important");
             if (meta) meta.setAttribute("content", palette.bgLight);
           }
         } catch (e) {}
