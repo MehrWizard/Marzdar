@@ -84,6 +84,7 @@
   "admins.sudoAdmins": "ادمین‌های سودو",
   "admins.resellerTraffic": "ترافیک نمایندگان",
   "admins.allRoles": "همه نقش‌ها",
+  "admins.type": "نقش",
   "admins.sudoOnly": "فقط سودو",
   "admins.regularOnly": "فقط عادی",
   "admins.withUsers": "دارای کاربر",

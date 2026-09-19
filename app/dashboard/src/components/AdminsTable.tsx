@@ -39,6 +39,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
 import {
+  AdminRoleFilter,
   FetchAdminsQueryKey,
   useAdmins,
   useAdminsQuery,
@@ -292,10 +293,7 @@ export const AdminsTable: FC = () => {
   }
 
   if (filteredAndSortedAdmins.length === 0) {
-    const isFiltered =
-      filters.search !== "" ||
-      filters.role !== "all" ||
-      filters.userFilter !== "all";
+    const isFiltered = filters.search !== "" || filters.role !== "all";
 
     return (
       <Box
@@ -334,7 +332,7 @@ export const AdminsTable: FC = () => {
             size="sm"
             variant="outline"
             onClick={() =>
-              setFilters({ search: "", role: "all", userFilter: "all", page: 1 })
+              setFilters({ search: "", role: "all", page: 1 })
             }
           >
             {t("clear")}
@@ -354,6 +352,99 @@ export const AdminsTable: FC = () => {
 
   return (
     <Box w="full" mt={2}>
+      {/* Mobile Top Bar with Sort & Role Filter */}
+      <Box
+        display={{ base: "block", md: "none" }}
+        p={2.5}
+        mb={3}
+        borderRadius="md"
+        borderWidth="1px"
+        borderColor="light-border"
+        _dark={{ borderColor: "gray.700", bg: "var(--theme-card-bg)" }}
+      >
+        <HStack justify="space-between" align="center" fontSize="xs" fontWeight="bold">
+          <HStack spacing={1}>
+            <HStack
+              cursor="pointer"
+              userSelect="none"
+              onClick={() => handleSort("username")}
+              spacing={1}
+            >
+              <Text as="span">{t("username")}</Text>
+              <Sort sort={filters.sort} column="username" />
+            </HStack>
+
+            <Text as="span" color="gray.400" mx={1} userSelect="none">
+              /
+            </Text>
+
+            <Box position="relative" display="inline-flex" alignItems="center">
+              <Text
+                as="span"
+                userSelect="none"
+                pointerEvents="none"
+                color={filters.role !== "all" ? "primary.500" : undefined}
+                fontWeight={filters.role !== "all" ? "bold" : undefined}
+              >
+                {t("admins.type", "type")}
+                {filters.role !== "all"
+                  ? ": " +
+                    (filters.role === "sudo"
+                      ? t("admins.sudo", "sudo")
+                      : t("admins.regular", "regular"))
+                  : ""}
+              </Text>
+              <Select
+                fontSize="xs"
+                cursor="pointer"
+                position="absolute"
+                inset={0}
+                opacity={0}
+                p={0}
+                border={0}
+                h="full"
+                w="full"
+                value={filters.role}
+                onChange={(e) =>
+                  setFilters({
+                    role: e.target.value as AdminRoleFilter,
+                    page: 1,
+                  })
+                }
+              >
+                <option value="all">{t("admins.allRoles", "All Roles")}</option>
+                <option value="sudo">{t("admins.sudoOnly", "Sudo Only")}</option>
+                <option value="regular">{t("admins.regularOnly", "Regular Only")}</option>
+              </Select>
+            </Box>
+          </HStack>
+
+          <HStack spacing={1}>
+            <HStack
+              cursor="pointer"
+              userSelect="none"
+              onClick={() => handleSort("users_count")}
+              spacing={1}
+            >
+              <Text as="span">{t("admins.usersCount", "Users")}</Text>
+              <Sort sort={filters.sort} column="users_count" />
+            </HStack>
+            <Text as="span" color="gray.400" mx={0.5}>
+              •
+            </Text>
+            <HStack
+              cursor="pointer"
+              userSelect="none"
+              onClick={() => handleSort("users_usage")}
+              spacing={1}
+            >
+              <Text as="span">{t("admins.usersUsage", "Traffic")}</Text>
+              <Sort sort={filters.sort} column="users_usage" />
+            </HStack>
+          </HStack>
+        </HStack>
+      </Box>
+
       {/* Mobile Accordion View */}
       <Accordion
         allowMultiple
@@ -495,15 +586,74 @@ export const AdminsTable: FC = () => {
             <Tr>
               <Th
                 py={3}
-                cursor="pointer"
-                userSelect="none"
-                onClick={() => handleSort("username")}
                 color="gray.600"
                 _dark={{ color: "gray.300" }}
+                minW="220px"
               >
-                <HStack spacing={1}>
-                  <span>{t("admins.username", "Admin")}</span>
-                  <Sort sort={filters.sort} column="username" />
+                <HStack position="relative" spacing={1} align="center">
+                  <HStack
+                    cursor="pointer"
+                    userSelect="none"
+                    onClick={() => handleSort("username")}
+                    spacing={1}
+                    _hover={{ color: "primary.500" }}
+                    transition="color 0.15s ease"
+                  >
+                    <span>{t("username")}</span>
+                    <Sort sort={filters.sort} column="username" />
+                  </HStack>
+
+                  <Text userSelect="none" color="gray.400" mx={1}>
+                    /
+                  </Text>
+
+                  <Box position="relative" display="inline-flex" alignItems="center">
+                    <Text
+                      userSelect="none"
+                      pointerEvents="none"
+                      zIndex={1}
+                      cursor="pointer"
+                      color={filters.role !== "all" ? "primary.500" : undefined}
+                      fontWeight={filters.role !== "all" ? "bold" : undefined}
+                      _hover={{ color: "primary.500" }}
+                    >
+                      {t("admins.type", "type")}
+                      {filters.role !== "all"
+                        ? ": " +
+                          (filters.role === "sudo"
+                            ? t("admins.sudo", "sudo")
+                            : t("admins.regular", "regular"))
+                        : ""}
+                    </Text>
+                    <Select
+                      fontSize="xs"
+                      fontWeight="extrabold"
+                      textTransform="uppercase"
+                      cursor="pointer"
+                      position="absolute"
+                      p={0}
+                      border={0}
+                      h="full"
+                      w="full"
+                      inset={0}
+                      opacity={0}
+                      icon={<></>}
+                      _focusVisible={{
+                        border: "0 !important",
+                      }}
+                      value={filters.role}
+                      onChange={(e) => {
+                        setFilters({
+                          role: e.target.value as AdminRoleFilter,
+                          page: 1,
+                        });
+                      }}
+                    >
+                      <option value="all">{t("admins.allRoles", "All Roles")}</option>
+                      <option value="sudo">{t("admins.sudoOnly", "Sudo Only")}</option>
+                      <option value="regular">{t("admins.regularOnly", "Regular Only")}</option>
+                    </Select>
+                  </Box>
                 </HStack>
               </Th>
               <Th

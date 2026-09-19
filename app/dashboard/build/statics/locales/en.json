@@ -79,6 +79,7 @@
   "admins.sudoAdmins": "Sudo Admins",
   "admins.resellerTraffic": "Reseller Traffic",
   "admins.allRoles": "All Roles",
+  "admins.type": "type",
   "admins.sudoOnly": "Sudo Only",
   "admins.regularOnly": "Regular Only",
   "admins.withUsers": "With Users",

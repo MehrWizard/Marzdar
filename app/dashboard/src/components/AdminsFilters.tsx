@@ -1,5 +1,4 @@
 import {
-  Box,
   BoxProps,
   Button,
   chakra,
@@ -11,28 +10,16 @@ import {
   InputGroup,
   InputLeftElement,
   InputRightElement,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Portal,
-  Select,
   Spinner,
-  Text,
-  useToast,
 } from "@chakra-ui/react";
 import {
   ArrowPathIcon,
-  ChevronDownIcon,
-  FunnelIcon,
   MagnifyingGlassIcon,
   PlusIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import classNames from "classnames";
 import {
-  AdminRoleFilter,
-  AdminUserFilter,
   FetchAdminsQueryKey,
   useAdmins,
   useAdminsQuery,
@@ -94,10 +81,7 @@ export const AdminsFilters: FC<BoxProps> = ({ ...props }) => {
     queryClient.invalidateQueries(FetchAdminsQueryKey);
   };
 
-  const isFiltered =
-    filters.search !== "" ||
-    filters.role !== "all" ||
-    filters.userFilter !== "all";
+  const isFiltered = filters.search !== "" || filters.role !== "all";
 
   return (
     <Grid
@@ -120,7 +104,7 @@ export const AdminsFilters: FC<BoxProps> = ({ ...props }) => {
       {...props}
     >
       {/* Search Bar */}
-      <GridItem colSpan={{ base: 12, md: 5, lg: 4 }}>
+      <GridItem colSpan={{ base: 12, md: 6, lg: 5 }}>
         <InputGroup size="sm">
           <InputLeftElement pointerEvents="none">
             <SearchIcon />
@@ -149,50 +133,13 @@ export const AdminsFilters: FC<BoxProps> = ({ ...props }) => {
         </InputGroup>
       </GridItem>
 
-      {/* Role Filter & Activity Filter */}
-      <GridItem colSpan={{ base: 12, md: 7, lg: 8 }}>
+      {/* Action Controls */}
+      <GridItem colSpan={{ base: 12, md: 6, lg: 7 }}>
         <HStack
           spacing={2}
           justifyContent={{ base: "flex-start", md: "flex-end" }}
-          flexWrap="wrap"
-          rowGap={2}
+          alignItems="center"
         >
-          {/* Role Filter */}
-          <Select
-            size="sm"
-            w={{ base: "full", sm: "130px" }}
-            borderRadius="md"
-            borderColor="light-border"
-            value={filters.role}
-            onChange={(e) =>
-              setFilters({ role: e.target.value as AdminRoleFilter, page: 1 })
-            }
-          >
-            <option value="all">{t("admins.allRoles", "All Roles")}</option>
-            <option value="sudo">{t("admins.sudoOnly", "Sudo Only")}</option>
-            <option value="regular">{t("admins.regularOnly", "Regular Only")}</option>
-          </Select>
-
-          {/* User Presence Filter */}
-          <Select
-            size="sm"
-            w={{ base: "full", sm: "140px" }}
-            borderRadius="md"
-            borderColor="light-border"
-            value={filters.userFilter}
-            onChange={(e) =>
-              setFilters({
-                userFilter: e.target.value as AdminUserFilter,
-                page: 1,
-              })
-            }
-          >
-            <option value="all">{t("admins.allAdmins", "All Users")}</option>
-            <option value="with_users">{t("admins.withUsers", "With Users")}</option>
-            <option value="no_users">{t("admins.noUsers", "Without Users")}</option>
-          </Select>
-
-
           {/* Reset Filters button if active */}
           {isFiltered && (
             <Button

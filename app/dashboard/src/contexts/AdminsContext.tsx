@@ -123,7 +123,8 @@ export const useAdminsQuery = (enabled?: boolean) => {
     queryKey: FetchAdminsQueryKey,
     queryFn: useAdmins.getState().fetchAdmins,
     enabled: shouldEnable,
-    refetchInterval: activeTab === "admins" ? 10000 : false,
+    refetchInterval: false,
     refetchOnWindowFocus: false,
+    staleTime: 60000,
   });
 };
