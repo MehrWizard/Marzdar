@@ -16,6 +16,8 @@ export interface AccentPalette {
   id: AccentColor;
   label: string;
   rgb: string;
+  bgLight: string;
+  bgDark: string;
   shades: {
     50: string;
     100: string;
@@ -35,6 +37,8 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
     id: "cyan",
     label: "Cyan",
     rgb: "57, 111, 228",
+    bgLight: "#f4f7fc",
+    bgDark: "#101522",
     shades: {
       50: "#9cb7f2",
       100: "#88a9ef",
@@ -52,6 +56,8 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
     id: "blue",
     label: "Blue",
     rgb: "37, 99, 235",
+    bgLight: "#f3f6fc",
+    bgDark: "#0e1422",
     shades: {
       50: "#eff6ff",
       100: "#dbeafe",
@@ -69,6 +75,8 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
     id: "violet",
     label: "Violet",
     rgb: "139, 92, 246",
+    bgLight: "#f7f5fc",
+    bgDark: "#141122",
     shades: {
       50: "#f5f3ff",
       100: "#ede9fe",
@@ -86,6 +94,8 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
     id: "pink",
     label: "Pink",
     rgb: "236, 72, 153",
+    bgLight: "#fcf5f8",
+    bgDark: "#1c1118",
     shades: {
       50: "#fdf2f8",
       100: "#fce7f3",
@@ -103,6 +113,8 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
     id: "red",
     label: "Red",
     rgb: "239, 68, 68",
+    bgLight: "#fcf5f5",
+    bgDark: "#1d1112",
     shades: {
       50: "#fef2f2",
       100: "#fee2e2",
@@ -120,6 +132,8 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
     id: "orange",
     label: "Orange",
     rgb: "249, 115, 22",
+    bgLight: "#fcf6f3",
+    bgDark: "#1d1410",
     shades: {
       50: "#fff7ed",
       100: "#ffedd5",
@@ -137,6 +151,8 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
     id: "yellow",
     label: "Yellow",
     rgb: "234, 179, 8",
+    bgLight: "#fcf8f2",
+    bgDark: "#1c170f",
     shades: {
       50: "#fefce8",
       100: "#fef9c3",
@@ -154,6 +170,8 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
     id: "green",
     label: "Green",
     rgb: "16, 185, 129",
+    bgLight: "#f3fbf6",
+    bgDark: "#0e1a14",
     shades: {
       50: "#ecfdf5",
       100: "#d1fae5",
@@ -202,8 +220,8 @@ export const updateThemeColor = (
     themeMode === "black"
       ? "#000000"
       : themeMode === "dark"
-      ? "#1A202C"
-      : palette.shades[500];
+      ? palette.bgDark
+      : palette.bgLight;
   el?.setAttribute("content", color);
 };
 
@@ -241,6 +259,32 @@ export const applyAccentColorToDom = (accent: AccentColor) => {
     .chakra-portal {
       ${cssVarEntries}
       --chakra-colors-primary-500-rgb: ${palette.rgb} !important;
+      --theme-accent-bg-light: ${palette.bgLight} !important;
+      --theme-accent-bg-dark: ${palette.bgDark} !important;
+    }
+
+    html.chakra-ui-light,
+    body.chakra-ui-light,
+    html[data-theme="light"],
+    body[data-theme="light"] {
+      --chakra-colors-chakra-body-bg: ${palette.bgLight} !important;
+      background-color: ${palette.bgLight} !important;
+    }
+
+    html.chakra-ui-dark:not(.theme-black):not([data-theme-mode="black"]),
+    body.chakra-ui-dark:not(.theme-black):not([data-theme-mode="black"]),
+    html[data-theme="dark"]:not(.theme-black):not([data-theme-mode="black"]),
+    body[data-theme="dark"]:not(.theme-black):not([data-theme-mode="black"]) {
+      --chakra-colors-chakra-body-bg: ${palette.bgDark} !important;
+      background-color: ${palette.bgDark} !important;
+    }
+
+    html.theme-black,
+    body.theme-black,
+    html[data-theme-mode="black"],
+    body[data-theme-mode="black"] {
+      --chakra-colors-chakra-body-bg: #000000 !important;
+      background-color: #000000 !important;
     }
   `;
 
@@ -252,15 +296,48 @@ export const applyAccentColorToDom = (accent: AccentColor) => {
     }
   }
 
-  doc.setAttribute("data-accent", accent);
+  doc.style.setProperty("--chakra-colors-primary-500-rgb", palette.rgb, "important");
+  doc.style.setProperty("--theme-accent-bg-light", palette.bgLight, "important");
+  doc.style.setProperty("--theme-accent-bg-dark", palette.bgDark, "important");
   if (body) {
-    body.setAttribute("data-accent", accent);
+    body.style.setProperty("--chakra-colors-primary-500-rgb", palette.rgb, "important");
+    body.style.setProperty("--theme-accent-bg-light", palette.bgLight, "important");
+    body.style.setProperty("--theme-accent-bg-dark", palette.bgDark, "important");
   }
 
   const currentMode =
     doc.getAttribute("data-theme-mode") ||
     doc.getAttribute("data-theme") ||
     "light";
+
+  if (currentMode === "black") {
+    doc.style.setProperty("--chakra-colors-chakra-body-bg", "#000000", "important");
+    doc.style.setProperty("background-color", "#000000", "important");
+    if (body) {
+      body.style.setProperty("--chakra-colors-chakra-body-bg", "#000000", "important");
+      body.style.setProperty("background-color", "#000000", "important");
+    }
+  } else if (currentMode === "dark") {
+    doc.style.setProperty("--chakra-colors-chakra-body-bg", palette.bgDark, "important");
+    doc.style.setProperty("background-color", palette.bgDark, "important");
+    if (body) {
+      body.style.setProperty("--chakra-colors-chakra-body-bg", palette.bgDark, "important");
+      body.style.setProperty("background-color", palette.bgDark, "important");
+    }
+  } else {
+    doc.style.setProperty("--chakra-colors-chakra-body-bg", palette.bgLight, "important");
+    doc.style.setProperty("background-color", palette.bgLight, "important");
+    if (body) {
+      body.style.setProperty("--chakra-colors-chakra-body-bg", palette.bgLight, "important");
+      body.style.setProperty("background-color", palette.bgLight, "important");
+    }
+  }
+
+  doc.setAttribute("data-accent", accent);
+  if (body) {
+    body.setAttribute("data-accent", accent);
+  }
+
   updateThemeColor(currentMode as ThemeMode, accent);
 };
 

@@ -1,5 +1,63 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
+html, body {
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease;
+}
+
+body {
+  position: relative;
+  min-height: 100vh;
+
+  &::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.4s ease;
+  }
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+html.chakra-ui-light body::before,
+html[data-theme="light"] body::before {
+  background: radial-gradient(
+    ellipse 80% 50% at 50% -20%,
+    rgba(var(--chakra-colors-primary-500-rgb), 0.12),
+    transparent 70%
+  );
+  opacity: 0.8;
+}
+
+html.chakra-ui-dark body::before,
+html[data-theme="dark"] body::before {
+  background: radial-gradient(
+    ellipse 80% 50% at 50% -20%,
+    rgba(var(--chakra-colors-primary-500-rgb), 0.15),
+    transparent 75%
+  );
+  opacity: 0.9;
+}
+
+html.theme-black body::before,
+html[data-theme-mode="black"] body::before,
+body.theme-black::before {
+  background: radial-gradient(
+    ellipse 80% 50% at 50% -20%,
+    rgba(var(--chakra-colors-primary-500-rgb), 0.16),
+    transparent 70%
+  );
+  opacity: 1;
+}
+
 .bg-blue-animate {
   animation: blur-animate 200ms ease-in;
   backdrop-filter: blur(10px);

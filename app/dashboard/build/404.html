@@ -36,10 +36,57 @@
     <meta name="theme-color" content="#3B81F6" />
     <style id="theme-preload">
       html, body {
-        transition: background-color 0.15s ease, color 0.15s ease;
+        transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease;
+      }
+      body {
+        position: relative;
+        min-height: 100vh;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 0;
+        transition: opacity 0.4s ease;
+      }
+      #root {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+      }
+      html.chakra-ui-dark body::before,
+      html[data-theme="dark"] body::before {
+        background: radial-gradient(
+          ellipse 80% 50% at 50% -20%,
+          rgba(var(--chakra-colors-primary-500-rgb, 57, 111, 228), 0.15),
+          transparent 75%
+        );
+        opacity: 0.9;
+      }
+      html.theme-black body::before,
+      html[data-theme-mode="black"] body::before {
+        background: radial-gradient(
+          ellipse 80% 50% at 50% -20%,
+          rgba(var(--chakra-colors-primary-500-rgb, 57, 111, 228), 0.16),
+          transparent 70%
+        );
+        opacity: 1;
+      }
+      html.chakra-ui-light body::before,
+      html[data-theme="light"] body::before {
+        background: radial-gradient(
+          ellipse 80% 50% at 50% -20%,
+          rgba(var(--chakra-colors-primary-500-rgb, 57, 111, 228), 0.12),
+          transparent 70%
+        );
+        opacity: 0.8;
       }
       html.chakra-ui-dark, body.chakra-ui-dark {
-        background-color: #1A202C !important;
+        background-color: #101522 !important;
         color: #edf2f7;
       }
       html.theme-black, html.theme-black body,
@@ -49,7 +96,7 @@
         color: #f4f4f5;
       }
       html.chakra-ui-light, body.chakra-ui-light {
-        background-color: #ffffff;
+        background-color: #f4f7fc;
         color: #1a202c;
       }
     </style>
@@ -65,14 +112,14 @@
           var meta = document.querySelector('meta[name="theme-color"]');
 
           var accents = {
-            cyan: { 50:"#9cb7f2",100:"#88a9ef",200:"#749aec",300:"#618ce9",400:"#4d7de7",500:"#396fe4",600:"#3364cd",700:"#2e59b6",800:"#284ea0",900:"#224389" },
-            blue: { 50:"#eff6ff",100:"#dbeafe",200:"#bfdbfe",300:"#93c5fd",400:"#60a5fa",500:"#2563eb",600:"#1d4ed8",700:"#1e40af",800:"#1e3a8a",900:"#172554" },
-            violet: { 50:"#f5f3ff",100:"#ede9fe",200:"#ddd6fe",300:"#c4b5fd",400:"#a78bfa",500:"#8b5cf6",600:"#7c3aed",700:"#6d28d9",800:"#5b21b6",900:"#4c1d95" },
-            pink: { 50:"#fdf2f8",100:"#fce7f3",200:"#fbcfe8",300:"#f9a8d4",400:"#f472b6",500:"#ec4899",600:"#db2777",700:"#be185d",800:"#9d174d",900:"#831843" },
-            red: { 50:"#fef2f2",100:"#fee2e2",200:"#fecaca",300:"#fca5a5",400:"#f87171",500:"#ef4444",600:"#dc2626",700:"#b91c1c",800:"#991b1b",900:"#7f1d1d" },
-            orange: { 50:"#fff7ed",100:"#ffedd5",200:"#fed7aa",300:"#fdba74",400:"#fb923c",500:"#f97316",600:"#ea580c",700:"#c2410c",800:"#9a3412",900:"#7c2d12" },
-            yellow: { 50:"#fefce8",100:"#fef9c3",200:"#fef08a",300:"#fde047",400:"#facc15",500:"#eab308",600:"#ca8a04",700:"#a16207",800:"#854d0e",900:"#713f12" },
-            green: { 50:"#ecfdf5",100:"#d1fae5",200:"#a7f3d0",300:"#6ee7b7",400:"#34d399",500:"#10b981",600:"#059669",700:"#047857",800:"#065f46",900:"#064e3b" }
+            cyan: { rgb:"57, 111, 228", bgLight:"#f4f7fc", bgDark:"#101522", 50:"#9cb7f2",100:"#88a9ef",200:"#749aec",300:"#618ce9",400:"#4d7de7",500:"#396fe4",600:"#3364cd",700:"#2e59b6",800:"#284ea0",900:"#224389" },
+            blue: { rgb:"37, 99, 235", bgLight:"#f3f6fc", bgDark:"#0e1422", 50:"#eff6ff",100:"#dbeafe",200:"#bfdbfe",300:"#93c5fd",400:"#60a5fa",500:"#2563eb",600:"#1d4ed8",700:"#1e40af",800:"#1e3a8a",900:"#172554" },
+            violet: { rgb:"139, 92, 246", bgLight:"#f7f5fc", bgDark:"#141122", 50:"#f5f3ff",100:"#ede9fe",200:"#ddd6fe",300:"#c4b5fd",400:"#a78bfa",500:"#8b5cf6",600:"#7c3aed",700:"#6d28d9",800:"#5b21b6",900:"#4c1d95" },
+            pink: { rgb:"236, 72, 153", bgLight:"#fcf5f8", bgDark:"#1c1118", 50:"#fdf2f8",100:"#fce7f3",200:"#fbcfe8",300:"#f9a8d4",400:"#f472b6",500:"#ec4899",600:"#db2777",700:"#be185d",800:"#9d174d",900:"#831843" },
+            red: { rgb:"239, 68, 68", bgLight:"#fcf5f5", bgDark:"#1d1112", 50:"#fef2f2",100:"#fee2e2",200:"#fecaca",300:"#fca5a5",400:"#f87171",500:"#ef4444",600:"#dc2626",700:"#b91c1c",800:"#991b1b",900:"#7f1d1d" },
+            orange: { rgb:"249, 115, 22", bgLight:"#fcf6f3", bgDark:"#1d1410", 50:"#fff7ed",100:"#ffedd5",200:"#fed7aa",300:"#fdba74",400:"#fb923c",500:"#f97316",600:"#ea580c",700:"#c2410c",800:"#9a3412",900:"#7c2d12" },
+            yellow: { rgb:"234, 179, 8", bgLight:"#fcf8f2", bgDark:"#1c170f", 50:"#fefce8",100:"#fef9c3",200:"#fef08a",300:"#fde047",400:"#facc15",500:"#eab308",600:"#ca8a04",700:"#a16207",800:"#854d0e",900:"#713f12" },
+            green: { rgb:"16, 185, 129", bgLight:"#f3fbf6", bgDark:"#0e1a14", 50:"#ecfdf5",100:"#d1fae5",200:"#a7f3d0",300:"#6ee7b7",400:"#34d399",500:"#10b981",600:"#059669",700:"#047857",800:"#065f46",900:"#064e3b" }
           };
 
           var savedAccent = localStorage.getItem("marzdar-accent-color") || "cyan";
@@ -87,10 +134,24 @@
 
           var rules = "";
           for (var shade in palette) {
-            rules += "--chakra-colors-primary-" + shade + ": " + palette[shade] + " !important;\n";
-            doc.style.setProperty("--chakra-colors-primary-" + shade, palette[shade], "important");
+            if (shade !== "rgb" && shade !== "bgLight" && shade !== "bgDark") {
+              rules += "--chakra-colors-primary-" + shade + ": " + palette[shade] + " !important;\n";
+              doc.style.setProperty("--chakra-colors-primary-" + shade, palette[shade], "important");
+            }
           }
-          styleEl.textContent = ":root, :host, html, body, #root, [data-theme], [data-theme=\"light\"], [data-theme=\"dark\"], .chakra-ui-light, .chakra-ui-dark, .chakra-portal {\n" + rules + "}";
+          rules += "--chakra-colors-primary-500-rgb: " + palette.rgb + " !important;\n";
+          rules += "--theme-accent-bg-light: " + palette.bgLight + " !important;\n";
+          rules += "--theme-accent-bg-dark: " + palette.bgDark + " !important;\n";
+          doc.style.setProperty("--chakra-colors-primary-500-rgb", palette.rgb, "important");
+          doc.style.setProperty("--theme-accent-bg-light", palette.bgLight, "important");
+          doc.style.setProperty("--theme-accent-bg-dark", palette.bgDark, "important");
+
+          var fullRules = ":root, :host, html, body, #root, [data-theme], [data-theme=\"light\"], [data-theme=\"dark\"], .chakra-ui-light, .chakra-ui-dark, .chakra-portal {\n" + rules + "}\n";
+          fullRules += "html.chakra-ui-light, body.chakra-ui-light, html[data-theme=\"light\"], body[data-theme=\"light\"] { background-color: " + palette.bgLight + " !important; --chakra-colors-chakra-body-bg: " + palette.bgLight + " !important; }\n";
+          fullRules += "html.chakra-ui-dark:not(.theme-black):not([data-theme-mode=\"black\"]), body.chakra-ui-dark:not(.theme-black):not([data-theme-mode=\"black\"]), html[data-theme=\"dark\"]:not(.theme-black):not([data-theme-mode=\"black\"]), body[data-theme=\"dark\"]:not(.theme-black):not([data-theme-mode=\"black\"]) { background-color: " + palette.bgDark + " !important; --chakra-colors-chakra-body-bg: " + palette.bgDark + " !important; }\n";
+          fullRules += "html.theme-black, body.theme-black, html[data-theme-mode=\"black\"], body[data-theme-mode=\"black\"] { background-color: #000000 !important; --chakra-colors-chakra-body-bg: #000000 !important; }\n";
+
+          styleEl.textContent = fullRules;
           doc.setAttribute("data-accent", savedAccent);
 
           if (mode === "black") {
@@ -99,6 +160,8 @@
             doc.setAttribute("data-theme", "dark");
             doc.setAttribute("data-theme-mode", "black");
             doc.style.colorScheme = "dark";
+            doc.style.backgroundColor = "#000000";
+            doc.style.setProperty("--chakra-colors-chakra-body-bg", "#000000", "important");
             if (meta) meta.setAttribute("content", "#000000");
           } else if (mode === "dark") {
             doc.classList.add("chakra-ui-dark");
@@ -106,21 +169,25 @@
             doc.setAttribute("data-theme", "dark");
             doc.removeAttribute("data-theme-mode");
             doc.style.colorScheme = "dark";
-            if (meta) meta.setAttribute("content", "#1A202C");
+            doc.style.backgroundColor = palette.bgDark;
+            doc.style.setProperty("--chakra-colors-chakra-body-bg", palette.bgDark, "important");
+            if (meta) meta.setAttribute("content", palette.bgDark);
           } else {
             doc.classList.add("chakra-ui-light");
             doc.classList.remove("chakra-ui-dark", "theme-black");
             doc.setAttribute("data-theme", "light");
             doc.removeAttribute("data-theme-mode");
             doc.style.colorScheme = "light";
-            if (meta) meta.setAttribute("content", palette["500"] || "#396fe4");
+            doc.style.backgroundColor = palette.bgLight;
+            doc.style.setProperty("--chakra-colors-chakra-body-bg", palette.bgLight, "important");
+            if (meta) meta.setAttribute("content", palette.bgLight);
           }
         } catch (e) {}
       })();
     </script>
-    <script type="module" crossorigin src="/statics/index.8c856e80.js"></script>
+    <script type="module" crossorigin src="/statics/index.14325586.js"></script>
     <link rel="modulepreload" crossorigin href="/statics/vendor.425e3aa1.js">
-    <link rel="stylesheet" href="/statics/index.86aeca29.css">
+    <link rel="stylesheet" href="/statics/index.03fda765.css">
   </head>
   <body>
     <div id="root"></div>

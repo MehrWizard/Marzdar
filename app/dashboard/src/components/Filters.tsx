@@ -162,6 +162,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
         base: 0,
       }}
       bg="var(--chakra-colors-chakra-body-bg)"
+      transition="background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
       py={4}
       zIndex="sticky"
       {...props}
