@@ -318,5 +318,14 @@
   "theme.title": "Theme",
   "theme.light": "Light",
   "theme.dark": "Dark",
-  "theme.black": "Black (OLED)"
+  "theme.black": "Black (OLED)",
+  "theme.accent": "Accent Color",
+  "theme.accent.cyan": "Cyan",
+  "theme.accent.blue": "Blue",
+  "theme.accent.violet": "Violet",
+  "theme.accent.pink": "Pink",
+  "theme.accent.red": "Red",
+  "theme.accent.orange": "Orange",
+  "theme.accent.yellow": "Yellow",
+  "theme.accent.green": "Green"
 }

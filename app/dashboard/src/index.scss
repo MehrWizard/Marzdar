@@ -285,12 +285,21 @@ table thead {
   gap: .7rem;
 }
 
+:root {
+  --theme-menu-bg: #ffffff;
+}
+
+.chakra-ui-dark {
+  --theme-menu-bg: #2d3748;
+}
+
 // Black (AMOLED / OLED) Theme
 html[data-theme-mode="black"],
 body[data-theme-mode="black"],
 html.theme-black,
 body.theme-black {
   color-scheme: dark !important;
+  --theme-menu-bg: #0c0c0e !important;
 
   --chakra-colors-chakra-body-bg: #000000 !important;
   --chakra-colors-chakra-border-color: #262626 !important;

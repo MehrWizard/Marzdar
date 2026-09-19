@@ -1,21 +1,30 @@
 import {
+  Box,
   HStack,
   IconButton,
   Menu,
   MenuButton,
+  MenuDivider,
   MenuItem,
   MenuList,
   Portal,
+  SimpleGrid,
   Text,
+  Tooltip,
 } from "@chakra-ui/react";
 import { CheckIcon, MoonIcon, SunIcon } from "@heroicons/react/24/outline";
 import { MoonIcon as MoonIconSolid } from "@heroicons/react/24/solid";
 import { useThemeMode } from "hooks/useThemeMode";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  ACCENT_COLOR_ORDER,
+  ACCENT_PALETTES,
+} from "utils/themeColor";
 
 export const ThemeToggle: FC = () => {
-  const { themeMode, setThemeMode } = useThemeMode();
+  const { themeMode, setThemeMode, accentColor, setAccentColor } =
+    useThemeMode();
   const { t } = useTranslation();
 
   const getButtonIcon = () => {
@@ -38,7 +47,7 @@ export const ThemeToggle: FC = () => {
         icon={getButtonIcon()}
       />
       <Portal>
-        <MenuList minW="150px" zIndex={99999}>
+        <MenuList minW="180px" zIndex={99999} py={2}>
           <MenuItem
             fontSize="sm"
             icon={<SunIcon width="16px" height="16px" />}
@@ -87,6 +96,82 @@ export const ThemeToggle: FC = () => {
               )}
             </HStack>
           </MenuItem>
+
+          <MenuDivider my={2} />
+
+          <Box px={3} pt={1} pb={1}>
+            <Text
+              fontSize="2xs"
+              fontWeight="semibold"
+              textTransform="uppercase"
+              letterSpacing="wider"
+              color="gray.500"
+              _dark={{ color: "gray.400" }}
+              mb={2.5}
+            >
+              {t("theme.accent") || "Accent Color"}
+            </Text>
+            <SimpleGrid columns={4} spacingY={3} spacingX={2.5} justifyItems="center">
+              {ACCENT_COLOR_ORDER.map((accentKey) => {
+                const accent = ACCENT_PALETTES[accentKey];
+                const isActive = accentColor === accentKey;
+                const color500 = accent.shades[500];
+                const localizedLabel =
+                  t(`theme.accent.${accentKey}`) || accent.label;
+
+                return (
+                  <Tooltip
+                    key={accentKey}
+                    label={localizedLabel}
+                    fontSize="xs"
+                    placement="top"
+                    openDelay={200}
+                    hasArrow
+                  >
+                    <Box
+                      as="button"
+                      type="button"
+                      role="radio"
+                      aria-checked={isActive}
+                      aria-label={localizedLabel}
+                      w="22px"
+                      h="22px"
+                      p={0}
+                      m="2px"
+                      borderRadius="full"
+                      bg={color500}
+                      cursor="pointer"
+                      outline="none"
+                      border="none"
+                      transition="transform 0.15s ease, box-shadow 0.15s ease"
+                      boxShadow={
+                        isActive
+                          ? `0 0 0 2px var(--theme-menu-bg, var(--chakra-colors-chakra-body-bg, #ffffff)), 0 0 0 4px ${color500}`
+                          : "none"
+                      }
+                      _hover={{
+                        transform: "scale(1.12)",
+                        boxShadow: isActive
+                          ? `0 0 0 2px var(--theme-menu-bg, var(--chakra-colors-chakra-body-bg, #ffffff)), 0 0 0 4px ${color500}`
+                          : `0 0 0 2px var(--theme-menu-bg, var(--chakra-colors-chakra-body-bg, #ffffff)), 0 0 0 3px ${color500}77`,
+                      }}
+                      _focus={{
+                        outline: "none",
+                      }}
+                      _focusVisible={{
+                        outline: "none",
+                      }}
+                      onClick={(e: React.MouseEvent) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setAccentColor(accentKey);
+                      }}
+                    />
+                  </Tooltip>
+                );
+              })}
+            </SimpleGrid>
+          </Box>
         </MenuList>
       </Portal>
     </Menu>

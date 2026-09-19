@@ -14,7 +14,11 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClientProvider } from "react-query";
 import { queryClient } from "utils/react-query";
-import { applyThemeModeToDom } from "utils/themeColor";
+import {
+  applyAccentColorToDom,
+  applyThemeModeToDom,
+  getInitialAccentColor,
+} from "utils/themeColor";
 import { theme } from "../chakra.config";
 import App from "./App";
 import "index.scss";
@@ -26,7 +30,9 @@ dayjs.extend(RelativeTime);
 dayjs.extend(Duration);
 
 const initialTheme = getInitialThemeMode();
-applyThemeModeToDom(initialTheme);
+const initialAccent = getInitialAccentColor();
+applyThemeModeToDom(initialTheme, initialAccent);
+applyAccentColorToDom(initialAccent);
 
 const customColorModeManager = {
   type: "localStorage" as const,

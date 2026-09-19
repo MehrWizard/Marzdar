@@ -324,5 +324,14 @@
   "theme.title": "پوسته",
   "theme.light": "روشن",
   "theme.dark": "تاریک",
-  "theme.black": "مشکی (OLED)"
+  "theme.black": "مشکی (OLED)",
+  "theme.accent": "رنگ شاخص",
+  "theme.accent.cyan": "فیروزه‌ای",
+  "theme.accent.blue": "آبی",
+  "theme.accent.violet": "بنفش",
+  "theme.accent.pink": "صورتی",
+  "theme.accent.red": "قرمز",
+  "theme.accent.orange": "نارنجی",
+  "theme.accent.yellow": "زرد",
+  "theme.accent.green": "سبز"
 }

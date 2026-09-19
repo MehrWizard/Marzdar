@@ -279,5 +279,14 @@
   "theme.title": "Тема",
   "theme.light": "Светлая",
   "theme.dark": "Тёмная",
-  "theme.black": "Чёрная (OLED)"
+  "theme.black": "Чёрная (OLED)",
+  "theme.accent": "Цвет акцента",
+  "theme.accent.cyan": "Бирюзовый",
+  "theme.accent.blue": "Синий",
+  "theme.accent.violet": "Фиолетовый",
+  "theme.accent.pink": "Розовый",
+  "theme.accent.red": "Красный",
+  "theme.accent.orange": "Оранжевый",
+  "theme.accent.yellow": "Жёлтый",
+  "theme.accent.green": "Зелёный"
 }
