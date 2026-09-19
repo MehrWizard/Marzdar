@@ -10,7 +10,6 @@ import {
   Portal,
   SimpleGrid,
   Text,
-  Tooltip,
 } from "@chakra-ui/react";
 import { CheckIcon, MoonIcon, SunIcon } from "@heroicons/react/24/outline";
 import { MoonIcon as MoonIconSolid } from "@heroicons/react/24/solid";
@@ -120,54 +119,52 @@ export const ThemeToggle: FC = () => {
                   t(`theme.accent.${accentKey}`) || accent.label;
 
                 return (
-                  <Tooltip
+                  <Box
                     key={accentKey}
-                    label={localizedLabel}
-                    fontSize="xs"
-                    placement="top"
-                    openDelay={200}
-                    hasArrow
-                  >
-                    <Box
-                      as="button"
-                      type="button"
-                      role="radio"
-                      aria-checked={isActive}
-                      aria-label={localizedLabel}
-                      w="22px"
-                      h="22px"
-                      p={0}
-                      m="2px"
-                      borderRadius="full"
-                      bg={color500}
-                      cursor="pointer"
-                      outline="none"
-                      border="none"
-                      transition="transform 0.15s ease, box-shadow 0.15s ease"
-                      boxShadow={
-                        isActive
-                          ? `0 0 0 2px var(--theme-menu-bg, var(--chakra-colors-chakra-body-bg, #ffffff)), 0 0 0 4px ${color500}`
-                          : "none"
-                      }
-                      _hover={{
-                        transform: "scale(1.12)",
-                        boxShadow: isActive
-                          ? `0 0 0 2px var(--theme-menu-bg, var(--chakra-colors-chakra-body-bg, #ffffff)), 0 0 0 4px ${color500}`
-                          : `0 0 0 2px var(--theme-menu-bg, var(--chakra-colors-chakra-body-bg, #ffffff)), 0 0 0 3px ${color500}77`,
-                      }}
-                      _focus={{
-                        outline: "none",
-                      }}
-                      _focusVisible={{
-                        outline: "none",
-                      }}
-                      onClick={(e: React.MouseEvent) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setAccentColor(accentKey);
-                      }}
-                    />
-                  </Tooltip>
+                    as="button"
+                    type="button"
+                    role="radio"
+                    aria-checked={isActive}
+                    aria-label={localizedLabel}
+                    title={localizedLabel}
+                    w="22px"
+                    h="22px"
+                    p={0}
+                    m="2px"
+                    borderRadius="full"
+                    bg={color500}
+                    cursor="pointer"
+                    outline="none"
+                    border="none"
+                    transition="transform 0.15s ease, box-shadow 0.15s ease"
+                    boxShadow={
+                      isActive
+                        ? `0 0 0 2px var(--theme-menu-bg, #ffffff), 0 0 0 4px ${color500}`
+                        : "none"
+                    }
+                    _hover={{
+                      transform: "scale(1.15)",
+                      boxShadow: isActive
+                        ? `0 0 0 2px var(--theme-menu-bg, #ffffff), 0 0 0 4px ${color500}`
+                        : `0 0 0 2px var(--theme-menu-bg, #ffffff), 0 0 0 3px ${color500}77`,
+                    }}
+                    _focus={{
+                      outline: "none",
+                    }}
+                    _focusVisible={{
+                      outline: "none",
+                    }}
+                    onPointerDown={(e: React.PointerEvent) => {
+                      e.stopPropagation();
+                    }}
+                    onMouseDown={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                    }}
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      setAccentColor(accentKey);
+                    }}
+                  />
                 );
               })}
             </SimpleGrid>

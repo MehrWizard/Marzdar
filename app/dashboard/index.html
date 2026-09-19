@@ -77,9 +77,20 @@
 
           var savedAccent = localStorage.getItem("marzdar-accent-color") || "cyan";
           var palette = accents[savedAccent] || accents.cyan;
-          for (var shade in palette) {
-            doc.style.setProperty("--chakra-colors-primary-" + shade, palette[shade]);
+
+          var styleEl = document.getElementById("marzdar-accent-style");
+          if (!styleEl) {
+            styleEl = document.createElement("style");
+            styleEl.id = "marzdar-accent-style";
+            document.head.appendChild(styleEl);
           }
+
+          var rules = "";
+          for (var shade in palette) {
+            rules += "--chakra-colors-primary-" + shade + ": " + palette[shade] + " !important;\n";
+            doc.style.setProperty("--chakra-colors-primary-" + shade, palette[shade], "important");
+          }
+          styleEl.textContent = ":root, :host, html, body, #root, [data-theme], [data-theme=\"light\"], [data-theme=\"dark\"], .chakra-ui-light, .chakra-ui-dark, .chakra-portal {\n" + rules + "}";
           doc.setAttribute("data-accent", savedAccent);
 
           if (mode === "black") {

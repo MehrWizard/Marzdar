@@ -15,6 +15,7 @@ export type AccentColor =
 export interface AccentPalette {
   id: AccentColor;
   label: string;
+  rgb: string;
   shades: {
     50: string;
     100: string;
@@ -33,6 +34,7 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
   cyan: {
     id: "cyan",
     label: "Cyan",
+    rgb: "57, 111, 228",
     shades: {
       50: "#9cb7f2",
       100: "#88a9ef",
@@ -49,6 +51,7 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
   blue: {
     id: "blue",
     label: "Blue",
+    rgb: "37, 99, 235",
     shades: {
       50: "#eff6ff",
       100: "#dbeafe",
@@ -65,6 +68,7 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
   violet: {
     id: "violet",
     label: "Violet",
+    rgb: "139, 92, 246",
     shades: {
       50: "#f5f3ff",
       100: "#ede9fe",
@@ -81,6 +85,7 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
   pink: {
     id: "pink",
     label: "Pink",
+    rgb: "236, 72, 153",
     shades: {
       50: "#fdf2f8",
       100: "#fce7f3",
@@ -97,6 +102,7 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
   red: {
     id: "red",
     label: "Red",
+    rgb: "239, 68, 68",
     shades: {
       50: "#fef2f2",
       100: "#fee2e2",
@@ -113,6 +119,7 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
   orange: {
     id: "orange",
     label: "Orange",
+    rgb: "249, 115, 22",
     shades: {
       50: "#fff7ed",
       100: "#ffedd5",
@@ -129,6 +136,7 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
   yellow: {
     id: "yellow",
     label: "Yellow",
+    rgb: "234, 179, 8",
     shades: {
       50: "#fefce8",
       100: "#fef9c3",
@@ -145,6 +153,7 @@ export const ACCENT_PALETTES: Record<AccentColor, AccentPalette> = {
   green: {
     id: "green",
     label: "Green",
+    rgb: "16, 185, 129",
     shades: {
       50: "#ecfdf5",
       100: "#d1fae5",
@@ -203,12 +212,50 @@ export const applyAccentColorToDom = (accent: AccentColor) => {
 
   const palette = ACCENT_PALETTES[accent] || ACCENT_PALETTES.cyan;
   const doc = document.documentElement;
+  const body = document.body;
 
+  // 1. Create or update the global override <style> element with !important rules
+  // targeting all possible scopes where Emotion or Chakra might set variables
+  let styleEl = document.getElementById("marzdar-accent-style") as HTMLStyleElement | null;
+  if (!styleEl) {
+    styleEl = document.createElement("style");
+    styleEl.id = "marzdar-accent-style";
+    document.head.appendChild(styleEl);
+  }
+
+  const cssVarEntries = Object.entries(palette.shades)
+    .map(([shade, color]) => `--chakra-colors-primary-${shade}: ${color} !important;`)
+    .join("\n      ");
+
+  styleEl.textContent = `
+    :root,
+    :host,
+    html,
+    body,
+    #root,
+    [data-theme],
+    [data-theme="light"],
+    [data-theme="dark"],
+    .chakra-ui-light,
+    .chakra-ui-dark,
+    .chakra-portal {
+      ${cssVarEntries}
+      --chakra-colors-primary-500-rgb: ${palette.rgb} !important;
+    }
+  `;
+
+  // 2. Also set on inline styles with !important
   for (const [shade, color] of Object.entries(palette.shades)) {
-    doc.style.setProperty(`--chakra-colors-primary-${shade}`, color);
+    doc.style.setProperty(`--chakra-colors-primary-${shade}`, color, "important");
+    if (body) {
+      body.style.setProperty(`--chakra-colors-primary-${shade}`, color, "important");
+    }
   }
 
   doc.setAttribute("data-accent", accent);
+  if (body) {
+    body.setAttribute("data-accent", accent);
+  }
 
   const currentMode =
     doc.getAttribute("data-theme-mode") ||
@@ -225,6 +272,7 @@ export const applyThemeModeToDom = (
 
   const doc = document.documentElement;
   const body = document.body;
+  const currentAccent = accent || getInitialAccentColor();
 
   if (mode === "black") {
     doc.classList.add("chakra-ui-dark", "theme-black");
@@ -267,5 +315,5 @@ export const applyThemeModeToDom = (
     }
   }
 
-  updateThemeColor(mode, accent);
+  applyAccentColorToDom(currentAccent);
 };
