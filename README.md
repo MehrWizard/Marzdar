@@ -44,6 +44,12 @@
   <a href="./README-ru.md">Русский</a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/MehrWizard/Marzdar" target="_blank" rel="noopener noreferrer">
+    <img src="https://github.com/MehrWizard/Marzdar/raw/master/docs/assets/preview.png" alt="Marzdar Preview" width="800" height="auto">
+  </a>
+</p>
+
 ---
 
 ## What is Marzdar?
