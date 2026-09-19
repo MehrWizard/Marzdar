@@ -13,6 +13,7 @@ import {
   InputRightElement,
   Menu,
   MenuButton,
+  MenuDivider,
   MenuItem,
   MenuList,
   Portal,
@@ -21,23 +22,29 @@ import {
   TagCloseButton,
   TagLabel,
   Text,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
 import {
   ArrowPathIcon,
+  CheckCircleIcon,
   DocumentDuplicateIcon,
+  DocumentMinusIcon,
   EllipsisVerticalIcon,
   FunnelIcon,
   MagnifyingGlassIcon,
+  NoSymbolIcon,
   TrashIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import classNames from "classnames";
+import { useAdmins } from "contexts/AdminsContext";
 import { useDashboard } from "contexts/DashboardContext";
 import useGetUser from "hooks/useGetUser";
 import debounce from "lodash.debounce";
 import { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { generateErrorMessage, generateSuccessMessage } from "utils/toastHandler";
 import { FilterAdminModal } from "./FilterAdminModal";
 
 const iconProps = {
@@ -70,10 +77,13 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
     onCreateUser,
     onCleaningExpiredUsers,
     onManagingTemplates,
+    onResetAllUsage,
   } = useDashboard();
   const { t } = useTranslation();
   const { userData } = useGetUser();
   const isSudo = userData?.is_sudo;
+  const toast = useToast();
+  const { disableAdminUsers, activateAdminUsers } = useAdmins();
   const [isFilterAdminOpen, setIsFilterAdminOpen] = useState(false);
 
   const [search, setSearch] = useState("");
@@ -90,6 +100,46 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
       offset: 0,
       search: "",
     });
+  };
+
+  const handleActivateAdminUsers = async () => {
+    if (!filters.admin) return;
+    if (
+      !window.confirm(
+        t("admins.activateUsersConfirm", { username: filters.admin })
+      )
+    )
+      return;
+    try {
+      await activateAdminUsers(filters.admin);
+      generateSuccessMessage(
+        t("admins.activateUsersSuccess", { username: filters.admin }),
+        toast
+      );
+      refetchUsers();
+    } catch (e) {
+      generateErrorMessage(e, toast);
+    }
+  };
+
+  const handleDisableAdminUsers = async () => {
+    if (!filters.admin) return;
+    if (
+      !window.confirm(
+        t("admins.disableUsersConfirm", { username: filters.admin })
+      )
+    )
+      return;
+    try {
+      await disableAdminUsers(filters.admin);
+      generateSuccessMessage(
+        t("admins.disableUsersSuccess", { username: filters.admin }),
+        toast
+      );
+      refetchUsers();
+    } catch (e) {
+      generateErrorMessage(e, toast);
+    }
   };
 
   return (
@@ -185,7 +235,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
               icon={<EllipsisVerticalIcon width="18px" height="18px" />}
             />
             <Portal>
-              <MenuList minW="200px" zIndex={99999}>
+              <MenuList minW="220px" zIndex={99999}>
                 {isSudo && (
                   <MenuItem
                     fontSize="sm"
@@ -204,6 +254,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
                     {t("templates.title")}
                   </MenuItem>
                 )}
+                <MenuDivider />
                 <MenuItem
                   fontSize="sm"
                   icon={<TrashIcon width="16px" height="16px" color="var(--chakra-colors-red-500)" />}
@@ -211,6 +262,34 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
                 >
                   {t("expiredUsers.menuAction")}
                 </MenuItem>
+                {isSudo && (
+                  <MenuItem
+                    fontSize="sm"
+                    icon={<DocumentMinusIcon width="16px" height="16px" color="var(--chakra-colors-yellow-500)" />}
+                    onClick={() => onResetAllUsage(true)}
+                  >
+                    {t("resetAllUsage")}
+                  </MenuItem>
+                )}
+                {isSudo && filters.admin && (
+                  <>
+                    <MenuDivider />
+                    <MenuItem
+                      fontSize="sm"
+                      icon={<CheckCircleIcon width="16px" height="16px" color="var(--chakra-colors-green-500)" />}
+                      onClick={handleActivateAdminUsers}
+                    >
+                      {t("admins.activateUsers")}: {filters.admin}
+                    </MenuItem>
+                    <MenuItem
+                      fontSize="sm"
+                      icon={<NoSymbolIcon width="16px" height="16px" color="var(--chakra-colors-orange-500)" />}
+                      onClick={handleDisableAdminUsers}
+                    >
+                      {t("admins.disableUsers")}: {filters.admin}
+                    </MenuItem>
+                  </>
+                )}
               </MenuList>
             </Portal>
           </Menu>
