@@ -21,7 +21,17 @@ dayjs.extend(utc);
 dayjs.extend(RelativeTime);
 dayjs.extend(Duration);
 
-updateThemeColor(localStorageManager.get() || "light");
+const initialTheme =
+  (localStorage.getItem("marzdar-theme-mode") as any) ||
+  localStorageManager.get() ||
+  "light";
+
+if (initialTheme === "black") {
+  document.documentElement.setAttribute("data-theme", "black");
+} else {
+  document.documentElement.removeAttribute("data-theme");
+}
+updateThemeColor(initialTheme);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

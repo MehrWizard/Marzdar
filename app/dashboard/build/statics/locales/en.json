@@ -314,5 +314,9 @@
   "usersUsage.node": "Node",
   "usersUsage.usage": "Usage",
   "usersUsage.percentage": "Share",
-  "usersUsage.noUsage": "No usage recorded for this period."
+  "usersUsage.noUsage": "No usage recorded for this period.",
+  "theme.title": "Theme",
+  "theme.light": "Light",
+  "theme.dark": "Dark",
+  "theme.black": "Black (OLED)"
 }

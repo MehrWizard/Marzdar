@@ -284,3 +284,105 @@ table thead {
   justify-content: start;
   gap: .7rem;
 }
+
+// Black (AMOLED / OLED) Theme
+html[data-theme="black"],
+body[data-theme="black"] {
+  color-scheme: dark !important;
+
+  --chakra-colors-chakra-body-bg: #000000 !important;
+  --chakra-colors-chakra-border-color: #262626 !important;
+  --chakra-colors-chakra-subtle-bg: #09090b !important;
+
+  --chakra-colors-gray-900: #050505 !important;
+  --chakra-colors-gray-850: #08080a !important;
+  --chakra-colors-gray-800: #09090b !important;
+  --chakra-colors-gray-750: #0f0f12 !important;
+  --chakra-colors-gray-700: #141416 !important;
+  --chakra-colors-gray-600: #262626 !important;
+  --chakra-colors-gray-500: #52525b !important;
+  --chakra-colors-whiteAlpha-50: rgba(255, 255, 255, 0.03) !important;
+  --chakra-colors-whiteAlpha-100: rgba(255, 255, 255, 0.06) !important;
+  --chakra-colors-whiteAlpha-200: rgba(255, 255, 255, 0.1) !important;
+  --chakra-colors-whiteAlpha-300: rgba(255, 255, 255, 0.15) !important;
+
+  background-color: #000000 !important;
+
+  body {
+    background-color: #000000 !important;
+  }
+
+  // Modals & Dialogs
+  .chakra-modal__content {
+    background-color: #0c0c0e !important;
+    border: 1px solid #262626 !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.95) !important;
+  }
+
+  // Menus & Dropdowns
+  .chakra-menu__menu-list {
+    background-color: #0c0c0e !important;
+    border: 1px solid #262626 !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.85) !important;
+  }
+
+  .chakra-menu__menuitem {
+    background-color: transparent !important;
+    &:hover,
+    &[data-hover] {
+      background-color: #1a1a1f !important;
+    }
+  }
+
+  .chakra-popover__content {
+    background-color: #0c0c0e !important;
+    border: 1px solid #262626 !important;
+  }
+
+  // Form Inputs, Textareas, Selects
+  .chakra-input,
+  .chakra-select,
+  .chakra-textarea {
+    background-color: #09090b !important;
+    border-color: #262626 !important;
+    &:focus,
+    &[data-focus] {
+      border-color: var(--chakra-colors-primary-500) !important;
+    }
+  }
+
+  // Buttons with default dark background
+  .chakra-button {
+    &:not([class*="chakra-button--solid"]):not([class*="chakra-button--outline"]):not([class*="chakra-button--ghost"]):not([class*="chakra-button--link"]) {
+      background-color: #161618 !important;
+      border: 1px solid #262626;
+      &:hover {
+        background-color: #222226 !important;
+      }
+    }
+  }
+
+  // Tables
+  table {
+    th {
+      background: #0f0f12 !important;
+      border-color: #262626 !important;
+    }
+    td {
+      border-color: #262626 !important;
+    }
+    tr.interactive:hover > td {
+      background-color: #141418 !important;
+    }
+  }
+
+  // React Datepicker
+  .react-datepicker {
+    background-color: #0c0c0e !important;
+    border-color: #262626 !important;
+  }
+  .react-datepicker__header {
+    background-color: #0f0f12 !important;
+    border-bottom-color: #262626 !important;
+  }
+}

@@ -276,5 +276,9 @@
   "usersUsage.node": "节点",
   "usersUsage.usage": "用量",
   "usersUsage.percentage": "占比",
-  "usersUsage.noUsage": "在此期间无用量记录。"
+  "usersUsage.noUsage": "在此期间无用量记录。",
+  "theme.title": "主题",
+  "theme.light": "浅色",
+  "theme.dark": "深色",
+  "theme.black": "纯黑 (OLED)"
 }

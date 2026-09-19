@@ -18,9 +18,7 @@ import {
   CurrencyDollarIcon,
   DocumentMinusIcon,
   LinkIcon,
-  MoonIcon,
   SquaresPlusIcon,
-  SunIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
 import { DONATION_URL, REPO_URL } from "constants/Project";
@@ -31,8 +29,9 @@ import { FC, ReactNode, useState } from "react";
 import GitHubButton from "react-github-btn";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { updateThemeColor } from "utils/themeColor";
 import { Language } from "./Language";
+import { ThemeToggle } from "./ThemeToggle";
+import { useThemeMode } from "hooks/useThemeMode";
 import useGetUser from "hooks/useGetUser";
 
 type HeaderProps = {
@@ -45,8 +44,6 @@ const iconProps = {
   },
 };
 
-const DarkIcon = chakra(MoonIcon, iconProps);
-const LightIcon = chakra(SunIcon, iconProps);
 const CoreSettingsIcon = chakra(Cog6ToothIcon, iconProps);
 const SettingsIcon = chakra(Bars3Icon, iconProps);
 const LogoutIcon = chakra(ArrowLeftOnRectangleIcon, iconProps);
@@ -101,11 +98,17 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
     onManagingAdmins,
   } = useDashboard();
   const { t } = useTranslation();
-  const { colorMode, toggleColorMode } = useColorMode();
+  const { colorMode } = useColorMode();
+  const { themeMode } = useThemeMode();
   const [showDonationNotif, setShowDonationNotif] = useState(
     shouldShowDonation()
   );
-  const gBtnColor = colorMode === "dark" ? "dark_dimmed" : colorMode;
+  const gBtnColor =
+    themeMode === "black"
+      ? "dark"
+      : colorMode === "dark"
+      ? "dark_dimmed"
+      : "light";
 
   const handleOnClose = () => {
     localStorage.setItem(NOTIFICATION_KEY, new Date().getTime().toString());
@@ -225,17 +228,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
 
           <Language />
 
-          <IconButton
-            size="sm"
-            variant="outline"
-            aria-label="switch theme"
-            onClick={() => {
-              updateThemeColor(colorMode == "dark" ? "light" : "dark");
-              toggleColorMode();
-            }}
-          >
-            {colorMode === "light" ? <DarkIcon /> : <LightIcon />}
-          </IconButton>
+          <ThemeToggle />
 
           <Box
             css={{ direction: "ltr" }}

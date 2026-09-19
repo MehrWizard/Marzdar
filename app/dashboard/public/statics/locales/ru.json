@@ -275,5 +275,9 @@
   "usersUsage.node": "Узел",
   "usersUsage.usage": "Использование",
   "usersUsage.percentage": "Доля",
-  "usersUsage.noUsage": "Нет данных об использовании за этот период."
+  "usersUsage.noUsage": "Нет данных об использовании за этот период.",
+  "theme.title": "Тема",
+  "theme.light": "Светлая",
+  "theme.dark": "Тёмная",
+  "theme.black": "Чёрная (OLED)"
 }

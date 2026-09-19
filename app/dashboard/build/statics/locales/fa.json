@@ -320,5 +320,9 @@
   "usersUsage.node": "سرور (نود)",
   "usersUsage.usage": "مصرف",
   "usersUsage.percentage": "سهم",
-  "usersUsage.noUsage": "هیچ ترافیکی در این بازه ثبت نشده است."
+  "usersUsage.noUsage": "هیچ ترافیکی در این بازه ثبت نشده است.",
+  "theme.title": "پوسته",
+  "theme.light": "روشن",
+  "theme.dark": "تاریک",
+  "theme.black": "مشکی (OLED)"
 }
