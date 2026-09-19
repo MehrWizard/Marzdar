@@ -203,27 +203,24 @@ export const NextPlanModal: FC = () => {
     : null;
 
   return (
-    <Modal isOpen={!!nextPlanUser} onClose={onClose} size="md" isCentered>
+    <Modal isOpen={!!nextPlanUser} onClose={onClose} isCentered>
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
-      <ModalContent mx="3">
+      <ModalContent mx="3" w="fit-content" maxW="lg">
         <ModalHeader pt={6}>
-          <HStack spacing={3}>
-            <Icon color="purple">
-              <ClockIcon width="20px" height="20px" color="white" />
-            </Icon>
-            <Box>
-              <Text fontWeight="semibold" fontSize="lg">
-                {t("nextPlan.title")}
-              </Text>
-              <Text fontSize="xs" color="gray.500" fontWeight="normal">
-                @{nextPlanUser.username}
-              </Text>
-            </Box>
-          </HStack>
+          <Icon color="purple">
+            <ClockIcon width="20px" height="20px" color="white" />
+          </Icon>
         </ModalHeader>
         <ModalCloseButton mt={3} />
 
-        <ModalBody pb={4} pt={2}>
+        <ModalBody w={{ base: "320px", sm: "440px" }} pb={6} pt={3}>
+          <Text fontWeight="semibold" fontSize="lg" mb={1}>
+            {t("nextPlan.title")}
+          </Text>
+          <Text fontSize="xs" color="gray.500" mb={4}>
+            @{nextPlanUser.username}
+          </Text>
+
           <VStack spacing={4} align="stretch">
             {/* View Mode (if queued plan exists and not editing) */}
             {hasQueuedPlan && !isEditingForm && (
@@ -418,12 +415,6 @@ export const NextPlanModal: FC = () => {
             )}
           </VStack>
         </ModalBody>
-
-        <ModalFooter>
-          <Button size="sm" variant="outline" onClick={onClose}>
-            {t("close")}
-          </Button>
-        </ModalFooter>
       </ModalContent>
     </Modal>
   );
