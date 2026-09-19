@@ -1,6 +1,7 @@
 import {
   Alert,
   AlertIcon,
+  Badge,
   Box,
   Button,
   Collapse,
@@ -13,6 +14,10 @@ import {
   GridItem,
   HStack,
   IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -20,6 +25,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Portal,
   Select,
   Spinner,
   Switch,
@@ -34,7 +40,9 @@ import {
 import {
   ChartPieIcon,
   ClockIcon,
+  EllipsisVerticalIcon,
   PencilIcon,
+  UserGroupIcon,
   UserPlusIcon,
 } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -907,8 +915,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
               )}
             </ModalBody>
             <ModalFooter mt="3">
-              <HStack
+              <Flex
                 justifyContent="space-between"
+                alignItems="center"
                 w="full"
                 gap={3}
                 flexDirection={{
@@ -918,12 +927,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
               >
                 <HStack
                   justifyContent="flex-start"
-                  w={{
-                    base: "full",
-                    sm: "unset",
-                  }}
                   flexWrap="wrap"
                   gap={2}
+                  w={{
+                    base: "full",
+                    sm: "auto",
+                  }}
                 >
                   {isEditing && (
                     <>
@@ -954,34 +963,71 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       <Button onClick={handleRevokeSubscription} size="sm">
                         {t("userDialog.revokeSubscription")}
                       </Button>
-                      <Button
-                        onClick={() => onNextPlanUser(editingUser)}
-                        size="sm"
-                        variant={editingUser?.next_plan ? "solid" : "outline"}
-                        colorScheme="purple"
-                        leftIcon={<ClockIcon width="16px" height="16px" />}
-                      >
-                        {editingUser?.next_plan
-                          ? t("nextPlan.hasQueuedPlan")
-                          : t("nextPlan.manageQueuedPlan")}
-                      </Button>
-                      {isSudo && (
-                        <Button
-                          onClick={() => setIsTransferOpen(true)}
+                      <Menu isLazy>
+                        <MenuButton
+                          as={IconButton}
                           size="sm"
-                          variant="outline"
-                          colorScheme="purple"
-                        >
-                          {t("userDialog.transferOwnership")}
-                        </Button>
-                      )}
+                          variant={editingUser?.next_plan ? "solid" : undefined}
+                          colorScheme={editingUser?.next_plan ? "purple" : "gray"}
+                          aria-label={t("moreActions") || "More actions"}
+                          icon={<EllipsisVerticalIcon width="18px" height="18px" />}
+                        />
+                        <Portal>
+                          <MenuList minW="210px" zIndex={99999}>
+                            <MenuItem
+                              fontSize="sm"
+                              icon={
+                                <ClockIcon
+                                  width="16px"
+                                  height="16px"
+                                  color={
+                                    editingUser?.next_plan
+                                      ? "var(--chakra-colors-purple-500)"
+                                      : undefined
+                                  }
+                                />
+                              }
+                              onClick={() => onNextPlanUser(editingUser)}
+                            >
+                              <HStack justify="space-between" w="full">
+                                <Text>
+                                  {editingUser?.next_plan
+                                    ? t("nextPlan.hasQueuedPlan")
+                                    : t("nextPlan.manageQueuedPlan")}
+                                </Text>
+                                {editingUser?.next_plan && (
+                                  <Badge colorScheme="purple" fontSize="xs">
+                                    Active
+                                  </Badge>
+                                )}
+                              </HStack>
+                            </MenuItem>
+                            {isSudo && (
+                              <MenuItem
+                                fontSize="sm"
+                                icon={
+                                  <UserGroupIcon
+                                    width="16px"
+                                    height="16px"
+                                  />
+                                }
+                                onClick={() => setIsTransferOpen(true)}
+                              >
+                                {t("userDialog.transferOwnership")}
+                              </MenuItem>
+                            )}
+                          </MenuList>
+                        </Portal>
+                      </Menu>
                     </>
                   )}
                 </HStack>
-                <HStack
-                  w="full"
-                  maxW={{ md: "50%", base: "full" }}
-                  justify="end"
+                <Box
+                  w={{ base: "full", sm: "auto" }}
+                  display="flex"
+                  justifyContent={{ base: "stretch", sm: "flex-end" }}
+                  flexShrink={0}
+                  ml="auto"
                 >
                   <Button
                     type="submit"
@@ -990,11 +1036,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     colorScheme="primary"
                     leftIcon={loading ? <Spinner size="xs" /> : undefined}
                     disabled={disabled}
+                    w={{ base: "full", sm: "auto" }}
                   >
                     {isEditing ? t("userDialog.editUser") : t("createUser")}
                   </Button>
-                </HStack>
-              </HStack>
+                </Box>
+              </Flex>
             </ModalFooter>
           </form>
         </ModalContent>
