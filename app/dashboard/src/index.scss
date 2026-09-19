@@ -358,14 +358,74 @@ body.theme-black {
     color: #ffffff !important;
   }
 
-  // Buttons with default dark background
-  .chakra-button {
-    &:not([class*="chakra-button--solid"]):not([class*="chakra-button--outline"]):not([class*="chakra-button--ghost"]):not([class*="chakra-button--link"]) {
-      background-color: #161618 !important;
-      border: 1px solid #262626;
-      &:hover {
-        background-color: #222226 !important;
+  // Protocol Cards (RadioGroup in User Dialog / Templates)
+  .protocol-card {
+    border-color: #262626 !important;
+    background-color: transparent !important;
+
+    &.is-disabled {
+      background-color: rgba(255, 255, 255, 0.02) !important;
+      border-color: #1e1e24 !important;
+
+      p {
+        color: #71717a !important;
       }
+    }
+
+    &.is-selected {
+      background-color: #0c0c0e !important;
+      border-color: var(--chakra-colors-primary-500) !important;
+      box-shadow: 0 0 0 1px var(--chakra-colors-primary-500) !important;
+
+      p {
+        color: #f4f4f5 !important;
+      }
+    }
+  }
+
+  // Host Config Cards (HostsDialog)
+  .host-config-card {
+    background-color: #0c0c0e !important;
+    border-color: #262626 !important;
+
+    .chakra-input,
+    .chakra-select {
+      background-color: #000000 !important;
+      border-color: #262626 !important;
+    }
+  }
+
+  // Accordions
+  .chakra-accordion__item {
+    border-color: #262626 !important;
+  }
+  .chakra-accordion__button {
+    &:hover {
+      background-color: #141418 !important;
+    }
+  }
+
+  // Ghost icon buttons transparency reset
+  .chakra-button[class*="variant-ghost"],
+  .chakra-button--ghost {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+
+    &:hover,
+    &[data-hover] {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+    }
+  }
+
+  // Checkboxes
+  .chakra-checkbox__control {
+    background-color: #09090b !important;
+    border-color: #3f3f46 !important;
+
+    &[data-checked] {
+      background-color: var(--chakra-colors-primary-500) !important;
+      border-color: var(--chakra-colors-primary-500) !important;
     }
   }
 

@@ -282,7 +282,8 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                   id={host.id}
                   key={host.id}
                   border="1px solid"
-                  _dark={{ borderColor: "gray.600", bg: "#273142" }}
+                  className="host-config-card"
+                  _dark={{ borderColor: "gray.600", bg: "gray.750" }}
                   _light={{ borderColor: "gray.200", bg: "#fcfbfb" }}
                   p={2}
                   w="full"
@@ -596,7 +597,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                           <IconButton
                             aria-label="Duplicate"
                             size="sm"
-                            colorScheme="white"
                             variant="ghost"
                             onClick={() => duplicateHost(index)}
                           >
@@ -608,7 +608,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             <IconButton
                               aria-label="DownIcon"
                               size="sm"
-                              colorScheme="white"
                               variant="ghost"
                               onClick={() => moveHostPosition(index, "down")}
                             >
@@ -621,7 +620,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             <IconButton
                               aria-label="UpIcon"
                               size="sm"
-                              colorScheme="white"
                               variant="ghost"
                               onClick={() => moveHostPosition(index, "up")}
                             >
