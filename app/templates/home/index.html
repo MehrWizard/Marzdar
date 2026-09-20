@@ -1,1942 +1,335 @@
-<style>
-    html,
-    body {
-        height: 100%;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Flappy Bird</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/statics/favicon/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/statics/favicon/favicon-16x16.png" />
+  <link rel="shortcut icon" href="/statics/favicon/favicon.ico" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #1e1e2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    #game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+    canvas {
+      border: 2px solid #11111b;
+      border-radius: 12px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAHHCAMAAAD5+3H4AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAMAUExURQAAAFLLa1POa1vLeFfWbVnZblneblvecF7fcF7fc1vgb1zgb1zgcF3gcl3icGLMfGnNf2PXd2PXeGfQfGbUeWLYdmHbdGHadWDcc2HfdGLfdWbfd2DgclS+0Fy912vQhnDOi3bjg07AylLDy1zHzFbA0GbJzWHD0XHLzZ3joaXjqq/pr6vjuo3XyZTYzZHU15fZ1pnZ0JnZ15ra1pva153b1J3b15/b2KDc16Hc2KLc2aTd2KXd2qXe2qfe26nf3Kvg3K3h3a7h3rHkxbXlw7rnwrnnxL3nwr7px7Hi37Pj4LTj4Lbk4cDquMXrusjrvs7twMzswsrryMzryM3syM/sydDtxNDtx9Lux9TsxdTvxNXuxtDtydrtz93vzNzuz9bwxtrzzd/wz9f119Py2Nv32N742MPp5uLx0OL10uP10+X21Ob61+H52OP52eP62Ob62Of72ej72On82QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIV2UwsAAAEAdFJOU////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wBT9wclAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGHRFWHRTb2Z0d2FyZQBwYWludC5uZXQgNC4wLjVlhTJlAAAM4UlEQVR4Xu2a/V9bZxmHW6nSF6Gtc06pzpfpRhUYiLDU+jLHy1ZdC1GElBXBdeDU0cL6/3/q8z33OZyEnKRJvsk21+v6gSTP85z7/p4rzzlJul14HSwQaIJAEwSaINAEgSYINEGgCQJNEGiCQBMEmiDQBIEmCDRBoAkCTRBogkATBJog0ASBJgg0QaAJAk0QaIJAEwSaINAEgSYINEGgCQJNEGiCQBMEmiDQBIEmCDRBoAkCTRBogkATBJog0ASBJgg0QaAJAk0QaIJAEwSaINAEgSYINEGgCQJNEGiCQBMEmiDQBIEmCDRBoAkCTRBogkATBJog0ASBJgg0QaAJAk0QaIJAEwSaINAEgSYINEGgCQJNEGiCQBMEmiDQBIEmCDRBoAkCTRBogkATBJog0ASBJgg0QaAJAk0QaIJAEwSaINAEgSYINEGgCQJNEGiCQBMEmiDQBIEmCDRBoAkCTRBogkATBJog0ASBJgg0QaAJAk0QaIJAEwSaINAEgSYINEGgCQJNEGiCQBMEmiDQBIEmCDRBoAkCTRBogkATBJog0ASBJgg0QaAJAk0QaIJAEwSaINAEgSYINEGgCQJNEGiCQBMEmiDQBIEmCDRBoAkCTRBogkATBJog0ASBJgg0QaAJAk0QaIJAEwSaINAEgSYINEGgCQJNEGiCQBMEmiDQBIEmCDRBoAkCTRBogkATBJog0ASBJgg0QaAJAk0QaIJAEwSaINAEgSYINEGgCQJNEGiCQBMEmiDQBIEmCDRBoAkCTRBogkATBJog0ASBJgg0QaAJAk0QaIJAEwSaINAEgSYINEGgCQJNEGiCQBMEmiDQBIEm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');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      max-width: 95vw;
+      max-height: 88vh;
+      display: block;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="myCanvas" width="620" height="480"></canvas>
+  </div>
+  <script>
+    var myCanvas = document.getElementById('myCanvas');
+    var ctx = myCanvas.getContext('2d');
+    var FPS = 40;
+    var jump_amount = -10;
+    var max_fall_speed = 10;
+    var acceleration = 1;
+    var pipe_speed = -2;
+    var game_mode = 'prestart';
+    var time_game_last_running = 0;
+    var bottom_bar_offset = 0;
+    var pipes = [];
+
+    var SPRITES = {
+      bird: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADEAAAAjCAMAAAAKXBK+AAAABGdBTUEAALGPC/xhBQAAAwBQTFRFAAAACQoLBgEmGx8gHRk4Ay88IyMkJCUnJyYpKisrLS0uMDAxMzM0Ojk6PT09DQBKEBBKER5QDCVCGSJHFTlAKCRFJTpAKDJILTZMMy1FMjNENDZCMjBPND9BOj9DMz1UND5SOjhWMkVKQS09QT8/VEs+X1Q6c142Z2gebHg+dH0vf38rfHw9QUFBQkJCQkRCREJBRUZGSkNCTExMTk5OUURCVE9SWVNNVVNUV1dXWlpaX1tdXFxcXl5eaklFfU9FflFFbHFDYGBgYmJhaWlnbGxtbWxuZW9xbntzcG9scG9wdHN1fXt3fX55dniIe4yIiWUxhn48lHAwmXwzlFJGgGpAgH96sFNKtm9fzl9K03NH4WFM42hK7GNM7G1M4XFB9WdL8mpN92tN/mpM/m9N/nROgX+BkIo6qIUtrKw7rq49s7Izsrc0trc+ub86uL0/g4lDgIB5kIF/np9xpJR2urtFpql4vsM625kn36Ep3Kwp4qor76Au9LMr974u+L8u/L4sxaJawb1B6cMz78Mx+8Iu/MMu/MUt/Mku/Mwv/NEw+tg2/Noy7+s/8u89/Oc09fM79fQ49vY49vc++/89+/8/z9FA4OBB7+dD8O5E9fJH9PRD9fZD9fdK9vtE+/pD+/9A+/9D+/9E+P9H+ftJ+/9K9/Zs9vhv9vNzgoGCg4ODh4aGg4iDiYaHiYiJjIuKjIuMjo2Oj46NhoWYi5KLjpiQm4qBk5SMk5KRl5iWnZyZjoyhp6enrKuqr6+ur7Curba2uLepsrKysbiyu7W3ubm3vLy8urjEvcPAxMW6zsqxyMm9zM2/ztG8/P+AwcLBxcbEwsPPx8nJy8jIzMXR1dXK1NXU3N3a3+HS3+Dd5eTf6u3e8vbf+Pfb+fjZ+Pvf4+Pj8+/v9O7v8fLv+PLv+Pzl+fzp/P7r9vLx9PPz9PTz9vb0+Pf1+Pf3+fvy+vr3+v3z/v/w///3+vv4+vv++/z5+v75+/76+f3//Pn4/f75/v/6/f39/v/8////AAAAzvEL0QAAAQB0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AFP3ByUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuNWWFMmUAAAPjSURBVDhPZdJ7WFNlHMDxttFBhW2ojTW5pMYlbLgdlsYq8IJiEmCmYvNWqAMiKcrSjIBusIGoKIqpMMdJUNCimzdslbdpWUmWWKFSal6CIqdMPOu8833Ped05Bz7/7HnO3u/e33v23uPtL0tsJ36M9S9aCcIfIQJIMnAQgr/A+hX/tDalsbImySOMSQkJCZP+xl9xRMWXBsMTo08A7AQx6GfAMKDrccUneAEiKiYTBCH5Grjd7h6XCxyUSFpReVsuS8YLEFHxVeorGVN/uNIBnW2/+K0xqQ3QNOhMTdqPFyB84Uh2sMP8WFlbW1v/emigEwDGgwDQGR/he2N8kUJkMC5XT+/2tVVVVfYX/WSHAPDQ9C0aFsxAWQpeJijSBqReaz/b8e/2tTU1NVSeauAh0N1zi6aZ263Oo02NLSdPtrHrUPHpIwaI1JOG0Pz6Wrj+bnGhG810NUJCAnBRIee2QcVT3F82QCaTPrTBTm3xFX92w7HA1bGy+G7wm0KexRVtTmfL/r3Y58teeqHaxhc3cGHsBGcU8kauSFYE/Mq+I4T53U8ZQ/Upro0l4rsERZYi8HtwGQOnZdJRFEVtoXKV0mPwJzweuIdcIhfuISqutLccWLYkd6PNtjFvydIDzWeYThp0OfY5boiKgFPA/R9X/OViwE9SZS7chKIelkqOgAu0hwH/Aw86Ob/Hd9fPn+OKyx3nrx8MUOWxR9Eq/X7hjofAt9uMi5DID+ord9xkg5s7Kuvf1XCFrTpv+dL0j5o5+zJiFcZdTYdRMSxytX1dQy+8sG53b8M6+3JcoMFGSf1lmH84FPIkLFKGRVLU+oZL55BLDevrqlW+oi5fFavT6UgdScIPSL8bFm3HndO12Zu2bUa2bcrWTgjB58idkD9n7jyRBc+mf4xuyYggzSo7vLDwyq7SKNXhuIhRDp5rXiRiNgXrUPEZGoxVt3WMRq9XvUzZPqTqslX6BebFImbTSCN7208dnc7RzlhRUFCw4v2VK9/TxsyZnzk7cfw4ofF74DlQ4fWGqoYGQcoHLRVlZeVvF1rfCFLONpsT771PKDh4mq94LDwyGop6utBSjFgLoqNMi80zw8YI6WN38YU6uswClRSVsEVxUUn5W+MSTQuf5y2cHxfGF6NhAROrpbiIC4pLy98cEmQSnty8KC4szVcYH5hVZmX3YAOktDBnxnP451mZmY+SX/gK6DV0jmdKSnGA5lqTo8EnQOJeZdfxxf1qtXpwlNVSyqvIGRomMIVdxxdGw8QEPNtdFe+kNwo42HV8wZmFXrLPafxUqG8xHM7G+wY/FepbOPEEnD/wU57XewcTNzBXMItnWwAAAABJRU5ErkJggg==',
+      pipe: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADsAAAGICAMAAADI0mjuAAAABGdBTUEAALGPC/xhBQAAAwBQTFRFAAAAPjtEQC07RTQqRzwsTzYyTjQ4STw9VTMyVTY8VTk9WDY1WDc+Wzk3Wjg7SzNDTTtCTjtJUTVGUzxDUThIWTxCVj5TZT9LR0IvS0gsSUg7RFMpUUM7VU48W0I7WlY1XFI8TmglTm42R38qSn4nTX4tUGYrU2ouWmovVWwxWGM2W2U8WWwzXGg6UXUnVnohUXwsWX0mWnwpUnQzUXE6XXAyWXw7YV0yZWo6Z3U8R0NCTEFCTUdJT05BR1VcUkNDVUVJVUlGVEpLXUFEXURNWk1HWExJVUVQWUFfWUpRXFFNWlxEU1BcXF16S2NxUmFzVGB6WGN2XmZ8XWx+YURNYE9HYExLYkdQaE9SaFFXblNYaFtpY31AdH1FYGJ9cG19XW2BaFyGR4UkR4YqS4QmTYUtSogkTYkrS4QwTogzTp4rUYYjU4IrVYsiUYovXYQmWoIuWY8lUoUyVYc4UYs0XIoxVZMuUpI0VJA4Upw1VJ85WJQyXaEpV6M5ZIo6YZs2ZZs4apExYaE1ZKM6Y6s2Za05a6Y0aqY+a6w0aKg8Zb09bLE2a7E7bro5da07d7M6cbo2cbs9a4BNbolGZZ1Aap5CdoFIdZVNfpdVY65AbqVAbLRGcq9Ae6ZMeK9JcrFFdrZJcr9OerRLeLhLZcM9bsI+dME8a8VBccVBccRLc8hCe8RDfcdOechGec1IfsxceNROfdZQi4JPioVUgZxZlYZZhKtWg7xUkb5XgMRGgMRIhs1Fg8hLiM1Ogs5ZjMVdh9RMhtlUld5VktxbmdNXicZjjdhkkMdglMpjmMphltZokdxklN1pnNxxh+BWheRbiuNVjOFbkOVTkeRem+FZiepik+ZhlOBqleljmOJjmuZomOtlnexok/BrmPFkm/RuoMxqqc51sNR4uNl/pORjpexsquVrrOlvqOdzqvNprPF2uOx2tvR4wupvwvN3wfR4xfl8zvt+t+2BvfiDyfyHzfiS0faN1PqF0P+L2P6N0PaS0fmS3/+YAAAAAAAAAAAAWw0+rgAAAQB0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AFP3ByUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuNWWFMmUAAAXPSURBVHhe7ZsLWFNlGMftpklGltnVzCgihAwRK7tt0IKwGxlFN7ofNoqsaEFplkWSIitPF6SoTN25tBFhYCZaMCyisIBwawOMLpAYS0oHKPQ89H7fOcAYDM+Q6vF53v/hfOyw89/v/X/n4+w533bG9fb2xrz2ze4Df7f8WG9vsNeKoq2uQOQ4EVY30c1MJp01pAWmhM2csAB8g7wNfV6T717k9gu5yEWuJOQiF7mSkItc5EpCLnKRKwm5yD2MuQZhsFUS8bJpzMhcUeBHzTVxgq/eAS73f3BtyEUucpErC7nIRa4k5CIXuZKQi1zkSkIucg9XLpkb4QZbJWVqydxIyshcEbjy/u4iXPZQuOn/ItdEuQLvsSjLK5B+5oU+O+12QVk/m+jxFTiemOkLiKLAKzu+JC/hglvgKF8UofWFyxMu5IYWUoySy/vOpXll7qjzwiPMi3kxL+bFvJgX82JezIt5Ma83rvx59wCXtNR78M+74eKRWGUumOmGdH0UpogLKJnoA5d8vj+UK12XpfvIldtMnZK8pGMHuNBCP3OCon6Wr7vduGRc8YqOL4yLMeSScaWE2z/P8B/nHWsu5sW8mBfzYl7M687FvJgX82JezIt53bmYF/NiXsw7MtfbPNII3w2QuaRm+qWLwVxeIVfyunFJPyudJxzC9WF+0pNL+nnUXB/mYzHvIXAxL+bFvJSLeTEv5sW8mBfzunMxL+bFvJgX845ZXul+jT4umOkG8Sq9T6SfC2WTVppXOQhXvk9kWK7C+0T6uTJdEdcjr0wfXV5fuMPnpfNIPueV+pnPTPbk3nvtc5/8/OsvP1WWVlaWbnpv3aav3vaip1L0b7y5cNasS2dMvot6r4o5abLmjjtvv+2ayMj58yNVkdHepVJFxaqmaE6fdsIp14P3xiP8pl891X/SpIl+fuP9phL5gfxJ4yH/qX4Tp8Dzp56mUp98ZFzvuFuiZlwSRBRMl/ODQucG062hCj6HNMGhF4SEXHfrBOK9Yma4Vp/+dHoySJ+sY3TJOvJwOD2Yrmd0T6ae+3jYnAungTfusrvXf/p15ab3165bk7Fm/ZoVGRkvetWK5xlm6dK0R5KSgo4G7w1Rqxv++OvP5vId5VvYsvJyftUqtk+8h1jz8kefeOXVZ1Me0IYeBd77Y1fXtPW4Wu1N9gLBYq0WjEaT4EVZH7ylTcvLe/jiQCb0GPAuUOXWOw90NVobHYWixW4ROREGwvAS+Gw9s5J9hglnAo4lNatyHc6uriZr445CscxmMdHROLyIN4V4Z+siiPceVa4NuC2EK0hcec+hIl4t5aZQLtTsAK/Mra1VxA3XBcs126BmypXzynsO1QBXygs1u3GV5k2Vay7u5yrP29/P293zHswrcfu8xQ7n/v2/2ezWAmGD/TshSxoHHF1hMRqNoijCeOG4LPDqwasLT404juSNLK53urp2OZqg3rJai8iLrIzxkBHWZdqHVrJLmPBAqa8ii6ucLhiTO63Qz45tBWIBjFx4BdLSxvwhLYSwTdnJ2mxxiVb2Ql7i3WXbad0gFNZZxDzR0Dco4aRl4AwsS8pnDQL8fRnUbFikD2dozXRMUq/dAv1sFYyUMkjknY3UQLwLsw2LtLOZCH/wLoguduwDr8O27TN6jAxkX0kGQBPBfyN4yYu8lKxdzi5Juui8gONJXlWu5fd9rraW1uYvSiBvScnWEjNZ8s35mzfnbzWDZ4vZTE7Q8BacvTgN+mrxY0yAVPPr+VVtTifU3d7u6nI529vb2qn27IEfp7OlweHc3VxXW11dXVNT92Xp9+VrX35h4RzSVzddmfjuRxWtrp6ezs5uqh7pV3dPR3d3R8e+va3fdu5t/WE7qKqiogKaz9/JCAyZDt6bJ5wdOi8xsWijFxUV5SRu/DgxMSeHrjmwzpsbfOZZ48F7X4zqDLVao4mP13goPj4+IV6TEJsQDU+po6LUmmi1Wh0brYYz/OWxJ8b1/gNv3XyOE26IBAAAAABJRU5ErkJggg==',
+      bottom: 'data:image/png;base64,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',
+      end: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAHHCAMAAACx7TlRAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAMAUExURQAAAP/YAP/rfwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOzyaIsAAAEAdFJOU////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wBT9wclAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGHRFWHRTb2Z0d2FyZQBwYWludC5uZXQgNC4wLjVlhTJlAAAAV0lEQVRYR+3PMQrAMAwEQUv///OZcAiSzpBzt6qmEBK7pKrSMyfs7uHMl6+FWxf+kwqTihSpMKlIkQqTihSpMKlIkQqTihSpMKlIkQqTihSpMKlI0S+kDRAtlX/B5R+xAAAAAElFTkSuQmCC'
+    };
+
+    function MySprite(img_src) {
+      this.x = 0;
+      this.y = 0;
+      this.visible = true;
+      this.velocity_x = 0;
+      this.velocity_y = 0;
+      this.MyImg = new Image();
+      if (img_src) {
+        this.MyImg.src = img_src;
+      }
+      this.angle = 0;
+      this.flipV = false;
+      this.flipH = false;
     }
 
-    body {
-        overflow: hidden;
-        margin: 0;
-        perspective: 80em;
-        perspective-origin: 50% 0%;
-        background: black;
-        color: cyan;
+    MySprite.prototype.Do_Frame_Things = function () {
+      ctx.save();
+      ctx.translate(this.x + this.MyImg.width / 2, this.y + this.MyImg.height / 2);
+      ctx.rotate((this.angle * Math.PI) / 180);
+      if (this.flipV) ctx.scale(1, -1);
+      if (this.flipH) ctx.scale(-1, 1);
+      if (this.visible && this.MyImg.complete) {
+        ctx.drawImage(this.MyImg, -this.MyImg.width / 2, -this.MyImg.height / 2);
+      }
+      this.x = this.x + this.velocity_x;
+      this.y = this.y + this.velocity_y;
+      ctx.restore();
+    };
+
+    function ImagesTouching(thing1, thing2) {
+      if (!thing1.visible || !thing2.visible) return false;
+      if (
+        thing1.x >= thing2.x + thing2.MyImg.width ||
+        thing1.x + thing1.MyImg.width <= thing2.x
+      )
+        return false;
+      if (
+        thing1.y >= thing2.y + thing2.MyImg.height ||
+        thing1.y + thing1.MyImg.height <= thing2.y
+      )
+        return false;
+      return true;
     }
 
-    .scene {
-        transform: translate(-15em, 15em) rotateX(75deg) rotate(22.5deg);
+    function Got_Player_Input(e) {
+      switch (game_mode) {
+        case 'prestart':
+          game_mode = 'running';
+          break;
+        case 'running':
+          bird.velocity_y = jump_amount;
+          break;
+        case 'over':
+          if (Date.now() - time_game_last_running > 800) {
+            reset_game();
+            game_mode = 'running';
+          }
+          break;
+      }
+      if (e && e.preventDefault) e.preventDefault();
     }
 
-    .scene,
-    .scene * {
-        box-sizing: border-box;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform-style: preserve-3d;
+    window.addEventListener('touchstart', Got_Player_Input, { passive: false });
+    window.addEventListener('mousedown', Got_Player_Input);
+    window.addEventListener('keydown', function(e) {
+      if (e.code === 'Space' || e.code === 'ArrowUp' || e.key === ' ' || e.key === 'ArrowUp') {
+        Got_Player_Input(e);
+      }
+    });
+
+    function make_bird_slow_and_fall() {
+      if (bird.velocity_y < max_fall_speed) {
+        bird.velocity_y = bird.velocity_y + acceleration;
+      }
+      if (bird.y > myCanvas.height - bird.MyImg.height - 25) {
+        bird.velocity_y = 0;
+        game_mode = 'over';
+      }
+      if (bird.y < 0 - bird.MyImg.height) {
+        bird.velocity_y = 0;
+        game_mode = 'over';
+      }
     }
 
-    .assembly:nth-child(1) {
-        z-index: -1;
-        transform: translate(0, -5em);
-        animation: slide1 1s ease-in-out infinite;
+    function add_pipe(x_pos, top_of_gap, gap_width) {
+      var top_pipe = new MySprite();
+      top_pipe.MyImg = pipe_piece;
+      top_pipe.x = x_pos;
+      top_pipe.y = top_of_gap - pipe_piece.height;
+      top_pipe.velocity_x = pipe_speed;
+      pipes.push(top_pipe);
+
+      var bottom_pipe = new MySprite();
+      bottom_pipe.MyImg = pipe_piece;
+      bottom_pipe.flipV = true;
+      bottom_pipe.x = x_pos;
+      bottom_pipe.y = top_of_gap + gap_width;
+      bottom_pipe.velocity_x = pipe_speed;
+      pipes.push(bottom_pipe);
     }
 
-    @keyframes slide1 {
-        to {
-            transform: translate(3em, -5em);
+    function make_bird_tilt_appropriately() {
+      if (bird.velocity_y < 0) {
+        bird.angle = -15;
+      } else if (bird.angle < 70) {
+        bird.angle = bird.angle + 4;
+      }
+    }
+
+    function show_the_pipes() {
+      for (var i = 0; i < pipes.length; i++) {
+        pipes[i].Do_Frame_Things();
+      }
+    }
+
+    function check_for_end_game() {
+      for (var i = 0; i < pipes.length; i++) {
+        if (ImagesTouching(bird, pipes[i])) {
+          game_mode = 'over';
         }
-    }
-
-    .assembly:nth-child(1) .roller {
-        transform: rotateY(90deg) translateZ(1.5em) rotateY(-270deg);
-        animation: inherit;
-        animation-name: roll1a;
-    }
-
-    .assembly:nth-child(1) .roller:last-child {
-        z-index: -1;
-        margin: 0 12em;
-        transform: rotateY(-90deg) translateZ(-1.5em) rotateY(-90deg);
-        animation-name: roll1b;
-    }
-
-    @keyframes roll1a {
-        to {
-            transform: rotateY(-90deg) translateZ(1.5em) rotateY(-270deg);
-        }
-    }
-
-    @keyframes roll1b {
-        to {
-            transform: rotateY(90deg) translateZ(-1.5em) rotateY(-90deg);
-        }
-    }
-
-    .assembly:nth-child(1) .side {
-        margin: -2em -1.5em;
-        width: 3em;
-        height: 4em;
-    }
-
-    .assembly:nth-child(1) .side:nth-child(1) {
-        transform: rotateY(0deg);
-    }
-
-    .assembly:nth-child(1) .side:nth-child(2) {
-        transform: rotateY(180deg);
-    }
-
-    .assembly:nth-child(2) {
-        z-index: -2;
-        transform: translate(0, -10em);
-        animation: slide2 1s ease-in-out infinite;
-    }
-
-    @keyframes slide2 {
-        to {
-            transform: translate(3em, -10em);
-        }
-    }
-
-    .assembly:nth-child(2) .roller {
-        transform: rotateY(60deg) translateZ(1.73205em) rotateY(-120deg);
-        animation: inherit;
-        animation-name: roll2a;
-    }
-
-    .assembly:nth-child(2) .roller:last-child {
-        z-index: -1;
-        margin: 0 12em;
-        transform: rotateY(-60deg) translateZ(-1.73205em) rotateY(-60deg);
-        animation-name: roll2b;
-    }
-
-    @keyframes roll2a {
-        to {
-            transform: rotateY(-60deg) translateZ(1.73205em) rotateY(-120deg);
-        }
-    }
-
-    @keyframes roll2b {
-        to {
-            transform: rotateY(60deg) translateZ(-1.73205em) rotateY(-60deg);
-        }
-    }
-
-    .assembly:nth-child(2) .side {
-        margin: -2em -1.5em;
-        width: 3em;
-        height: 4em;
-    }
-
-    .assembly:nth-child(2) .side:nth-child(1) {
-        transform: rotateY(0deg) translateZ(0.86603em);
-    }
-
-    .assembly:nth-child(2) .side:nth-child(2) {
-        transform: rotateY(120deg) translateZ(0.86603em);
-    }
-
-    .assembly:nth-child(2) .side:nth-child(3) {
-        transform: rotateY(240deg) translateZ(0.86603em);
-    }
-
-    .assembly:nth-child(3) {
-        z-index: -3;
-        transform: translate(0, -15em);
-        animation: slide3 1s ease-in-out infinite;
-    }
-
-    @keyframes slide3 {
-        to {
-            transform: translate(3em, -15em);
-        }
-    }
-
-    .assembly:nth-child(3) .roller {
-        transform: rotateY(45deg) translateZ(2.12132em) rotateY(-135deg);
-        animation: inherit;
-        animation-name: roll3a;
-    }
-
-    .assembly:nth-child(3) .roller:last-child {
-        z-index: -1;
-        margin: 0 12em;
-        transform: rotateY(-45deg) translateZ(-2.12132em) rotateY(-45deg);
-        animation-name: roll3b;
-    }
-
-    @keyframes roll3a {
-        to {
-            transform: rotateY(-45deg) translateZ(2.12132em) rotateY(-135deg);
-        }
-    }
-
-    @keyframes roll3b {
-        to {
-            transform: rotateY(45deg) translateZ(-2.12132em) rotateY(-45deg);
-        }
-    }
-
-    .assembly:nth-child(3) .side {
-        margin: -2em -1.5em;
-        width: 3em;
-        height: 4em;
-    }
-
-    .assembly:nth-child(3) .side:nth-child(1) {
-        transform: rotateY(0deg) translateZ(1.5em);
-    }
-
-    .assembly:nth-child(3) .side:nth-child(1):before {
-        height: 1.5em;
-        left: .125em;
-        width: calc(3em - .125em);
-    }
-
-    .assembly:nth-child(3) .side:nth-child(2) {
-        transform: rotateY(90deg) translateZ(1.5em);
-    }
-
-    .assembly:nth-child(3) .side:nth-child(2):before {
-        height: 1.5em;
-        left: .125em;
-        width: calc(3em - .125em);
-    }
-
-    .assembly:nth-child(3) .side:nth-child(3) {
-        transform: rotateY(180deg) translateZ(1.5em);
-    }
-
-    .assembly:nth-child(3) .side:nth-child(3):before {
-        height: 1.5em;
-        left: .125em;
-        width: calc(3em - .125em);
-    }
-
-    .assembly:nth-child(3) .side:nth-child(4) {
-        transform: rotateY(270deg) translateZ(1.5em);
-    }
-
-    .assembly:nth-child(3) .side:nth-child(4):before {
-        height: 1.5em;
-        left: .125em;
-        width: calc(3em - .125em);
-    }
-
-    .assembly:nth-child(4) {
-        z-index: -4;
-        transform: translate(0, -20em);
-        animation: slide4 1s ease-in-out infinite;
-    }
-
-    @keyframes slide4 {
-        to {
-            transform: translate(3em, -20em);
-        }
-    }
-
-    .assembly:nth-child(4) .roller {
-        transform: rotateY(36deg) translateZ(2.55195em) rotateY(-72deg);
-        animation: inherit;
-        animation-name: roll4a;
-    }
-
-    .assembly:nth-child(4) .roller:last-child {
-        z-index: -1;
-        margin: 0 12em;
-        transform: rotateY(-36deg) translateZ(-2.55195em) rotateY(-36deg);
-        animation-name: roll4b;
-    }
-
-    @keyframes roll4a {
-        to {
-            transform: rotateY(-36deg) translateZ(2.55195em) rotateY(-72deg);
-        }
-    }
-
-    @keyframes roll4b {
-        to {
-            transform: rotateY(36deg) translateZ(-2.55195em) rotateY(-36deg);
-        }
-    }
-
-    .assembly:nth-child(4) .side {
-        margin: -2em -1.5em;
-        width: 3em;
-        height: 4em;
-    }
-
-    .assembly:nth-child(4) .side:nth-child(1) {
-        transform: rotateY(0deg) translateZ(2.06457em);
-    }
-
-    .assembly:nth-child(4) .side:nth-child(1):before {
-        height: 2.06457em;
-    }
-
-    .assembly:nth-child(4) .side:nth-child(2) {
-        transform: rotateY(72deg) translateZ(2.06457em);
-    }
-
-    .assembly:nth-child(4) .side:nth-child(2):before {
-        height: 2.06457em;
-    }
-
-    .assembly:nth-child(4) .side:nth-child(3) {
-        transform: rotateY(144deg) translateZ(2.06457em);
-    }
-
-    .assembly:nth-child(4) .side:nth-child(3):before {
-        height: 2.06457em;
-    }
-
-    .assembly:nth-child(4) .side:nth-child(4) {
-        transform: rotateY(216deg) translateZ(2.06457em);
-    }
-
-    .assembly:nth-child(4) .side:nth-child(4):before {
-        height: 2.06457em;
-    }
-
-    .assembly:nth-child(4) .side:nth-child(5) {
-        transform: rotateY(288deg) translateZ(2.06457em);
-    }
-
-    .assembly:nth-child(4) .side:nth-child(5):before {
-        height: 2.06457em;
-    }
-
-    .assembly:nth-child(5) {
-        z-index: -5;
-        transform: translate(0, -25em);
-        animation: slide5 1s ease-in-out infinite;
-    }
-
-    @keyframes slide5 {
-        to {
-            transform: translate(3em, -25em);
-        }
-    }
-
-    .assembly:nth-child(5) .roller {
-        transform: rotateY(30deg) translateZ(3em) rotateY(-90deg);
-        animation: inherit;
-        animation-name: roll5a;
-    }
-
-    .assembly:nth-child(5) .roller:last-child {
-        z-index: -1;
-        margin: 0 12em;
-        transform: rotateY(-30deg) translateZ(-3em) rotateY(-30deg);
-        animation-name: roll5b;
-    }
-
-    @keyframes roll5a {
-        to {
-            transform: rotateY(-30deg) translateZ(3em) rotateY(-90deg);
-        }
-    }
-
-    @keyframes roll5b {
-        to {
-            transform: rotateY(30deg) translateZ(-3em) rotateY(-30deg);
-        }
-    }
-
-    .assembly:nth-child(5) .side {
-        margin: -2em -1.5em;
-        width: 3em;
-        height: 4em;
-    }
-
-    .assembly:nth-child(5) .side:nth-child(1) {
-        transform: rotateY(0deg) translateZ(2.59808em);
-    }
-
-    .assembly:nth-child(5) .side:nth-child(1):before {
-        height: 2.59808em;
-    }
-
-    .assembly:nth-child(5) .side:nth-child(2) {
-        transform: rotateY(60deg) translateZ(2.59808em);
-    }
-
-    .assembly:nth-child(5) .side:nth-child(2):before {
-        height: 2.59808em;
-    }
-
-    .assembly:nth-child(5) .side:nth-child(3) {
-        transform: rotateY(120deg) translateZ(2.59808em);
-    }
-
-    .assembly:nth-child(5) .side:nth-child(3):before {
-        height: 2.59808em;
-    }
-
-    .assembly:nth-child(5) .side:nth-child(4) {
-        transform: rotateY(180deg) translateZ(2.59808em);
-    }
-
-    .assembly:nth-child(5) .side:nth-child(4):before {
-        height: 2.59808em;
-    }
-
-    .assembly:nth-child(5) .side:nth-child(5) {
-        transform: rotateY(240deg) translateZ(2.59808em);
-    }
-
-    .assembly:nth-child(5) .side:nth-child(5):before {
-        height: 2.59808em;
-    }
-
-    .assembly:nth-child(5) .side:nth-child(6) {
-        transform: rotateY(300deg) translateZ(2.59808em);
-    }
-
-    .assembly:nth-child(5) .side:nth-child(6):before {
-        height: 2.59808em;
-    }
-
-    .assembly:nth-child(6) {
-        z-index: -6;
-        transform: translate(0, -30em);
-        animation: slide6 1s ease-in-out infinite;
-    }
-
-    @keyframes slide6 {
-        to {
-            transform: translate(3em, -30em);
-        }
-    }
-
-    .assembly:nth-child(6) .roller {
-        transform: rotateY(25.71429deg) translateZ(3.45715em) rotateY(-51.42857deg);
-        animation: inherit;
-        animation-name: roll6a;
-    }
-
-    .assembly:nth-child(6) .roller:last-child {
-        z-index: -1;
-        margin: 0 12em;
-        transform: rotateY(-25.71429deg) translateZ(-3.45715em) rotateY(-25.71429deg);
-        animation-name: roll6b;
-    }
-
-    @keyframes roll6a {
-        to {
-            transform: rotateY(-25.71429deg) translateZ(3.45715em) rotateY(-51.42857deg);
-        }
-    }
-
-    @keyframes roll6b {
-        to {
-            transform: rotateY(25.71429deg) translateZ(-3.45715em) rotateY(-25.71429deg);
-        }
-    }
-
-    .assembly:nth-child(6) .side {
-        margin: -2em -1.5em;
-        width: 3em;
-        height: 4em;
-    }
-
-    .assembly:nth-child(6) .side:nth-child(1) {
-        transform: rotateY(0deg) translateZ(3.11478em);
-    }
-
-    .assembly:nth-child(6) .side:nth-child(1):before {
-        height: 3.11478em;
-    }
-
-    .assembly:nth-child(6) .side:nth-child(2) {
-        transform: rotateY(51.42857deg) translateZ(3.11478em);
-    }
-
-    .assembly:nth-child(6) .side:nth-child(2):before {
-        height: 3.11478em;
-    }
-
-    .assembly:nth-child(6) .side:nth-child(3) {
-        transform: rotateY(102.85714deg) translateZ(3.11478em);
-    }
-
-    .assembly:nth-child(6) .side:nth-child(3):before {
-        height: 3.11478em;
-    }
-
-    .assembly:nth-child(6) .side:nth-child(4) {
-        transform: rotateY(154.28571deg) translateZ(3.11478em);
-    }
-
-    .assembly:nth-child(6) .side:nth-child(4):before {
-        height: 3.11478em;
-    }
-
-    .assembly:nth-child(6) .side:nth-child(5) {
-        transform: rotateY(205.71429deg) translateZ(3.11478em);
-    }
-
-    .assembly:nth-child(6) .side:nth-child(5):before {
-        height: 3.11478em;
-    }
-
-    .assembly:nth-child(6) .side:nth-child(6) {
-        transform: rotateY(257.14286deg) translateZ(3.11478em);
-    }
-
-    .assembly:nth-child(6) .side:nth-child(6):before {
-        height: 3.11478em;
-    }
-
-    .assembly:nth-child(6) .side:nth-child(7) {
-        transform: rotateY(308.57143deg) translateZ(3.11478em);
-    }
-
-    .assembly:nth-child(6) .side:nth-child(7):before {
-        height: 3.11478em;
-    }
-
-    .assembly:nth-child(7) {
-        z-index: -7;
-        transform: translate(0, -35em);
-        animation: slide7 1s ease-in-out infinite;
-    }
-
-    @keyframes slide7 {
-        to {
-            transform: translate(3em, -35em);
-        }
-    }
-
-    .assembly:nth-child(7) .roller {
-        transform: rotateY(22.5deg) translateZ(3.91969em) rotateY(-67.5deg);
-        animation: inherit;
-        animation-name: roll7a;
-    }
-
-    .assembly:nth-child(7) .roller:last-child {
-        z-index: -1;
-        margin: 0 12em;
-        transform: rotateY(-22.5deg) translateZ(-3.91969em) rotateY(-22.5deg);
-        animation-name: roll7b;
-    }
-
-    @keyframes roll7a {
-        to {
-            transform: rotateY(-22.5deg) translateZ(3.91969em) rotateY(-67.5deg);
-        }
-    }
-
-    @keyframes roll7b {
-        to {
-            transform: rotateY(22.5deg) translateZ(-3.91969em) rotateY(-22.5deg);
-        }
-    }
-
-    .assembly:nth-child(7) .side {
-        margin: -2em -1.5em;
-        width: 3em;
-        height: 4em;
-    }
-
-    .assembly:nth-child(7) .side:nth-child(1) {
-        transform: rotateY(0deg) translateZ(3.62132em);
-    }
-
-    .assembly:nth-child(7) .side:nth-child(1):before {
-        height: 3.62132em;
-    }
-
-    .assembly:nth-child(7) .side:nth-child(2) {
-        transform: rotateY(45deg) translateZ(3.62132em);
-    }
-
-    .assembly:nth-child(7) .side:nth-child(2):before {
-        height: 3.62132em;
-    }
-
-    .assembly:nth-child(7) .side:nth-child(3) {
-        transform: rotateY(90deg) translateZ(3.62132em);
-    }
-
-    .assembly:nth-child(7) .side:nth-child(3):before {
-        height: 3.62132em;
-    }
-
-    .assembly:nth-child(7) .side:nth-child(4) {
-        transform: rotateY(135deg) translateZ(3.62132em);
-    }
-
-    .assembly:nth-child(7) .side:nth-child(4):before {
-        height: 3.62132em;
-    }
-
-    .assembly:nth-child(7) .side:nth-child(5) {
-        transform: rotateY(180deg) translateZ(3.62132em);
-    }
-
-    .assembly:nth-child(7) .side:nth-child(5):before {
-        height: 3.62132em;
-    }
-
-    .assembly:nth-child(7) .side:nth-child(6) {
-        transform: rotateY(225deg) translateZ(3.62132em);
-    }
-
-    .assembly:nth-child(7) .side:nth-child(6):before {
-        height: 3.62132em;
-    }
-
-    .assembly:nth-child(7) .side:nth-child(7) {
-        transform: rotateY(270deg) translateZ(3.62132em);
-    }
-
-    .assembly:nth-child(7) .side:nth-child(7):before {
-        height: 3.62132em;
-    }
-
-    .assembly:nth-child(7) .side:nth-child(8) {
-        transform: rotateY(315deg) translateZ(3.62132em);
-    }
-
-    .assembly:nth-child(7) .side:nth-child(8):before {
-        height: 3.62132em;
-    }
-
-    .assembly:nth-child(8) {
-        z-index: -8;
-        transform: translate(0, -40em);
-        animation: slide8 1s ease-in-out infinite;
-    }
-
-    @keyframes slide8 {
-        to {
-            transform: translate(3em, -40em);
-        }
-    }
-
-    .assembly:nth-child(8) .roller {
-        transform: rotateY(20deg) translateZ(4.38571em) rotateY(-40deg);
-        animation: inherit;
-        animation-name: roll8a;
-    }
-
-    .assembly:nth-child(8) .roller:last-child {
-        z-index: -1;
-        margin: 0 12em;
-        transform: rotateY(-20deg) translateZ(-4.38571em) rotateY(-20deg);
-        animation-name: roll8b;
-    }
-
-    @keyframes roll8a {
-        to {
-            transform: rotateY(-20deg) translateZ(4.38571em) rotateY(-40deg);
-        }
-    }
-
-    @keyframes roll8b {
-        to {
-            transform: rotateY(20deg) translateZ(-4.38571em) rotateY(-20deg);
-        }
-    }
-
-    .assembly:nth-child(8) .side {
-        margin: -2em -1.5em;
-        width: 3em;
-        height: 4em;
-    }
-
-    .assembly:nth-child(8) .side:nth-child(1) {
-        transform: rotateY(0deg) translateZ(4.12122em);
-    }
-
-    .assembly:nth-child(8) .side:nth-child(1):before {
-        height: 4.12122em;
-    }
-
-    .assembly:nth-child(8) .side:nth-child(2) {
-        transform: rotateY(40deg) translateZ(4.12122em);
-    }
-
-    .assembly:nth-child(8) .side:nth-child(2):before {
-        height: 4.12122em;
-    }
-
-    .assembly:nth-child(8) .side:nth-child(3) {
-        transform: rotateY(80deg) translateZ(4.12122em);
-    }
-
-    .assembly:nth-child(8) .side:nth-child(3):before {
-        height: 4.12122em;
-    }
-
-    .assembly:nth-child(8) .side:nth-child(4) {
-        transform: rotateY(120deg) translateZ(4.12122em);
-    }
-
-    .assembly:nth-child(8) .side:nth-child(4):before {
-        height: 4.12122em;
-    }
-
-    .assembly:nth-child(8) .side:nth-child(5) {
-        transform: rotateY(160deg) translateZ(4.12122em);
-    }
-
-    .assembly:nth-child(8) .side:nth-child(5):before {
-        height: 4.12122em;
-    }
-
-    .assembly:nth-child(8) .side:nth-child(6) {
-        transform: rotateY(200deg) translateZ(4.12122em);
-    }
-
-    .assembly:nth-child(8) .side:nth-child(6):before {
-        height: 4.12122em;
-    }
-
-    .assembly:nth-child(8) .side:nth-child(7) {
-        transform: rotateY(240deg) translateZ(4.12122em);
-    }
-
-    .assembly:nth-child(8) .side:nth-child(7):before {
-        height: 4.12122em;
-    }
-
-    .assembly:nth-child(8) .side:nth-child(8) {
-        transform: rotateY(280deg) translateZ(4.12122em);
-    }
-
-    .assembly:nth-child(8) .side:nth-child(8):before {
-        height: 4.12122em;
-    }
-
-    .assembly:nth-child(8) .side:nth-child(9) {
-        transform: rotateY(320deg) translateZ(4.12122em);
-    }
-
-    .assembly:nth-child(8) .side:nth-child(9):before {
-        height: 4.12122em;
-    }
-
-    .assembly:nth-child(9) {
-        z-index: -9;
-        transform: translate(0, -45em);
-        animation: slide9 1s ease-in-out infinite;
-    }
-
-    @keyframes slide9 {
-        to {
-            transform: translate(3em, -45em);
-        }
-    }
-
-    .assembly:nth-child(9) .roller {
-        transform: rotateY(18deg) translateZ(4.8541em) rotateY(-54deg);
-        animation: inherit;
-        animation-name: roll9a;
-    }
-
-    .assembly:nth-child(9) .roller:last-child {
-        z-index: -1;
-        margin: 0 12em;
-        transform: rotateY(-18deg) translateZ(-4.8541em) rotateY(-18deg);
-        animation-name: roll9b;
-    }
-
-    @keyframes roll9a {
-        to {
-            transform: rotateY(-18deg) translateZ(4.8541em) rotateY(-54deg);
-        }
-    }
-
-    @keyframes roll9b {
-        to {
-            transform: rotateY(18deg) translateZ(-4.8541em) rotateY(-18deg);
-        }
-    }
-
-    .assembly:nth-child(9) .side {
-        margin: -2em -1.5em;
-        width: 3em;
-        height: 4em;
-    }
-
-    .assembly:nth-child(9) .side:nth-child(1) {
-        transform: rotateY(0deg) translateZ(4.61653em);
-    }
-
-    .assembly:nth-child(9) .side:nth-child(1):before {
-        height: 4.61653em;
-    }
-
-    .assembly:nth-child(9) .side:nth-child(2) {
-        transform: rotateY(36deg) translateZ(4.61653em);
-    }
-
-    .assembly:nth-child(9) .side:nth-child(2):before {
-        height: 4.61653em;
-    }
-
-    .assembly:nth-child(9) .side:nth-child(3) {
-        transform: rotateY(72deg) translateZ(4.61653em);
-    }
-
-    .assembly:nth-child(9) .side:nth-child(3):before {
-        height: 4.61653em;
-    }
-
-    .assembly:nth-child(9) .side:nth-child(4) {
-        transform: rotateY(108deg) translateZ(4.61653em);
-    }
-
-    .assembly:nth-child(9) .side:nth-child(4):before {
-        height: 4.61653em;
-    }
-
-    .assembly:nth-child(9) .side:nth-child(5) {
-        transform: rotateY(144deg) translateZ(4.61653em);
-    }
-
-    .assembly:nth-child(9) .side:nth-child(5):before {
-        height: 4.61653em;
-    }
-
-    .assembly:nth-child(9) .side:nth-child(6) {
-        transform: rotateY(180deg) translateZ(4.61653em);
-    }
-
-    .assembly:nth-child(9) .side:nth-child(6):before {
-        height: 4.61653em;
-    }
-
-    .assembly:nth-child(9) .side:nth-child(7) {
-        transform: rotateY(216deg) translateZ(4.61653em);
-    }
-
-    .assembly:nth-child(9) .side:nth-child(7):before {
-        height: 4.61653em;
-    }
-
-    .assembly:nth-child(9) .side:nth-child(8) {
-        transform: rotateY(252deg) translateZ(4.61653em);
-    }
-
-    .assembly:nth-child(9) .side:nth-child(8):before {
-        height: 4.61653em;
-    }
-
-    .assembly:nth-child(9) .side:nth-child(9) {
-        transform: rotateY(288deg) translateZ(4.61653em);
-    }
-
-    .assembly:nth-child(9) .side:nth-child(9):before {
-        height: 4.61653em;
-    }
-
-    .assembly:nth-child(9) .side:nth-child(10) {
-        transform: rotateY(324deg) translateZ(4.61653em);
-    }
-
-    .assembly:nth-child(9) .side:nth-child(10):before {
-        height: 4.61653em;
-    }
-
-    .assembly:nth-child(10) {
-        z-index: -10;
-        transform: translate(0, -50em);
-        animation: slide10 1s ease-in-out infinite;
-    }
-
-    @keyframes slide10 {
-        to {
-            transform: translate(3em, -50em);
-        }
-    }
-
-    .assembly:nth-child(10) .roller {
-        transform: rotateY(16.36364deg) translateZ(5.3242em) rotateY(-32.72727deg);
-        animation: inherit;
-        animation-name: roll10a;
-    }
-
-    .assembly:nth-child(10) .roller:last-child {
-        z-index: -1;
-        margin: 0 12em;
-        transform: rotateY(-16.36364deg) translateZ(-5.3242em) rotateY(-16.36364deg);
-        animation-name: roll10b;
-    }
-
-    @keyframes roll10a {
-        to {
-            transform: rotateY(-16.36364deg) translateZ(5.3242em) rotateY(-32.72727deg);
-        }
-    }
-
-    @keyframes roll10b {
-        to {
-            transform: rotateY(16.36364deg) translateZ(-5.3242em) rotateY(-16.36364deg);
-        }
-    }
-
-    .assembly:nth-child(10) .side {
-        margin: -2em -1.5em;
-        width: 3em;
-        height: 4em;
-    }
-
-    .assembly:nth-child(10) .side:nth-child(1) {
-        transform: rotateY(0deg) translateZ(5.10853em);
-    }
-
-    .assembly:nth-child(10) .side:nth-child(1):before {
-        height: 5.10853em;
-    }
-
-    .assembly:nth-child(10) .side:nth-child(2) {
-        transform: rotateY(32.72727deg) translateZ(5.10853em);
-    }
-
-    .assembly:nth-child(10) .side:nth-child(2):before {
-        height: 5.10853em;
-    }
-
-    .assembly:nth-child(10) .side:nth-child(3) {
-        transform: rotateY(65.45455deg) translateZ(5.10853em);
-    }
-
-    .assembly:nth-child(10) .side:nth-child(3):before {
-        height: 5.10853em;
-    }
-
-    .assembly:nth-child(10) .side:nth-child(4) {
-        transform: rotateY(98.18182deg) translateZ(5.10853em);
-    }
-
-    .assembly:nth-child(10) .side:nth-child(4):before {
-        height: 5.10853em;
-    }
-
-    .assembly:nth-child(10) .side:nth-child(5) {
-        transform: rotateY(130.90909deg) translateZ(5.10853em);
-    }
-
-    .assembly:nth-child(10) .side:nth-child(5):before {
-        height: 5.10853em;
-    }
-
-    .assembly:nth-child(10) .side:nth-child(6) {
-        transform: rotateY(163.63636deg) translateZ(5.10853em);
-    }
-
-    .assembly:nth-child(10) .side:nth-child(6):before {
-        height: 5.10853em;
-    }
-
-    .assembly:nth-child(10) .side:nth-child(7) {
-        transform: rotateY(196.36364deg) translateZ(5.10853em);
-    }
-
-    .assembly:nth-child(10) .side:nth-child(7):before {
-        height: 5.10853em;
-    }
-
-    .assembly:nth-child(10) .side:nth-child(8) {
-        transform: rotateY(229.09091deg) translateZ(5.10853em);
-    }
-
-    .assembly:nth-child(10) .side:nth-child(8):before {
-        height: 5.10853em;
-    }
-
-    .assembly:nth-child(10) .side:nth-child(9) {
-        transform: rotateY(261.81818deg) translateZ(5.10853em);
-    }
-
-    .assembly:nth-child(10) .side:nth-child(9):before {
-        height: 5.10853em;
-    }
-
-    .assembly:nth-child(10) .side:nth-child(10) {
-        transform: rotateY(294.54545deg) translateZ(5.10853em);
-    }
-
-    .assembly:nth-child(10) .side:nth-child(10):before {
-        height: 5.10853em;
-    }
-
-    .assembly:nth-child(10) .side:nth-child(11) {
-        transform: rotateY(327.27273deg) translateZ(5.10853em);
-    }
-
-    .assembly:nth-child(10) .side:nth-child(11):before {
-        height: 5.10853em;
-    }
-
-    .assembly:nth-child(11) {
-        z-index: -11;
-        transform: translate(0, -55em);
-        animation: slide11 1s ease-in-out infinite;
-    }
-
-    @keyframes slide11 {
-        to {
-            transform: translate(3em, -55em);
-        }
-    }
-
-    .assembly:nth-child(11) .roller {
-        transform: rotateY(15deg) translateZ(5.79555em) rotateY(-45deg);
-        animation: inherit;
-        animation-name: roll11a;
-    }
-
-    .assembly:nth-child(11) .roller:last-child {
-        z-index: -1;
-        margin: 0 12em;
-        transform: rotateY(-15deg) translateZ(-5.79555em) rotateY(-15deg);
-        animation-name: roll11b;
-    }
-
-    @keyframes roll11a {
-        to {
-            transform: rotateY(-15deg) translateZ(5.79555em) rotateY(-45deg);
-        }
-    }
-
-    @keyframes roll11b {
-        to {
-            transform: rotateY(15deg) translateZ(-5.79555em) rotateY(-15deg);
-        }
-    }
-
-    .assembly:nth-child(11) .side {
-        margin: -2em -1.5em;
-        width: 3em;
-        height: 4em;
-    }
-
-    .assembly:nth-child(11) .side:nth-child(1) {
-        transform: rotateY(0deg) translateZ(5.59808em);
-    }
-
-    .assembly:nth-child(11) .side:nth-child(1):before {
-        height: 5.59808em;
-    }
-
-    .assembly:nth-child(11) .side:nth-child(2) {
-        transform: rotateY(30deg) translateZ(5.59808em);
-    }
-
-    .assembly:nth-child(11) .side:nth-child(2):before {
-        height: 5.59808em;
-    }
-
-    .assembly:nth-child(11) .side:nth-child(3) {
-        transform: rotateY(60deg) translateZ(5.59808em);
-    }
-
-    .assembly:nth-child(11) .side:nth-child(3):before {
-        height: 5.59808em;
-    }
-
-    .assembly:nth-child(11) .side:nth-child(4) {
-        transform: rotateY(90deg) translateZ(5.59808em);
-    }
-
-    .assembly:nth-child(11) .side:nth-child(4):before {
-        height: 5.59808em;
-    }
-
-    .assembly:nth-child(11) .side:nth-child(5) {
-        transform: rotateY(120deg) translateZ(5.59808em);
-    }
-
-    .assembly:nth-child(11) .side:nth-child(5):before {
-        height: 5.59808em;
-    }
-
-    .assembly:nth-child(11) .side:nth-child(6) {
-        transform: rotateY(150deg) translateZ(5.59808em);
-    }
-
-    .assembly:nth-child(11) .side:nth-child(6):before {
-        height: 5.59808em;
-    }
-
-    .assembly:nth-child(11) .side:nth-child(7) {
-        transform: rotateY(180deg) translateZ(5.59808em);
-    }
-
-    .assembly:nth-child(11) .side:nth-child(7):before {
-        height: 5.59808em;
-    }
-
-    .assembly:nth-child(11) .side:nth-child(8) {
-        transform: rotateY(210deg) translateZ(5.59808em);
-    }
-
-    .assembly:nth-child(11) .side:nth-child(8):before {
-        height: 5.59808em;
-    }
-
-    .assembly:nth-child(11) .side:nth-child(9) {
-        transform: rotateY(240deg) translateZ(5.59808em);
-    }
-
-    .assembly:nth-child(11) .side:nth-child(9):before {
-        height: 5.59808em;
-    }
-
-    .assembly:nth-child(11) .side:nth-child(10) {
-        transform: rotateY(270deg) translateZ(5.59808em);
-    }
-
-    .assembly:nth-child(11) .side:nth-child(10):before {
-        height: 5.59808em;
-    }
-
-    .assembly:nth-child(11) .side:nth-child(11) {
-        transform: rotateY(300deg) translateZ(5.59808em);
-    }
-
-    .assembly:nth-child(11) .side:nth-child(11):before {
-        height: 5.59808em;
-    }
-
-    .assembly:nth-child(11) .side:nth-child(12) {
-        transform: rotateY(330deg) translateZ(5.59808em);
-    }
-
-    .assembly:nth-child(11) .side:nth-child(12):before {
-        height: 5.59808em;
-    }
-
-    .assembly:nth-child(12) {
-        z-index: -12;
-        transform: translate(0, -60em);
-        animation: slide12 1s ease-in-out infinite;
-    }
-
-    @keyframes slide12 {
-        to {
-            transform: translate(3em, -60em);
-        }
-    }
-
-    .assembly:nth-child(12) .roller {
-        transform: rotateY(13.84615deg) translateZ(6.26787em) rotateY(-27.69231deg);
-        animation: inherit;
-        animation-name: roll12a;
-    }
-
-    .assembly:nth-child(12) .roller:last-child {
-        z-index: -1;
-        margin: 0 12em;
-        transform: rotateY(-13.84615deg) translateZ(-6.26787em) rotateY(-13.84615deg);
-        animation-name: roll12b;
-    }
-
-    @keyframes roll12a {
-        to {
-            transform: rotateY(-13.84615deg) translateZ(6.26787em) rotateY(-27.69231deg);
-        }
-    }
-
-    @keyframes roll12b {
-        to {
-            transform: rotateY(13.84615deg) translateZ(-6.26787em) rotateY(-13.84615deg);
-        }
-    }
-
-    .assembly:nth-child(12) .side {
-        margin: -2em -1.5em;
-        width: 3em;
-        height: 4em;
-    }
-
-    .assembly:nth-child(12) .side:nth-child(1) {
-        transform: rotateY(0deg) translateZ(6.08574em);
-    }
-
-    .assembly:nth-child(12) .side:nth-child(1):before {
-        height: 6.08574em;
-    }
-
-    .assembly:nth-child(12) .side:nth-child(2) {
-        transform: rotateY(27.69231deg) translateZ(6.08574em);
-    }
-
-    .assembly:nth-child(12) .side:nth-child(2):before {
-        height: 6.08574em;
-    }
-
-    .assembly:nth-child(12) .side:nth-child(3) {
-        transform: rotateY(55.38462deg) translateZ(6.08574em);
-    }
-
-    .assembly:nth-child(12) .side:nth-child(3):before {
-        height: 6.08574em;
-    }
-
-    .assembly:nth-child(12) .side:nth-child(4) {
-        transform: rotateY(83.07692deg) translateZ(6.08574em);
-    }
-
-    .assembly:nth-child(12) .side:nth-child(4):before {
-        height: 6.08574em;
-    }
-
-    .assembly:nth-child(12) .side:nth-child(5) {
-        transform: rotateY(110.76923deg) translateZ(6.08574em);
-    }
-
-    .assembly:nth-child(12) .side:nth-child(5):before {
-        height: 6.08574em;
-    }
-
-    .assembly:nth-child(12) .side:nth-child(6) {
-        transform: rotateY(138.46154deg) translateZ(6.08574em);
-    }
-
-    .assembly:nth-child(12) .side:nth-child(6):before {
-        height: 6.08574em;
-    }
-
-    .assembly:nth-child(12) .side:nth-child(7) {
-        transform: rotateY(166.15385deg) translateZ(6.08574em);
-    }
-
-    .assembly:nth-child(12) .side:nth-child(7):before {
-        height: 6.08574em;
-    }
-
-    .assembly:nth-child(12) .side:nth-child(8) {
-        transform: rotateY(193.84615deg) translateZ(6.08574em);
-    }
-
-    .assembly:nth-child(12) .side:nth-child(8):before {
-        height: 6.08574em;
-    }
-
-    .assembly:nth-child(12) .side:nth-child(9) {
-        transform: rotateY(221.53846deg) translateZ(6.08574em);
-    }
-
-    .assembly:nth-child(12) .side:nth-child(9):before {
-        height: 6.08574em;
-    }
-
-    .assembly:nth-child(12) .side:nth-child(10) {
-        transform: rotateY(249.23077deg) translateZ(6.08574em);
-    }
-
-    .assembly:nth-child(12) .side:nth-child(10):before {
-        height: 6.08574em;
-    }
-
-    .assembly:nth-child(12) .side:nth-child(11) {
-        transform: rotateY(276.92308deg) translateZ(6.08574em);
-    }
-
-    .assembly:nth-child(12) .side:nth-child(11):before {
-        height: 6.08574em;
-    }
-
-    .assembly:nth-child(12) .side:nth-child(12) {
-        transform: rotateY(304.61538deg) translateZ(6.08574em);
-    }
-
-    .assembly:nth-child(12) .side:nth-child(12):before {
-        height: 6.08574em;
-    }
-
-    .assembly:nth-child(12) .side:nth-child(13) {
-        transform: rotateY(332.30769deg) translateZ(6.08574em);
-    }
-
-    .assembly:nth-child(12) .side:nth-child(13):before {
-        height: 6.08574em;
-    }
-
-    .assembly:nth-child(13) {
-        z-index: -13;
-        transform: translate(0, -65em);
-        animation: slide13 1s ease-in-out infinite;
-    }
-
-    @keyframes slide13 {
-        to {
-            transform: translate(3em, -65em);
-        }
-    }
-
-    .assembly:nth-child(13) .roller {
-        transform: rotateY(12.85714deg) translateZ(6.74094em) rotateY(-38.57143deg);
-        animation: inherit;
-        animation-name: roll13a;
-    }
-
-    .assembly:nth-child(13) .roller:last-child {
-        z-index: -1;
-        margin: 0 12em;
-        transform: rotateY(-12.85714deg) translateZ(-6.74094em) rotateY(-12.85714deg);
-        animation-name: roll13b;
-    }
-
-    @keyframes roll13a {
-        to {
-            transform: rotateY(-12.85714deg) translateZ(6.74094em) rotateY(-38.57143deg);
-        }
-    }
-
-    @keyframes roll13b {
-        to {
-            transform: rotateY(12.85714deg) translateZ(-6.74094em) rotateY(-12.85714deg);
-        }
-    }
-
-    .assembly:nth-child(13) .side {
-        margin: -2em -1.5em;
-        width: 3em;
-        height: 4em;
-    }
-
-    .assembly:nth-child(13) .side:nth-child(1) {
-        transform: rotateY(0deg) translateZ(6.57193em);
-    }
-
-    .assembly:nth-child(13) .side:nth-child(1):before {
-        height: 6.57193em;
-    }
-
-    .assembly:nth-child(13) .side:nth-child(2) {
-        transform: rotateY(25.71429deg) translateZ(6.57193em);
-    }
-
-    .assembly:nth-child(13) .side:nth-child(2):before {
-        height: 6.57193em;
-    }
-
-    .assembly:nth-child(13) .side:nth-child(3) {
-        transform: rotateY(51.42857deg) translateZ(6.57193em);
-    }
-
-    .assembly:nth-child(13) .side:nth-child(3):before {
-        height: 6.57193em;
-    }
-
-    .assembly:nth-child(13) .side:nth-child(4) {
-        transform: rotateY(77.14286deg) translateZ(6.57193em);
-    }
-
-    .assembly:nth-child(13) .side:nth-child(4):before {
-        height: 6.57193em;
-    }
-
-    .assembly:nth-child(13) .side:nth-child(5) {
-        transform: rotateY(102.85714deg) translateZ(6.57193em);
-    }
-
-    .assembly:nth-child(13) .side:nth-child(5):before {
-        height: 6.57193em;
-    }
-
-    .assembly:nth-child(13) .side:nth-child(6) {
-        transform: rotateY(128.57143deg) translateZ(6.57193em);
-    }
-
-    .assembly:nth-child(13) .side:nth-child(6):before {
-        height: 6.57193em;
-    }
-
-    .assembly:nth-child(13) .side:nth-child(7) {
-        transform: rotateY(154.28571deg) translateZ(6.57193em);
-    }
-
-    .assembly:nth-child(13) .side:nth-child(7):before {
-        height: 6.57193em;
-    }
-
-    .assembly:nth-child(13) .side:nth-child(8) {
-        transform: rotateY(180deg) translateZ(6.57193em);
-    }
-
-    .assembly:nth-child(13) .side:nth-child(8):before {
-        height: 6.57193em;
-    }
-
-    .assembly:nth-child(13) .side:nth-child(9) {
-        transform: rotateY(205.71429deg) translateZ(6.57193em);
-    }
-
-    .assembly:nth-child(13) .side:nth-child(9):before {
-        height: 6.57193em;
-    }
-
-    .assembly:nth-child(13) .side:nth-child(10) {
-        transform: rotateY(231.42857deg) translateZ(6.57193em);
-    }
-
-    .assembly:nth-child(13) .side:nth-child(10):before {
-        height: 6.57193em;
-    }
-
-    .assembly:nth-child(13) .side:nth-child(11) {
-        transform: rotateY(257.14286deg) translateZ(6.57193em);
-    }
-
-    .assembly:nth-child(13) .side:nth-child(11):before {
-        height: 6.57193em;
-    }
-
-    .assembly:nth-child(13) .side:nth-child(12) {
-        transform: rotateY(282.85714deg) translateZ(6.57193em);
-    }
-
-    .assembly:nth-child(13) .side:nth-child(12):before {
-        height: 6.57193em;
-    }
-
-    .assembly:nth-child(13) .side:nth-child(13) {
-        transform: rotateY(308.57143deg) translateZ(6.57193em);
-    }
-
-    .assembly:nth-child(13) .side:nth-child(13):before {
-        height: 6.57193em;
-    }
-
-    .assembly:nth-child(13) .side:nth-child(14) {
-        transform: rotateY(334.28571deg) translateZ(6.57193em);
-    }
-
-    .assembly:nth-child(13) .side:nth-child(14):before {
-        height: 6.57193em;
-    }
-
-    .assembly:nth-child(14) {
-        z-index: -14;
-        transform: translate(0, -70em);
-        animation: slide14 1s ease-in-out infinite;
-    }
-
-    @keyframes slide14 {
-        to {
-            transform: translate(3em, -70em);
-        }
-    }
-
-    .assembly:nth-child(14) .roller {
-        transform: rotateY(12deg) translateZ(7.2146em) rotateY(-24deg);
-        animation: inherit;
-        animation-name: roll14a;
-    }
-
-    .assembly:nth-child(14) .roller:last-child {
-        z-index: -1;
-        margin: 0 12em;
-        transform: rotateY(-12deg) translateZ(-7.2146em) rotateY(-12deg);
-        animation-name: roll14b;
-    }
-
-    @keyframes roll14a {
-        to {
-            transform: rotateY(-12deg) translateZ(7.2146em) rotateY(-24deg);
-        }
-    }
-
-    @keyframes roll14b {
-        to {
-            transform: rotateY(12deg) translateZ(-7.2146em) rotateY(-12deg);
-        }
-    }
-
-    .assembly:nth-child(14) .side {
-        margin: -2em -1.5em;
-        width: 3em;
-        height: 4em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(1) {
-        transform: rotateY(0deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(1):before {
-        height: 7.05695em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(2) {
-        transform: rotateY(24deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(2):before {
-        height: 7.05695em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(3) {
-        transform: rotateY(48deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(3):before {
-        height: 7.05695em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(4) {
-        transform: rotateY(72deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(4):before {
-        height: 7.05695em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(5) {
-        transform: rotateY(96deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(5):before {
-        height: 7.05695em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(6) {
-        transform: rotateY(120deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(6):before {
-        height: 7.05695em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(7) {
-        transform: rotateY(144deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(7):before {
-        height: 7.05695em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(8) {
-        transform: rotateY(168deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(8):before {
-        height: 7.05695em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(9) {
-        transform: rotateY(192deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(9):before {
-        height: 7.05695em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(10) {
-        transform: rotateY(216deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(10):before {
-        height: 7.05695em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(11) {
-        transform: rotateY(240deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(11):before {
-        height: 7.05695em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(12) {
-        transform: rotateY(264deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(12):before {
-        height: 7.05695em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(13) {
-        transform: rotateY(288deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(13):before {
-        height: 7.05695em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(14) {
-        transform: rotateY(312deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(14):before {
-        height: 7.05695em;
-    }
-
-    .assembly:nth-child(14) .side:nth-child(15) {
-        transform: rotateY(336deg) translateZ(7.05695em);
-    }
-
-    .assembly:nth-child(14) .side:nth-child(15):before {
-        height: 7.05695em;
-    }
-
-    .strip {
-        margin: -2em -1px;
-        width: 12em;
-        height: 4em;
-        border: solid 0.125em cyan;
-        background: linear-gradient(90deg, #00ffff 0.125em, rgba(0, 0, 0, 0) 0%) black;
-        background-size: 3em 100%;
-    }
-
-    .side:before,
-    .side:after {
-        box-sizing: border-box;
-        position: absolute;
-        left: 0;
-        width: inherit;
-        backface-visibility: hidden;
-        content: '';
-    }
-
-    .side:before {
-        top: 100%;
-        height: .125em;
-        transform-origin: 50% 0;
-        transform: rotateX(-90deg);
-        border-top: solid 0.125em cyan;
-        background: black;
-    }
-
-    .side:after {
-        height: inherit;
-        border: solid 0.125em cyan;
-        background: black;
-    }
-</style>
-<div class='scene'>
-    <div class='assembly'>
-        <div class='strip'></div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-    </div>
-    <div class='assembly'>
-        <div class='strip'></div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-    </div>
-    <div class='assembly'>
-        <div class='strip'></div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-    </div>
-    <div class='assembly'>
-        <div class='strip'></div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-    </div>
-    <div class='assembly'>
-        <div class='strip'></div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-    </div>
-    <div class='assembly'>
-        <div class='strip'></div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-    </div>
-    <div class='assembly'>
-        <div class='strip'></div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-    </div>
-    <div class='assembly'>
-        <div class='strip'></div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-    </div>
-    <div class='assembly'>
-        <div class='strip'></div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-    </div>
-    <div class='assembly'>
-        <div class='strip'></div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-    </div>
-    <div class='assembly'>
-        <div class='strip'></div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-    </div>
-    <div class='assembly'>
-        <div class='strip'></div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-    </div>
-    <div class='assembly'>
-        <div class='strip'></div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-    </div>
-    <div class='assembly'>
-        <div class='strip'></div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-        <div class='roller'>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-            <div class='side'></div>
-        </div>
-    </div>
-</div>
+      }
+    }
+
+    function display_intro_instructions() {
+      ctx.save();
+      ctx.font = 'bold 26px sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 4;
+      ctx.textAlign = 'center';
+      ctx.strokeText('Press, touch or click to start', myCanvas.width / 2, myCanvas.height / 3);
+      ctx.fillText('Press, touch or click to start', myCanvas.width / 2, myCanvas.height / 3);
+      ctx.restore();
+    }
+
+    function display_game_over() {
+      var score = 0;
+      for (var i = 0; i < pipes.length; i++) {
+        if (pipes[i].x < bird.x) score = score + 0.5;
+      }
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.lineWidth = 4;
+
+      ctx.font = 'bold 36px sans-serif';
+      ctx.fillStyle = '#e63946';
+      ctx.strokeStyle = '#000000';
+      ctx.strokeText('Game Over', myCanvas.width / 2, 120);
+      ctx.fillText('Game Over', myCanvas.width / 2, 120);
+
+      ctx.font = 'bold 28px sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeText('Score: ' + Math.floor(score), myCanvas.width / 2, 180);
+      ctx.fillText('Score: ' + Math.floor(score), myCanvas.width / 2, 180);
+
+      ctx.font = '20px sans-serif';
+      ctx.strokeText('Click, touch, or press Space to play again', myCanvas.width / 2, 280);
+      ctx.fillText('Click, touch, or press Space to play again', myCanvas.width / 2, 280);
+      ctx.restore();
+    }
+
+    function display_current_score() {
+      var score = 0;
+      for (var i = 0; i < pipes.length; i++) {
+        if (pipes[i].x < bird.x) score = score + 0.5;
+      }
+      ctx.save();
+      ctx.font = 'bold 30px sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 4;
+      ctx.textAlign = 'center';
+      ctx.strokeText('' + Math.floor(score), myCanvas.width / 2, 50);
+      ctx.fillText('' + Math.floor(score), myCanvas.width / 2, 50);
+      ctx.restore();
+    }
+
+    function display_bar_running_along_bottom() {
+      if (bottom_bar_offset < -23) bottom_bar_offset = 0;
+      if (bottom_bar.complete) {
+        ctx.drawImage(
+          bottom_bar,
+          bottom_bar_offset,
+          myCanvas.height - bottom_bar.height
+        );
+      }
+    }
+
+    function reset_game() {
+      bird.y = myCanvas.height / 2;
+      bird.velocity_y = 0;
+      bird.angle = 0;
+      pipes = [];
+      add_all_my_pipes();
+    }
+
+    function add_all_my_pipes() {
+      add_pipe(500, 100, 140);
+      add_pipe(800, 50, 140);
+      add_pipe(1000, 250, 140);
+      add_pipe(1200, 150, 120);
+      add_pipe(1600, 100, 120);
+      add_pipe(1800, 150, 120);
+      add_pipe(2000, 200, 120);
+      add_pipe(2200, 250, 120);
+      add_pipe(2400, 30, 100);
+      add_pipe(2700, 300, 100);
+      add_pipe(3000, 100, 80);
+      add_pipe(3300, 250, 80);
+      add_pipe(3600, 50, 60);
+
+      var finish_line = new MySprite(SPRITES.end);
+      finish_line.x = 3900;
+      finish_line.velocity_x = pipe_speed;
+      pipes.push(finish_line);
+    }
+
+    var pipe_piece = new Image();
+    pipe_piece.onload = function() {
+      if (pipes.length === 0) add_all_my_pipes();
+    };
+    pipe_piece.src = SPRITES.pipe;
+    if (pipe_piece.complete && pipes.length === 0) {
+      add_all_my_pipes();
+    }
+
+    var bottom_bar = new Image();
+    bottom_bar.src = SPRITES.bottom;
+
+    var bird = new MySprite(SPRITES.bird);
+    bird.x = myCanvas.width / 3;
+    bird.y = myCanvas.height / 2;
+
+    function Do_a_Frame() {
+      ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
+      bird.Do_Frame_Things();
+      display_bar_running_along_bottom();
+      switch (game_mode) {
+        case 'prestart':
+          display_intro_instructions();
+          break;
+        case 'running':
+          time_game_last_running = Date.now();
+          bottom_bar_offset = bottom_bar_offset + pipe_speed;
+          show_the_pipes();
+          make_bird_tilt_appropriately();
+          make_bird_slow_and_fall();
+          check_for_end_game();
+          display_current_score();
+          break;
+        case 'over':
+          make_bird_slow_and_fall();
+          display_game_over();
+          break;
+      }
+    }
+
+    setInterval(Do_a_Frame, 1000 / FPS);
+  </script>
+</body>
+</html>
