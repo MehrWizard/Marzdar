@@ -39,16 +39,32 @@ class XRayCore:
             return m.groups()[0]
 
     def get_x25519(self, private_key: str = None):
+        if private_key:
+            try:
+                from app.utils.crypto import get_x25519_public_key
+                return {
+                    "private_key": private_key,
+                    "public_key": get_x25519_public_key(private_key)
+                }
+            except Exception:
+                pass
+        else:
+            try:
+                from app.utils.crypto import generate_x25519_keypair
+                return generate_x25519_keypair()
+            except Exception:
+                pass
+
         cmd = [self.executable_path, "x25519"]
         if private_key:
             cmd.extend(['-i', private_key])
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8')
-        m = re.match(r'Private key: (.+)\nPublic key: (.+)', output)
-        if m:
-            private, public = m.groups()
+        priv = re.search(r'Private\s*key:\s*([^\s\r\n]+)', output, re.IGNORECASE)
+        pub = re.search(r'(?:Password\s*\()?[Pp]ublic\s*key\)?:\s*([^\s\r\n]+)', output, re.IGNORECASE)
+        if priv and pub:
             return {
-                "private_key": private,
-                "public_key": public
+                "private_key": priv.group(1),
+                "public_key": pub.group(1)
             }
 
     def __capture_process_logs(self):

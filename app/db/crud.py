@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
-from sqlalchemy import and_, delete, func, or_
+from sqlalchemy import and_, case, delete, func, or_
 from sqlalchemy.orm import Query, Session, joinedload
 from sqlalchemy.sql.functions import coalesce
 
@@ -321,15 +321,26 @@ def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -
             used_traffic=0
         )
 
-    cond = and_(NodeUserUsage.user_id == dbuser.id,
-                NodeUserUsage.created_at >= start,
-                NodeUserUsage.created_at <= end)
+    cond = and_(
+        NodeUserUsage.user_id == dbuser.id,
+        NodeUserUsage.created_at >= start,
+        NodeUserUsage.created_at <= end,
+    )
 
-    for v in db.query(NodeUserUsage).filter(cond):
-        try:
-            usages[v.node_id or 0].used_traffic += v.used_traffic
-        except KeyError:
-            pass
+    results = (
+        db.query(
+            NodeUserUsage.node_id,
+            func.coalesce(func.sum(NodeUserUsage.used_traffic), 0),
+        )
+        .filter(cond)
+        .group_by(NodeUserUsage.node_id)
+        .all()
+    )
+
+    for node_id, total_used in results:
+        target_id = node_id or 0
+        if target_id in usages:
+            usages[target_id].used_traffic = int(total_used)
 
     return list(usages.values())
 
@@ -352,6 +363,16 @@ def get_users_count(db: Session, status: UserStatus = None, admin: Admin = None)
     if status:
         query = query.filter(User.status == status)
     return query.count()
+
+
+def get_users_status_counts(db: Session, admin: Admin = None) -> Dict[str, int]:
+    """
+    Retrieves a dictionary of user counts grouped by status.
+    """
+    query = db.query(User.status, func.count(User.id))
+    if admin:
+        query = query.filter(User.admin == admin)
+    return dict(query.group_by(User.status).all())
 
 
 def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
@@ -515,15 +536,18 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     if modify.on_hold_expire_duration is not None:
         dbuser.on_hold_expire_duration = modify.on_hold_expire_duration
 
-    if modify.next_plan is not None:
-        dbuser.next_plan = NextPlan(
-            data_limit=modify.next_plan.data_limit,
-            expire=modify.next_plan.expire,
-            add_remaining_traffic=modify.next_plan.add_remaining_traffic,
-            fire_on_either=modify.next_plan.fire_on_either,
-        )
-    elif dbuser.next_plan is not None:
-        db.delete(dbuser.next_plan)
+    fields_set = getattr(modify, "model_fields_set", getattr(modify, "__fields_set__", set()))
+    if "next_plan" in fields_set:
+        if modify.next_plan is not None:
+            dbuser.next_plan = NextPlan(
+                data_limit=modify.next_plan.data_limit,
+                expire=modify.next_plan.expire,
+                add_remaining_traffic=modify.next_plan.add_remaining_traffic,
+                fire_on_either=modify.next_plan.fire_on_either,
+            )
+        elif dbuser.next_plan is not None:
+            db.delete(dbuser.next_plan)
+            dbuser.next_plan = None
 
     dbuser.edit_at = datetime.utcnow()
 
@@ -588,9 +612,18 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
     dbuser.node_usages.clear()
     dbuser.status = UserStatus.active.value
 
-    dbuser.data_limit = dbuser.next_plan.data_limit + \
-        (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
-    dbuser.expire = dbuser.next_plan.expire
+    remaining_traffic = (
+        max(0, (dbuser.data_limit or 0) - (dbuser.used_traffic or 0))
+        if dbuser.next_plan.add_remaining_traffic
+        else 0
+    )
+    if dbuser.next_plan.expire:
+        if dbuser.next_plan.expire < 1000000000:
+            dbuser.expire = int(datetime.utcnow().timestamp()) + dbuser.next_plan.expire
+        else:
+            dbuser.expire = dbuser.next_plan.expire
+    else:
+        dbuser.expire = None
 
     dbuser.used_traffic = 0
     db.delete(dbuser.next_plan)
@@ -788,19 +821,32 @@ def get_all_users_usages(
             used_traffic=0
         )
 
-    admin_users = set(user.id for user in get_users(db=db, admins=admin))
-
-    cond = and_(
+    filters = [
         NodeUserUsage.created_at >= start,
         NodeUserUsage.created_at <= end,
-        NodeUserUsage.user_id.in_(admin_users)
+    ]
+
+    if admin:
+        admin_ids = [a.id for a in db.query(Admin.id).filter(Admin.username.in_(admin)).all()]
+        if admin_ids:
+            user_ids_subquery = db.query(User.id).filter(User.admin_id.in_(admin_ids))
+            filters.append(NodeUserUsage.user_id.in_(user_ids_subquery))
+        else:
+            return list(usages.values())
+
+    query = (
+        db.query(
+            NodeUserUsage.node_id,
+            func.coalesce(func.sum(NodeUserUsage.used_traffic), 0),
+        )
+        .filter(and_(*filters))
+        .group_by(NodeUserUsage.node_id)
     )
 
-    for v in db.query(NodeUserUsage).filter(cond):
-        try:
-            usages[v.node_id or 0].used_traffic += v.used_traffic
-        except KeyError:
-            pass
+    for node_id, total_used in query.all():
+        target_id = node_id or 0
+        if target_id in usages:
+            usages[target_id].used_traffic = int(total_used)
 
     return list(usages.values())
 
@@ -913,6 +959,7 @@ def get_admin(db: Session, username: str) -> Admin:
         Admin: The admin object.
     """
     return db.query(Admin).filter(Admin.username == username).first()
+
 
 
 def create_admin(db: Session, admin: AdminCreate) -> Admin:
@@ -1060,7 +1107,25 @@ def get_admins(db: Session,
         query = query.offset(offset)
     if limit:
         query = query.limit(limit)
-    return query.all()
+    admins = query.all()
+
+    stats_rows = (
+        db.query(
+            User.admin_id,
+            func.count(User.id),
+            coalesce(func.sum(case((User.status == UserStatus.active, 1), else_=0)), 0),
+        )
+        .filter(User.admin_id.isnot(None))
+        .group_by(User.admin_id)
+        .all()
+    )
+    stats = {row[0]: (row[1], int(row[2])) for row in stats_rows}
+    for admin in admins:
+        admin_stat = stats.get(admin.id, (0, 0))
+        admin.users_count = admin_stat[0]
+        admin.active_users_count = admin_stat[1]
+
+    return admins
 
 
 def reset_admin_usage(db: Session, dbadmin: Admin) -> int:
@@ -1283,12 +1348,22 @@ def get_nodes_usage(db: Session, start: datetime, end: datetime) -> List[NodeUsa
 
     cond = and_(NodeUsage.created_at >= start, NodeUsage.created_at <= end)
 
-    for v in db.query(NodeUsage).filter(cond):
-        try:
-            usages[v.node_id or 0].uplink += v.uplink
-            usages[v.node_id or 0].downlink += v.downlink
-        except KeyError:
-            pass
+    results = (
+        db.query(
+            NodeUsage.node_id,
+            func.coalesce(func.sum(NodeUsage.uplink), 0),
+            func.coalesce(func.sum(NodeUsage.downlink), 0),
+        )
+        .filter(cond)
+        .group_by(NodeUsage.node_id)
+        .all()
+    )
+
+    for node_id, total_up, total_down in results:
+        target_id = node_id or 0
+        if target_id in usages:
+            usages[target_id].uplink = int(total_up)
+            usages[target_id].downlink = int(total_down)
 
     return list(usages.values())
 
@@ -1493,8 +1568,17 @@ def delete_notification_reminder(db: Session, dbreminder: NotificationReminder) 
     return
 
 
-def count_online_users(db: Session, hours: int = 24):
-    twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=hours)
-    query = db.query(func.count(User.id)).filter(User.online_at.isnot(
-        None), User.online_at >= twenty_four_hours_ago)
+def count_online_users(db: Session, seconds: int = 60, hours: Optional[Union[int, float]] = None, admin: Optional[Admin] = None):
+    if hours is not None:
+        delta = timedelta(hours=hours)
+    else:
+        delta = timedelta(seconds=seconds)
+    recent_time = datetime.utcnow() - delta
+    query = db.query(func.count(User.id)).filter(
+        User.online_at.isnot(None),
+        User.online_at >= recent_time
+    )
+    if admin:
+        query = query.filter(User.admin_id == admin.id)
     return query.scalar()
+

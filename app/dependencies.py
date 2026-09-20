@@ -1,7 +1,8 @@
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 from app.models.admin import AdminInDB, AdminValidationResult, Admin
 from app.models.user import UserResponse, UserStatus
 from app.db import Session, crud, get_db
+from app.db.models import User
 from config import SUDOERS
 from fastapi import Depends, HTTPException
 from datetime import datetime, timezone, timedelta
@@ -40,18 +41,39 @@ def validate_dates(start: Optional[Union[str, datetime]], end: Optional[Union[st
     """Validate if start and end dates are correct and if end is after start."""
     try:
         if start:
-            start_date = start if isinstance(start, datetime) else datetime.fromisoformat(
-                start).astimezone(timezone.utc)
+            if isinstance(start, datetime):
+                start_date = start.replace(tzinfo=timezone.utc) if start.tzinfo is None else start.astimezone(timezone.utc)
+            else:
+                dt = datetime.fromisoformat(start)
+                start_date = dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt.astimezone(timezone.utc)
         else:
             start_date = datetime.now(timezone.utc) - timedelta(days=30)
         if end:
-            end_date = end if isinstance(end, datetime) else datetime.fromisoformat(end).astimezone(timezone.utc)
+            if isinstance(end, datetime):
+                end_date = end.replace(tzinfo=timezone.utc) if end.tzinfo is None else end.astimezone(timezone.utc)
+            else:
+                dt = datetime.fromisoformat(end)
+                end_date = dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt.astimezone(timezone.utc)
             if start_date and end_date < start_date:
                 raise HTTPException(status_code=400, detail="Start date must be before end date")
         else:
             end_date = datetime.now(timezone.utc)
 
         return start_date, end_date
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date range or format")
+
+
+def validate_expired_dates(after: Optional[datetime], before: Optional[datetime]) -> Tuple[Optional[datetime], Optional[datetime]]:
+    """Validate expired_after and expired_before dates ensuring UTC awareness without enforcing 30-day default."""
+    try:
+        if after:
+            after = after.replace(tzinfo=timezone.utc) if after.tzinfo is None else after.astimezone(timezone.utc)
+        if before:
+            before = before.replace(tzinfo=timezone.utc) if before.tzinfo is None else before.astimezone(timezone.utc)
+        if after and before and before < after:
+            raise HTTPException(status_code=400, detail="Start date must be before end date")
+        return after, before
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date range or format")
 
@@ -96,20 +118,19 @@ def get_validated_user(
 
     return dbuser
 
-
 def get_expired_users_list(db: Session, admin: Admin, expired_after: Optional[datetime] = None,
                            expired_before: Optional[datetime] = None):
     expired_before = expired_before or datetime.now(timezone.utc)
     expired_after = expired_after or datetime.min.replace(tzinfo=timezone.utc)
 
     dbadmin = crud.get_admin(db, admin.username)
-    dbusers = crud.get_users(
-        db=db,
-        status=[UserStatus.expired, UserStatus.limited],
-        admin=dbadmin if not admin.is_sudo else None
+    query = db.query(User).filter(
+        User.status.in_([UserStatus.expired, UserStatus.limited]),
+        User.expire.isnot(None),
+        User.expire >= int(expired_after.timestamp()),
+        User.expire <= int(expired_before.timestamp()),
     )
+    if not admin.is_sudo and dbadmin:
+        query = query.filter(User.admin_id == dbadmin.id)
 
-    return [
-        u for u in dbusers
-        if u.expire and expired_after.timestamp() <= u.expire <= expired_before.timestamp()
-    ]
+    return query.all()

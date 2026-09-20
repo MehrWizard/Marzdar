@@ -1,3 +1,6 @@
+import time
+
+
 class MemoryStorage:
     def __init__(self):
         self._data = {}
@@ -16,72 +19,72 @@ class MemoryStorage:
 
 
 class ListStorage(list):
-    def __init__(self, update_func):
+    def __init__(self, update_func, ttl: float = 30.0):
         super().__init__()
         self.update_func = update_func
+        self.ttl = ttl
+        self.last_update = 0.0
 
-    def __getitem__(self, index):
-        if not self:
+    def _check_and_update(self):
+        if not self or (self.ttl and (time.time() - self.last_update > self.ttl)):
             self.update()
 
+    def __getitem__(self, index):
+        self._check_and_update()
         return super().__getitem__(index)
 
     def __iter__(self):
-        if not self:
-            self.update()
-
+        self._check_and_update()
         return super().__iter__()
 
     def __str__(self):
-        if not self:
-            self.update()
-
+        self._check_and_update()
         return super().__str__()
 
     def update(self):
         self.update_func(self)
+        self.last_update = time.time()
 
 
 class DictStorage(dict):
-    def __init__(self, update_func):
+    def __init__(self, update_func, ttl: float = 30.0):
         super().__init__()
         self.update_func = update_func
+        self.ttl = ttl
+        self.last_update = 0.0
 
-    def __getitem__(self, key):
-        if not self:
+    def _check_and_update(self):
+        if not self or (self.ttl and (time.time() - self.last_update > self.ttl)):
             self.update()
 
+    def __getitem__(self, key):
+        self._check_and_update()
         return super().__getitem__(key)
 
     def __iter__(self):
-        if not self:
-            self.update()
-
+        self._check_and_update()
         return super().__iter__()
 
     def __str__(self):
-        if not self:
-            self.update()
-
+        self._check_and_update()
         return super().__str__()
 
     def values(self):
-        if not self:
-            self.update()
-
+        self._check_and_update()
         return super().values()
 
     def keys(self):
-        if not self:
-            self.update()
-
+        self._check_and_update()
         return super().keys()
 
-    def get(self, key, default=None):
-        if not self:
-            self.update()
+    def items(self):
+        self._check_and_update()
+        return super().items()
 
+    def get(self, key, default=None):
+        self._check_and_update()
         return super().get(key, default)
 
     def update(self):
         self.update_func(self)
+        self.last_update = time.time()
