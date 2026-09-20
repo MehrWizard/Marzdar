@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   build-dev:
@@ -46,17 +45,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set lower case repository owner
-        run: |
-          echo "REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -65,4 +53,3 @@ jobs:
           push: true
           tags: |
             mehrwizard/marzdar:${{ github.ref_name }}
-            ghcr.io/${{ env.REPO_OWNER }}/marzdar:${{ github.ref_name }}
