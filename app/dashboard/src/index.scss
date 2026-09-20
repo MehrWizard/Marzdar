@@ -1,4 +1,60 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+html, body {
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease;
+}
+
+body {
+  position: relative;
+  min-height: 100vh;
+
+  &::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.4s ease;
+  }
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+html.chakra-ui-light body::before,
+html[data-theme="light"] body::before {
+  background: radial-gradient(
+    ellipse 80% 50% at 50% -20%,
+    rgba(var(--chakra-colors-primary-500-rgb), 0.12),
+    transparent 70%
+  );
+  opacity: 0.8;
+}
+
+html.chakra-ui-dark body::before,
+html[data-theme="dark"] body::before {
+  background: radial-gradient(
+    ellipse 80% 50% at 50% -20%,
+    rgba(var(--chakra-colors-primary-500-rgb), 0.15),
+    transparent 75%
+  );
+  opacity: 0.9;
+}
+
+html.theme-black body::before,
+html[data-theme-mode="black"] body::before,
+body.theme-black::before {
+  background: radial-gradient(
+    ellipse 80% 50% at 50% -20%,
+    rgba(var(--chakra-colors-primary-500-rgb), 0.16),
+    transparent 70%
+  );
+  opacity: 1;
+}
 
 .bg-blue-animate {
   animation: blur-animate 200ms ease-in;
@@ -224,15 +280,14 @@ table thead {
   min-width: 10px;
   min-height: 10px;
   border-radius: 50%;
-
-  box-shadow: 0px 0px 1px 1px #0000001a;
+  flex-shrink: 0;
 }
 
 .pulse {
   animation: pulse-animation 3s infinite;
 }
 .pulse.green {
-  animation: green-pulse-animation 3s infinite;
+  animation: green-pulse-animation 2.5s infinite;
 }
 .pulse.red{
   animation: red-pulse-animation 3s infinite;
@@ -252,11 +307,11 @@ table thead {
 }
 @keyframes green-pulse-animation {
   0% {
-    box-shadow: 0 0 0 0px #66ff9975;
+    box-shadow: 0 0 0 0px rgba(34, 197, 94, 0.7);
   }
 
   100% {
-    box-shadow: 0 0 0 10px #66ff9900;
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
   }
 }
 @keyframes red-pulse-animation {
@@ -283,4 +338,230 @@ table thead {
   align-items: center;
   justify-content: start;
   gap: .7rem;
+}
+
+:root {
+  --theme-menu-bg: #ffffff;
+  --theme-card-bg: #ffffff;
+  --theme-card-border: #e2e8f0;
+  --theme-card-hover-border: var(--chakra-colors-primary-400);
+  --theme-subtle-bg: #f8fafc;
+  --theme-table-th-bg: #f8fafc;
+  --theme-table-th-border: #e2e8f0;
+  --theme-table-tr-hover: #f1f5f9;
+}
+
+.chakra-ui-dark {
+  --theme-menu-bg: #1a202c;
+  --theme-card-bg: #1f293d;
+  --theme-card-border: #2e3d5b;
+  --theme-card-hover-border: var(--chakra-colors-primary-400);
+  --theme-subtle-bg: #182236;
+  --theme-table-th-bg: #182236;
+  --theme-table-th-border: #2e3d5b;
+  --theme-table-tr-hover: #22304e;
+}
+
+// Global Cards & Surfaces styling
+.chakra-card,
+[class*="chakra-card"] {
+  background-color: var(--theme-card-bg) !important;
+  border-color: var(--theme-card-border) !important;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+// Table styling
+table thead th,
+.chakra-table thead th {
+  background-color: var(--theme-table-th-bg) !important;
+  border-color: var(--theme-table-th-border) !important;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease !important;
+}
+
+table td,
+.chakra-table td {
+  border-color: var(--theme-table-th-border) !important;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease !important;
+}
+
+table tr.interactive:hover > td,
+.chakra-table tr.interactive:hover > td {
+  background-color: var(--theme-table-tr-hover) !important;
+}
+
+// Protocol & host cards
+.protocol-card,
+.host-config-card {
+  border-color: var(--theme-card-border) !important;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease !important;
+}
+
+// Black (AMOLED / OLED) Theme
+html[data-theme-mode="black"],
+body[data-theme-mode="black"],
+html.theme-black,
+body.theme-black {
+  color-scheme: dark !important;
+  --theme-menu-bg: #0c0c0e !important;
+
+  --chakra-colors-chakra-body-bg: #000000 !important;
+  --chakra-colors-chakra-border-color: #262626 !important;
+  --chakra-colors-chakra-subtle-bg: #09090b !important;
+
+  --chakra-colors-gray-900: #050505 !important;
+  --chakra-colors-gray-850: #08080a !important;
+  --chakra-colors-gray-800: #09090b !important;
+  --chakra-colors-gray-750: #0f0f12 !important;
+  --chakra-colors-gray-700: #141416 !important;
+  --chakra-colors-gray-600: #262626 !important;
+  --chakra-colors-gray-500: #52525b !important;
+  --chakra-colors-whiteAlpha-50: rgba(255, 255, 255, 0.03) !important;
+  --chakra-colors-whiteAlpha-100: rgba(255, 255, 255, 0.06) !important;
+  --chakra-colors-whiteAlpha-200: rgba(255, 255, 255, 0.1) !important;
+  --chakra-colors-whiteAlpha-300: rgba(255, 255, 255, 0.15) !important;
+
+  background-color: #000000 !important;
+
+  &, body {
+    background-color: #000000 !important;
+  }
+
+  // Modals & Dialogs
+  .chakra-modal__content {
+    background-color: #0c0c0e !important;
+    border: 1px solid #262626 !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.95) !important;
+  }
+
+  // Menus & Dropdowns
+  .chakra-menu__menu-list {
+    background-color: #0c0c0e !important;
+    border: 1px solid #262626 !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.85) !important;
+  }
+
+  .chakra-menu__menuitem {
+    background-color: transparent !important;
+    &:hover,
+    &[data-hover] {
+      background-color: #1a1a1f !important;
+    }
+  }
+
+  .chakra-popover__content {
+    background-color: #0c0c0e !important;
+    border: 1px solid #262626 !important;
+  }
+
+  // Form Inputs, Textareas, Selects & Options
+  .chakra-input,
+  .chakra-select,
+  .chakra-textarea {
+    background-color: #09090b !important;
+    border-color: #262626 !important;
+    &:focus,
+    &[data-focus] {
+      border-color: var(--chakra-colors-primary-500) !important;
+    }
+  }
+
+  option {
+    background-color: #09090b !important;
+    color: #ffffff !important;
+  }
+
+  // Protocol Cards (RadioGroup in User Dialog / Templates)
+  .protocol-card {
+    border-color: #262626 !important;
+    background-color: transparent !important;
+
+    &.is-disabled {
+      background-color: rgba(255, 255, 255, 0.02) !important;
+      border-color: #1e1e24 !important;
+
+      p {
+        color: #71717a !important;
+      }
+    }
+
+    &.is-selected {
+      background-color: #0c0c0e !important;
+      border-color: var(--chakra-colors-primary-500) !important;
+      box-shadow: 0 0 0 1px var(--chakra-colors-primary-500) !important;
+
+      p {
+        color: #f4f4f5 !important;
+      }
+    }
+  }
+
+  // Host Config Cards (HostsDialog)
+  .host-config-card {
+    background-color: #0c0c0e !important;
+    border-color: #262626 !important;
+
+    .chakra-input,
+    .chakra-select {
+      background-color: #000000 !important;
+      border-color: #262626 !important;
+    }
+  }
+
+  // Accordions
+  .chakra-accordion__item {
+    border-color: #262626 !important;
+  }
+  .chakra-accordion__button {
+    &:hover {
+      background-color: #141418 !important;
+    }
+  }
+
+  // Ghost icon buttons transparency reset
+  .chakra-button[class*="variant-ghost"],
+  .chakra-button--ghost {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+
+    &:hover,
+    &[data-hover] {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+    }
+  }
+
+  // Checkboxes
+  .chakra-checkbox__control {
+    background-color: #09090b !important;
+    border-color: #3f3f46 !important;
+
+    &[data-checked] {
+      background-color: var(--chakra-colors-primary-500) !important;
+      border-color: var(--chakra-colors-primary-500) !important;
+    }
+  }
+
+  // Tables
+  table {
+    th {
+      background: #0f0f12 !important;
+      border-color: #262626 !important;
+    }
+    td {
+      border-color: #262626 !important;
+    }
+    tr.interactive:hover > td {
+      background-color: #141418 !important;
+    }
+  }
+
+  // React Datepicker
+  .react-datepicker {
+    background-color: #0c0c0e !important;
+    border-color: #262626 !important;
+  }
+  .react-datepicker__header {
+    background-color: #0f0f12 !important;
+    border-bottom-color: #262626 !important;
+  }
 }
