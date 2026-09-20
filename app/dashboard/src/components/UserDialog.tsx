@@ -1,6 +1,7 @@
 import {
   Alert,
   AlertIcon,
+  Badge,
   Box,
   Button,
   Collapse,
@@ -13,6 +14,10 @@ import {
   GridItem,
   HStack,
   IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -20,6 +25,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Portal,
   Select,
   Spinner,
   Switch,
@@ -33,12 +39,16 @@ import {
 } from "@chakra-ui/react";
 import {
   ChartPieIcon,
+  ClockIcon,
+  EllipsisVerticalIcon,
   PencilIcon,
+  UserGroupIcon,
   UserPlusIcon,
 } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resetStrategy } from "constants/UserSettings";
 import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
+import { useUserTemplatesQuery } from "contexts/UserTemplatesContext";
 import dayjs from "dayjs";
 import { FC, useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
@@ -53,6 +63,7 @@ import {
   UserInbounds,
 } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
+import { formatBytes } from "utils/formatByte";
 import { z } from "zod";
 import { DeleteIcon } from "./DeleteUserModal";
 import { Icon } from "./Icon";
@@ -60,6 +71,8 @@ import { Input } from "./Input";
 import { RadioGroup } from "./RadioGroup";
 import { UsageFilter, createUsageConfig } from "./UsageFilter";
 import { ReloadIcon } from "./Filters";
+import { TransferOwnerModal } from "./TransferOwnerModal";
+import useGetUser from "hooks/useGetUser";
 import classNames from "classnames";
 
 const AddUserIcon = chakra(UserPlusIcon, {
@@ -223,19 +236,88 @@ export const UserDialog: FC<UserDialogProps> = () => {
     onEditingUser,
     createUser,
     onDeletingUser,
+    onNextPlanUser,
   } = useDashboard();
   const isEditing = !!editingUser;
   const isOpen = isCreatingNewUser || isEditing;
+  const { data: templates } = useUserTemplatesQuery(isCreatingNewUser);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
   const toast = useToast();
   const { t, i18n } = useTranslation();
 
   const { colorMode } = useColorMode();
+  const { userData } = useGetUser();
+  const isSudo = userData?.is_sudo;
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
 
   const [usageVisible, setUsageVisible] = useState(false);
   const handleUsageToggle = () => {
     setUsageVisible((current) => !current);
+  };
+
+  const handleApplyTemplate = (templateId: string) => {
+    if (!templateId) return;
+    const template = templates?.find((tmpl) => String(tmpl.id) === templateId);
+    if (!template) return;
+
+    if (template.data_limit !== null && template.data_limit !== undefined) {
+      const gb =
+        template.data_limit > 0
+          ? Math.round((template.data_limit / 1073741824) * 100) / 100
+          : 0;
+      form.setValue("data_limit", gb);
+    }
+
+    if (template.expire_duration) {
+      const currentStatus = form.getValues("status");
+      if (currentStatus === "on_hold") {
+        form.setValue(
+          "on_hold_expire_duration",
+          Math.round(template.expire_duration / 86400)
+        );
+      } else {
+        const expireTs =
+          Math.floor(Date.now() / 1000) + template.expire_duration;
+        form.setValue("expire", expireTs);
+      }
+    }
+
+    if (template.username_prefix || template.username_suffix) {
+      const currentUsername = form.getValues("username") || "";
+      let newName = currentUsername;
+      if (
+        template.username_prefix &&
+        !newName.startsWith(template.username_prefix)
+      ) {
+        newName = template.username_prefix + newName;
+      }
+      if (
+        template.username_suffix &&
+        !newName.endsWith(template.username_suffix)
+      ) {
+        newName = newName + template.username_suffix;
+      }
+      if (newName) {
+        form.setValue("username", newName);
+      }
+    }
+
+    if (template.inbounds && Object.keys(template.inbounds).length > 0) {
+      form.setValue("inbounds", template.inbounds);
+      form.setValue(
+        "selected_proxies",
+        Object.keys(template.inbounds) as ProxyKeys
+      );
+    }
+
+    toast({
+      title: t("templates.applied", { name: template.name }),
+      status: "info",
+      duration: 2500,
+      isClosable: true,
+      position: "top",
+    });
   };
 
   const form = useForm<FormType>({
@@ -417,6 +499,46 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       gridAutoRows="min-content"
                       w="full"
                     >
+                      {!isEditing && templates && templates.length > 0 && (
+                        <FormControl mb={"10px"}>
+                          <FormLabel fontSize="xs">
+                            {t("templates.applyTemplate")}
+                          </FormLabel>
+                          <Select
+                            size="sm"
+                            placeholder={t("templates.selectTemplate")}
+                            onChange={(e) => handleApplyTemplate(e.target.value)}
+                            sx={{
+                              option: {
+                                backgroundColor:
+                                  colorMode === "dark"
+                                    ? "var(--chakra-colors-gray-750)"
+                                    : "white",
+                              },
+                            }}
+                          >
+                            {templates.map((tmpl) => {
+                              const dataGB = tmpl.data_limit
+                                ? `${
+                                    Math.round(
+                                      (tmpl.data_limit / 1073741824) * 100
+                                    ) / 100
+                                  } GB`
+                                : "∞";
+                              const durationDays = tmpl.expire_duration
+                                ? `${Math.round(
+                                    tmpl.expire_duration / 86400
+                                  )}d`
+                                : "∞";
+                              return (
+                                <option key={tmpl.id} value={tmpl.id}>
+                                  {tmpl.name} ({dataGB} / {durationDays})
+                                </option>
+                              );
+                            })}
+                          </Select>
+                        </FormControl>
+                      )}
                       <Flex flexDirection="row" w="full" gap={2}>
                         <FormControl mb={"10px"}>
                           <FormLabel>
@@ -563,8 +685,11 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                   }}
                                   sx={{
                                     option: {
-                                      backgroundColor: colorMode === "dark" ? "#222C3B" : "white"
-                                    }
+                                      backgroundColor:
+                                        colorMode === "dark"
+                                          ? "var(--chakra-colors-gray-750)"
+                                          : "white",
+                                    },
                                   }}
                                 >
                                   {resetStrategy.map((s) => {
@@ -703,6 +828,78 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           {form.formState.errors?.note?.message}
                         </FormErrorMessage>
                       </FormControl>
+                      {isEditing && (
+                        <Box
+                          mt={1}
+                          mb={"10px"}
+                          p={3}
+                          borderRadius="md"
+                          borderWidth="1px"
+                          bg={colorMode === "dark" ? "whiteAlpha.50" : "blackAlpha.50"}
+                          borderColor={colorMode === "dark" ? "whiteAlpha.200" : "blackAlpha.200"}
+                          fontSize="xs"
+                        >
+                          <Text
+                            fontWeight="bold"
+                            mb={2}
+                            fontSize="xs"
+                            color={colorMode === "dark" ? "gray.300" : "gray.600"}
+                            textTransform="uppercase"
+                            letterSpacing="wider"
+                          >
+                            {t("userDialog.subscriptionActivity")}
+                          </Text>
+                          <VStack align="stretch" gap={1.5}>
+                            <Flex justify="space-between" align="center">
+                              <Text color="gray.500">{t("userDialog.clientApp")}:</Text>
+                              {editingUser?.sub_last_user_agent ? (
+                                <Badge
+                                  colorScheme="blue"
+                                  variant="subtle"
+                                  fontSize="2xs"
+                                  px={2}
+                                  py={0.5}
+                                  borderRadius="md"
+                                  maxW="180px"
+                                  isTruncated
+                                  title={editingUser.sub_last_user_agent}
+                                >
+                                  {editingUser.sub_last_user_agent}
+                                </Badge>
+                              ) : (
+                                <Text color="gray.400" fontStyle="italic">
+                                  {t("userDialog.noClientApp")}
+                                </Text>
+                              )}
+                            </Flex>
+                            <Flex justify="space-between" align="center">
+                              <Text color="gray.500">{t("userDialog.lastSubUpdate")}:</Text>
+                              {editingUser?.sub_updated_at ? (
+                                <Tooltip
+                                  label={dayjs(editingUser.sub_updated_at).format("YYYY-MM-DD HH:mm:ss")}
+                                  placement="top"
+                                >
+                                  <Text fontWeight="medium" cursor="help">
+                                    {dayjs(editingUser.sub_updated_at).fromNow()}
+                                  </Text>
+                                </Tooltip>
+                              ) : (
+                                <Text color="gray.400" fontStyle="italic">
+                                  {t("userDialog.neverUpdated")}
+                                </Text>
+                              )}
+                            </Flex>
+                            {editingUser?.lifetime_used_traffic !== undefined && (
+                              <Flex justify="space-between" align="center">
+                                <Text color="gray.500">{t("userDialog.lifetimeUsage")}:</Text>
+                                <Text fontWeight="medium">
+                                  {formatBytes(editingUser.lifetime_used_traffic)}
+                                </Text>
+                              </Flex>
+                            )}
+                          </VStack>
+                        </Box>
+                      )}
                     </Flex>
                     {error && (
                       <Alert
@@ -796,8 +993,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
               )}
             </ModalBody>
             <ModalFooter mt="3">
-              <HStack
+              <Flex
                 justifyContent="space-between"
+                alignItems="center"
                 w="full"
                 gap={3}
                 flexDirection={{
@@ -807,9 +1005,11 @@ export const UserDialog: FC<UserDialogProps> = () => {
               >
                 <HStack
                   justifyContent="flex-start"
+                  flexWrap="wrap"
+                  gap={2}
                   w={{
                     base: "full",
-                    sm: "unset",
+                    sm: "auto",
                   }}
                 >
                   {isEditing && (
@@ -841,13 +1041,71 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       <Button onClick={handleRevokeSubscription} size="sm">
                         {t("userDialog.revokeSubscription")}
                       </Button>
+                      <Menu isLazy>
+                        <MenuButton
+                          as={IconButton}
+                          size="sm"
+                          variant={editingUser?.next_plan ? "solid" : undefined}
+                          colorScheme={editingUser?.next_plan ? "purple" : "gray"}
+                          aria-label={t("moreActions") || "More actions"}
+                          icon={<EllipsisVerticalIcon width="18px" height="18px" />}
+                        />
+                        <Portal>
+                          <MenuList minW="210px" zIndex={99999}>
+                            <MenuItem
+                              fontSize="sm"
+                              icon={
+                                <ClockIcon
+                                  width="16px"
+                                  height="16px"
+                                  color={
+                                    editingUser?.next_plan
+                                      ? "var(--chakra-colors-purple-500)"
+                                      : undefined
+                                  }
+                                />
+                              }
+                              onClick={() => onNextPlanUser(editingUser)}
+                            >
+                              <HStack justify="space-between" w="full">
+                                <Text>
+                                  {editingUser?.next_plan
+                                    ? t("nextPlan.hasQueuedPlan")
+                                    : t("nextPlan.manageQueuedPlan")}
+                                </Text>
+                                {editingUser?.next_plan && (
+                                  <Badge colorScheme="purple" fontSize="xs">
+                                    Active
+                                  </Badge>
+                                )}
+                              </HStack>
+                            </MenuItem>
+                            {isSudo && (
+                              <MenuItem
+                                fontSize="sm"
+                                icon={
+                                  <UserGroupIcon
+                                    width="16px"
+                                    height="16px"
+                                  />
+                                }
+                                onClick={() => setIsTransferOpen(true)}
+                              >
+                                {t("userDialog.transferOwnership")}
+                              </MenuItem>
+                            )}
+                          </MenuList>
+                        </Portal>
+                      </Menu>
                     </>
                   )}
                 </HStack>
-                <HStack
-                  w="full"
-                  maxW={{ md: "50%", base: "full" }}
-                  justify="end"
+                <Box
+                  w={{ base: "full", sm: "auto" }}
+                  display="flex"
+                  justifyContent={{ base: "stretch", sm: "flex-end" }}
+                  flexShrink={0}
+                  ml="auto"
                 >
                   <Button
                     type="submit"
@@ -856,15 +1114,26 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     colorScheme="primary"
                     leftIcon={loading ? <Spinner size="xs" /> : undefined}
                     disabled={disabled}
+                    w={{ base: "full", sm: "auto" }}
                   >
                     {isEditing ? t("userDialog.editUser") : t("createUser")}
                   </Button>
-                </HStack>
-              </HStack>
+                </Box>
+              </Flex>
             </ModalFooter>
           </form>
         </ModalContent>
       </FormProvider>
+      <TransferOwnerModal
+        user={editingUser || null}
+        isOpen={isTransferOpen}
+        onClose={() => setIsTransferOpen(false)}
+        onTransferred={(newOwner) => {
+          if (editingUser) {
+            editingUser.admin = { username: newOwner, is_sudo: false };
+          }
+        }}
+      />
     </Modal>
   );
 };

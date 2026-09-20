@@ -12,6 +12,7 @@ export type FilterType = {
   offset?: number;
   sort: string;
   status?: "active" | "disabled" | "limited" | "expired" | "on_hold";
+  admin?: string;
 };
 export type ProtocolType = "vmess" | "vless" | "trojan" | "shadowsocks";
 
@@ -45,11 +46,22 @@ type DashboardStateType = {
   QRcodeLinks: string[] | null;
   isEditingHosts: boolean;
   isEditingNodes: boolean;
+  isManagingAdmins: boolean;
+  activeTab: "users" | "admins";
+  setActiveTab: (activeTab: "users" | "admins") => void;
   isShowingNodesUsage: boolean;
+  isShowingUsersUsage: boolean;
   isResetingAllUsage: boolean;
   resetUsageUser: User | null;
   revokeSubscriptionUser: User | null;
   isEditingCore: boolean;
+  isCleaningExpiredUsers: boolean;
+  onCleaningExpiredUsers: (isCleaningExpiredUsers: boolean) => void;
+  isManagingTemplates: boolean;
+  onManagingTemplates: (isManagingTemplates: boolean) => void;
+  nextPlanUser: User | null;
+  onNextPlanUser: (user: User | null) => void;
+  onManagingAdmins: (isManagingAdmins: boolean) => void;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
@@ -66,8 +78,10 @@ type DashboardStateType = {
   onEditingHosts: (isEditingHosts: boolean) => void;
   onEditingNodes: (isEditingHosts: boolean) => void;
   onShowingNodesUsage: (isShowingNodesUsage: boolean) => void;
+  onShowingUsersUsage: (isShowingUsersUsage: boolean) => void;
   resetDataUsage: (user: User) => Promise<void>;
   revokeSubscription: (user: User) => Promise<void>;
+  activeNextPlan: (user: User) => Promise<User>;
 };
 
 const fetchUsers = (query: FilterType): Promise<User[]> => {
@@ -113,9 +127,15 @@ export const useDashboard = create(
     isResetingAllUsage: false,
     isEditingHosts: false,
     isEditingNodes: false,
+    isManagingAdmins: false,
+    activeTab: "users",
+    isCleaningExpiredUsers: false,
+    isManagingTemplates: false,
     isShowingNodesUsage: false,
+    isShowingUsersUsage: false,
     resetUsageUser: null,
     revokeSubscriptionUser: null,
+    nextPlanUser: null,
     filters: {
       username: "",
       limit: getUsersPerPageLimitSize(),
@@ -141,12 +161,14 @@ export const useDashboard = create(
       set({ deletingUser });
     },
     onFilterChange: (filters) => {
-      set({
-        filters: {
-          ...get().filters,
-          ...filters,
-        },
-      });
+      const nextFilters: FilterType = {
+        ...get().filters,
+        ...filters,
+      };
+      if ("status" in filters && (!filters.status || filters.status === ("all" as any))) {
+        delete nextFilters.status;
+      }
+      set({ filters: nextFilters });
       get().refetchUsers();
     },
     setQRCode: (QRcodeLinks) => {
@@ -188,8 +210,26 @@ export const useDashboard = create(
     onEditingNodes: (isEditingNodes: boolean) => {
       set({ isEditingNodes });
     },
+    onManagingAdmins: (isManagingAdmins: boolean) => {
+      set({ isManagingAdmins, activeTab: isManagingAdmins ? "admins" : "users" });
+    },
+    setActiveTab: (activeTab: "users" | "admins") => {
+      set({ activeTab });
+    },
+    onCleaningExpiredUsers: (isCleaningExpiredUsers: boolean) => {
+      set({ isCleaningExpiredUsers });
+    },
+    onManagingTemplates: (isManagingTemplates: boolean) => {
+      set({ isManagingTemplates });
+    },
+    onNextPlanUser: (nextPlanUser: User | null) => {
+      set({ nextPlanUser });
+    },
     onShowingNodesUsage: (isShowingNodesUsage: boolean) => {
       set({ isShowingNodesUsage });
+    },
+    onShowingUsersUsage: (isShowingUsersUsage: boolean) => {
+      set({ isShowingUsersUsage });
     },
     setSubLink: (subscribeUrl) => {
       set({ subscribeUrl });
@@ -208,6 +248,15 @@ export const useDashboard = create(
       }).then((user) => {
         set({ revokeSubscriptionUser: null, editingUser: user });
         get().refetchUsers();
+      });
+    },
+    activeNextPlan: (user) => {
+      return fetch<User>(`/user/${user.username}/active-next`, {
+        method: "POST",
+      }).then((updatedUser) => {
+        set({ nextPlanUser: null, editingUser: updatedUser });
+        get().refetchUsers();
+        return updatedUser;
       });
     },
   }))

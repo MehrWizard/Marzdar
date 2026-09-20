@@ -35,6 +35,13 @@ export type DataLimitResetStrategy =
 export type UserInbounds = {
   [key: string]: string[];
 };
+export type NextPlan = {
+  data_limit?: number | null;
+  expire?: number | null;
+  add_remaining_traffic: boolean;
+  fire_on_either: boolean;
+};
+
 export type User = {
   proxies: ProxyType;
   expire: number | null;
@@ -50,6 +57,15 @@ export type User = {
   inbounds: UserInbounds;
   note: string;
   online_at: string;
+  sub_updated_at?: string | null;
+  sub_last_user_agent?: string | null;
+  created_at?: string | null;
+  auto_delete_in_days?: number | null;
+  admin?: {
+    username: string;
+    is_sudo: boolean;
+  } | null;
+  next_plan?: NextPlan | null;
 };
 
 export type UserCreate = Pick<
@@ -63,7 +79,9 @@ export type UserCreate = Pick<
   | "username"
   | "status"
   | "note"
->;
+> & {
+  next_plan?: NextPlan | null;
+};
 
 export type UserApi = {
   discord_webook: string;

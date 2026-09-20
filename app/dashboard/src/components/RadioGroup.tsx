@@ -58,23 +58,23 @@ const InboundCard: FC<
         cursor="pointer"
         borderRadius="sm"
         border="1px solid"
-        borderColor={"gray.200"}
+        borderColor={"var(--theme-card-border)"}
         _dark={{
-          borderColor: "gray.600",
+          borderColor: "var(--theme-card-border)",
         }}
         display="flex"
         alignItems="center"
         justifyContent="space-between"
         overflow="hidden"
         _checked={{
-          bg: "gray.50",
+          bg: "var(--theme-subtle-bg)",
           outline: "2px",
           boxShadow: "outline",
           outlineColor: "primary.500",
           borderColor: "transparent",
           fontWeight: "medium",
           _dark: {
-            bg: "gray.750",
+            bg: "var(--theme-card-bg)",
             borderColor: "transparent",
           },
           "& p": {
@@ -187,22 +187,29 @@ const RadioCard: FC<
 
   return (
     <AccordionItem
+      className={`protocol-card ${
+        shouldBeDisabled ? "is-disabled" : ""
+      } ${isSelected ? "is-selected" : ""}`}
       isDisabled={!protocolHasInbound}
       borderRadius="md"
       borderStyle="solid"
       border="1px"
-      borderColor="gray.200"
-      bg={shouldBeDisabled ? "gray.100" : "transparent"}
+      borderColor="var(--theme-card-border)"
+      bg={shouldBeDisabled ? "var(--theme-subtle-bg)" : "transparent"}
       _dark={{
-        borderColor: "gray.600",
-        bg: shouldBeDisabled ? "#364154" : "transparent",
+        borderColor: "var(--theme-card-border)",
+        bg: shouldBeDisabled ? "var(--theme-subtle-bg)" : "transparent",
       }}
       _checked={{
-        bg: "gray.50",
+        bg: "var(--theme-subtle-bg)",
         outline: "2px",
         boxShadow: "outline",
         outlineColor: "primary.500",
         borderColor: "transparent",
+        _dark: {
+          bg: "var(--theme-card-bg)",
+          borderColor: "transparent",
+        },
       }}
       {...getCheckboxProps()}
     >
@@ -279,7 +286,12 @@ const RadioCard: FC<
             p={0}
             onClick={toggleAccordion}
           >
-            <IconButton size="sm" aria-label="inbound settings">
+            <IconButton
+              size="sm"
+              variant="ghost"
+              aria-label="inbound settings"
+              _hover={{ bg: "transparent" }}
+            >
               <SettingsIcon />
             </IconButton>
           </AccordionButton>
@@ -287,7 +299,13 @@ const RadioCard: FC<
           <Text
             fontSize="sm"
             color={shouldBeDisabled ? "gray.400" : "gray.700"}
-            _dark={{ color: shouldBeDisabled ? "gray.500" : "gray.300" }}
+            _dark={{
+              color: shouldBeDisabled
+                ? "gray.500"
+                : isSelected
+                ? "white"
+                : "gray.300",
+            }}
             {...getLabelProps()}
           >
             {title}
@@ -295,7 +313,13 @@ const RadioCard: FC<
           <Text
             fontWeight="medium"
             color={shouldBeDisabled ? "gray.400" : "gray.600"}
-            _dark={{ color: shouldBeDisabled ? "gray.500" : "gray.400" }}
+            _dark={{
+              color: shouldBeDisabled
+                ? "gray.600"
+                : isSelected
+                ? "gray.300"
+                : "gray.400",
+            }}
             fontSize="xs"
           >
             {description}
@@ -314,11 +338,12 @@ const RadioCard: FC<
           rowGap={2}
           borderStyle="solid"
           borderWidth="1px"
+          borderColor="gray.200"
           borderRadius="md"
           pl={3}
           pr={3}
           pt={1.5}
-          _dark={{ bg: "gray.700" }}
+          _dark={{ bg: "gray.700", borderColor: "gray.600" }}
         >
           <VStack alignItems="flex-start" w="full">
             <Text fontSize="sm">{t("inbound")}</Text>
