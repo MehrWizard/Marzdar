@@ -30,6 +30,7 @@ import {
   CheckIcon,
   ChevronDownIcon,
   ClipboardIcon,
+  ClockIcon,
   LinkIcon,
   PencilIcon,
   QrCodeIcon,
@@ -193,6 +194,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
     users: totalUsers,
     onEditingUser,
     onFilterChange,
+    onNextPlanUser,
   } = useDashboard();
 
   const { t } = useTranslation();
@@ -230,8 +232,10 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
     });
   };
   const handleStatusFilter = (e: any) => {
+    const val = e.target.value;
     onFilterChange({
-      status: e.target.value.length > 0 ? e.target.value : undefined,
+      status: val && val !== "all" && val.length > 0 ? val : undefined,
+      offset: 0,
     });
   };
 
@@ -290,7 +294,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                     {filters.status ? ": " + filters.status : ""}
                   </Text>
                   <Select
-                    value={filters.sort}
+                    value={filters.status ?? ""}
                     fontSize="xs"
                     fontWeight="extrabold"
                     textTransform="uppercase"
@@ -305,12 +309,12 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                     }}
                     onChange={handleStatusFilter}
                   >
-                    <option></option>
-                    <option>active</option>
-                    <option>on_hold</option>
-                    <option>disabled</option>
-                    <option>limited</option>
-                    <option>expired</option>
+                    <option value="">{t("usersTable.allStatus", "All status")}</option>
+                    <option value="active">active</option>
+                    <option value="on_hold">on_hold</option>
+                    <option value="disabled">disabled</option>
+                    <option value="limited">limited</option>
+                    <option value="expired">expired</option>
                   </Select>
                 </HStack>
               </Th>
@@ -348,15 +352,45 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                     >
                       <Td
                         borderBottom={0}
-                        minW="100px"
+                        minW="120px"
                         pl={4}
                         pr={4}
                         maxW="calc(100vw - 50px - 32px - 100px - 48px)"
                       >
-                        <div className="flex-status">
-                          <OnlineBadge lastOnline={user.online_at} />
-                          <Text isTruncated>{user.username}</Text>
-                        </div>
+                        <HStack spacing={2.5} align="flex-start" minW={0} maxW="full">
+                          <Box mt="5px" flexShrink={0}>
+                            <OnlineBadge lastOnline={user.online_at} />
+                          </Box>
+                          <VStack align="start" spacing={0.5} minW={0} maxW="full" overflow="hidden">
+                            <HStack spacing={1.5} align="center" maxW="full">
+                              <Text
+                                isTruncated
+                                fontWeight="semibold"
+                                fontSize="sm"
+                                lineHeight="short"
+                                color="gray.800"
+                                _dark={{ color: "gray.100" }}
+                              >
+                                {user.username}
+                              </Text>
+                              {user.next_plan && (
+                                <Box
+                                  as="span"
+                                  display="inline-flex"
+                                  alignItems="center"
+                                  color="purple.500"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onNextPlanUser(user);
+                                  }}
+                                >
+                                  <ClockIcon width="14px" height="14px" />
+                                </Box>
+                              )}
+                            </HStack>
+                            <OnlineStatus lastOnline={user.online_at} />
+                          </VStack>
+                        </HStack>
                       </Td>
                       <Td borderBottom={0} minW="50px" pl={0} pr={0}>
                         <StatusBadge
@@ -443,7 +477,6 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                                     expiryDate={user.expire}
                                     status={user.status}
                                   />
-                                  <OnlineStatus lastOnline={user.online_at} />
                                 </Box>
                                 <HStack>
                                   <ActionButtons user={user} />
@@ -495,7 +528,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
             <Th
               position="sticky"
               top={{ base: "unset", md: top }}
-              minW="140px"
+              minW="150px"
               cursor={"pointer"}
               onClick={handleSort.bind(null, "username")}
             >
@@ -512,50 +545,53 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               cursor={"pointer"}
             >
               <HStack position="relative" gap={"5px"}>
-                <Text
-                  _dark={{
-                    bg: "gray.750",
-                  }}
-                  _light={{
-                    bg: "#F9FAFB",
-                  }}
-                  userSelect="none"
-                  pointerEvents="none"
-                  zIndex={1}
-                >
-                  {t("usersTable.status")}
-                  {filters.status ? ": " + filters.status : ""}
-                </Text>
+                <Box position="relative" display="inline-flex" alignItems="center">
+                  <Text
+                    _dark={{
+                      bg: "var(--theme-table-th-bg)",
+                    }}
+                    _light={{
+                      bg: "var(--theme-table-th-bg)",
+                    }}
+                    userSelect="none"
+                    pointerEvents="none"
+                    zIndex={1}
+                  >
+                    {t("usersTable.status")}
+                    {filters.status ? ": " + filters.status : ""}
+                  </Text>
+                  <Select
+                    fontSize="xs"
+                    fontWeight="extrabold"
+                    textTransform="uppercase"
+                    cursor="pointer"
+                    position="absolute"
+                    inset={0}
+                    opacity={0}
+                    p={0}
+                    border={0}
+                    h="full"
+                    w="full"
+                    icon={<></>}
+                    _focusVisible={{
+                      border: "0 !important",
+                    }}
+                    value={filters.status ?? ""}
+                    onChange={handleStatusFilter}
+                  >
+                    <option value="">{t("usersTable.allStatus", "All status")}</option>
+                    <option value="active">active</option>
+                    <option value="on_hold">on_hold</option>
+                    <option value="disabled">disabled</option>
+                    <option value="limited">limited</option>
+                    <option value="expired">expired</option>
+                  </Select>
+                </Box>
                 <Text>/</Text>
                 <Sort sort={filters.sort} column="expire" />
                 <HStack onClick={handleSort.bind(null, "expire")}>
-                  <Text>Sort by expire</Text>
+                  <Text>{t("usersTable.sortByExpire", "Sort by expire")}</Text>
                 </HStack>
-                <Select
-                  fontSize="xs"
-                  fontWeight="extrabold"
-                  textTransform="uppercase"
-                  cursor="pointer"
-                  position={"absolute"}
-                  p={0}
-                  left={"-40px"}
-                  border={0}
-                  h="auto"
-                  w="auto"
-                  icon={<></>}
-                  _focusVisible={{
-                    border: "0 !important",
-                  }}
-                  value={filters.sort}
-                  onChange={handleStatusFilter}
-                >
-                  <option></option>
-                  <option>active</option>
-                  <option>on_hold</option>
-                  <option>disabled</option>
-                  <option>limited</option>
-                  <option>expired</option>
-                </Select>
               </HStack>
             </Th>
             <Th
@@ -590,12 +626,43 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   })}
                   onClick={() => onEditingUser(user)}
                 >
-                  <Td minW="140px">
-                    <div className="flex-status">
-                      <OnlineBadge lastOnline={user.online_at} />
-                      {user.username}
-                      <OnlineStatus lastOnline={user.online_at} />
-                    </div>
+                  <Td minW="150px">
+                    <HStack spacing={2.5} align="flex-start">
+                      <Box mt="5px" flexShrink={0}>
+                        <OnlineBadge lastOnline={user.online_at} />
+                      </Box>
+                      <VStack align="start" spacing={0.5}>
+                        <HStack spacing={1.5} align="center">
+                          <Text
+                            fontWeight="semibold"
+                            fontSize="sm"
+                            lineHeight="short"
+                            color="gray.800"
+                            _dark={{ color: "gray.100" }}
+                          >
+                            {user.username}
+                          </Text>
+                          {user.next_plan && (
+                            <Tooltip label={t("nextPlan.hasQueuedPlan")} placement="top">
+                              <Box
+                                as="span"
+                                display="inline-flex"
+                                alignItems="center"
+                                color="purple.500"
+                                cursor="pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onNextPlanUser(user);
+                                }}
+                              >
+                                <ClockIcon width="14px" height="14px" />
+                              </Box>
+                            </Tooltip>
+                          )}
+                        </HStack>
+                        <OnlineStatus lastOnline={user.online_at} />
+                      </VStack>
+                    </HStack>
                   </Td>
                   <Td width="400px" minW="150px">
                     <StatusBadge

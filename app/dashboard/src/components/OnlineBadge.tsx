@@ -1,4 +1,5 @@
-import { Box } from "@chakra-ui/react";
+import { Box, useColorMode } from "@chakra-ui/react";
+import { useThemeMode } from "hooks/useThemeMode";
 import { FC } from "react";
 
 type UserStatusProps = {
@@ -15,14 +16,30 @@ const convertDateFormat = (lastOnline?: string | null): number | null => {
 export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline }) => {
   const currentTimeInSeconds = Math.floor(Date.now() / 1000);
   const unixTime = convertDateFormat(lastOnline);
+  const { colorMode } = useColorMode();
+  const { themeMode } = useThemeMode();
+
+  const isDark = themeMode === "black" || colorMode === "dark";
+
+  // Dedicated neutral tokens immune to accent color overrides
+  const neutralColor = isDark ? "#8b949e" : "#94a3b8";
+  const onlineColor = isDark ? "#22c55e" : "#16a34a";
 
   if (!lastOnline || unixTime === null) {
     return (
       <Box
-        border="1px solid"
-        borderColor="gray.400"
-        _dark={{ borderColor: "gray.600" }}
         className="circle"
+        w="10px"
+        h="10px"
+        minW="10px"
+        minH="10px"
+        borderRadius="full"
+        border="1.5px solid"
+        borderColor={neutralColor}
+        bg="transparent"
+        boxShadow="none"
+        title="Not connected yet"
+        aria-label="Not connected yet"
       />
     );
   }
@@ -32,12 +49,31 @@ export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline }) => {
   if (timeDifferenceInSeconds <= 60) {
     return (
       <Box
-        bg="green.300"
-        _dark={{ bg: "green.500" }}
         className="circle pulse green"
+        w="10px"
+        h="10px"
+        minW="10px"
+        minH="10px"
+        borderRadius="full"
+        bg={onlineColor}
+        title="Online"
+        aria-label="Online"
       />
     );
   }
 
-  return <Box bg="gray.400" _dark={{ bg: "gray.600" }} className="circle" />;
+  return (
+    <Box
+      className="circle"
+      w="10px"
+      h="10px"
+      minW="10px"
+      minH="10px"
+      borderRadius="full"
+      bg={neutralColor}
+      boxShadow="none"
+      title="Offline"
+      aria-label="Offline"
+    />
+  );
 };
