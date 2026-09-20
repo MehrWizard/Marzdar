@@ -125,7 +125,14 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
     reconnectNode.bind(null, node),
     {
       onSuccess: () => {
+        generateSuccessMessage(
+          t("nodes.reconnectSuccess", { name: node.name }),
+          toast
+        );
         queryClient.invalidateQueries(FetchNodesQueryKey);
+      },
+      onError: (e) => {
+        generateErrorMessage(e, toast, form);
       },
     }
   );
@@ -158,7 +165,21 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
           >
             {node.name}
           </Text>
-          <HStack>
+          <HStack spacing={2} alignItems="center">
+            <Tooltip label={t("nodes.reconnect")} placement="top">
+              <IconButton
+                size="xs"
+                variant="ghost"
+                colorScheme="primary"
+                aria-label={t("nodes.reconnect")}
+                icon={<ReloadIcon />}
+                isLoading={isReconnecting}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  reconnect();
+                }}
+              />
+            </Tooltip>
             {node.xray_version && (
               <Badge
                 colorScheme="blue"
@@ -214,17 +235,31 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
           isLoading={isLoading}
           submitBtnText={t("nodes.editNode")}
           btnLeftAdornment={
-            <Tooltip label={t("delete")} placement="top">
-              <IconButton
-                colorScheme="red"
-                variant="ghost"
-                size="sm"
-                aria-label="delete node"
-                onClick={handleDeleteNode}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
+            <HStack spacing={1}>
+              <Tooltip label={t("delete")} placement="top">
+                <IconButton
+                  colorScheme="red"
+                  variant="ghost"
+                  size="sm"
+                  aria-label="delete node"
+                  onClick={handleDeleteNode}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip label={t("nodes.reconnect")} placement="top">
+                <IconButton
+                  colorScheme="blue"
+                  variant="ghost"
+                  size="sm"
+                  aria-label="reconnect node"
+                  isLoading={isReconnecting}
+                  onClick={() => reconnect()}
+                >
+                  <ReloadIcon />
+                </IconButton>
+              </Tooltip>
+            </HStack>
           }
         />
       </AccordionPanel>

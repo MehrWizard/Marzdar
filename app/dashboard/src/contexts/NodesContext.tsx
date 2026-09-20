@@ -52,10 +52,12 @@ export type NodeStore = {
 };
 
 export const useNodesQuery = () => {
-  const { isEditingNodes } = useDashboard();
+  const { isEditingNodes, isEditingCore } = useDashboard();
+  const isModalOpen = isEditingNodes || isEditingCore;
   return useQuery({
     queryKey: FetchNodesQueryKey,
     queryFn: useNodes.getState().fetchNodes,
+    enabled: isModalOpen,
     refetchInterval: isEditingNodes ? 3000 : undefined,
     refetchOnWindowFocus: false,
   });

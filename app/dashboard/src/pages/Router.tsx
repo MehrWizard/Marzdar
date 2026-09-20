@@ -1,14 +1,11 @@
 import { createHashRouter } from "react-router-dom";
-import { fetch } from "../service/http";
-import { getAuthToken } from "../utils/authStorage";
+import { queryClient } from "../utils/react-query";
+import { CurrentAdminUserQueryKey, fetchUser } from "../hooks/useGetUser";
 import { Dashboard } from "./Dashboard";
 import { Login } from "./Login";
+
 const fetchAdminLoader = () => {
-    return fetch("/admin", {
-        headers: {
-            Authorization: `Bearer ${getAuthToken()}`,
-        },
-    });
+    return queryClient.fetchQuery(CurrentAdminUserQueryKey, fetchUser);
 };
 export const router = createHashRouter([
     {

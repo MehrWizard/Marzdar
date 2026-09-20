@@ -64,7 +64,7 @@ import { Trans, useTranslation } from "react-i18next";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import { z } from "zod";
-import { useDashboard } from "../contexts/DashboardContext";
+import { fetchInbounds, useDashboard } from "../contexts/DashboardContext";
 import { DeleteIcon } from "./DeleteUserModal";
 import { Icon } from "./Icon";
 import { Input as CustomInput } from "./Input";
@@ -124,38 +124,44 @@ const InfoIcon = chakra(InformationCircleIcon, {
   },
 });
 
-const hostsSchema = z.record(
-  z.string().min(1),
-  z.array(
+const singleHostSchema = z.object({
+  remark: z.string().min(1, "Remark is required"),
+  address: z.string().min(1, "Address is required"),
+  port: z
+    .string()
+    .or(z.number())
+    .nullable()
+    .transform((value) => {
+      if (typeof value === "number") return value;
+      if (value !== null && value !== "" && !isNaN(parseInt(String(value))))
+        return Number(parseInt(String(value)));
+      return null;
+    }),
+  path: z.string().nullable(),
+  sni: z.string().nullable(),
+  host: z.string().nullable(),
+  mux_enable: z.boolean().default(false),
+  allowinsecure: z.boolean().nullable().default(false),
+  is_disabled: z.boolean().default(false),
+  fragment_setting: z.string().nullable(),
+  noise_setting: z.string().nullable(),
+  random_user_agent: z.boolean().default(false),
+  security: z.string(),
+  alpn: z.string(),
+  fingerprint: z.string(),
+  use_sni_as_host: z.boolean().default(false),
+});
+
+const hostsFormSchema = z.object({
+  inbounds: z.array(
     z.object({
-      remark: z.string().min(1, "Remark is required"),
-      address: z.string().min(1, "Address is required"),
-      port: z
-        .string()
-        .or(z.number())
-        .nullable()
-        .transform((value) => {
-          if (typeof value === "number") return value;
-          if (value !== null && !isNaN(parseInt(value)))
-            return Number(parseInt(value));
-          return null;
-        }),
-      path: z.string().nullable(),
-      sni: z.string().nullable(),
-      host: z.string().nullable(),
-      mux_enable: z.boolean().default(false),
-      allowinsecure: z.boolean().nullable().default(false),
-      is_disabled: z.boolean().default(true),
-      fragment_setting: z.string().nullable(),
-      noise_setting: z.string().nullable(),
-      random_user_agent: z.boolean().default(false),
-      security: z.string(),
-      alpn: z.string(),
-      fingerprint: z.string(),
-      use_sni_as_host: z.boolean().default(false),
+      tag: z.string(),
+      hosts: z.array(singleHostSchema),
     })
-  )
-);
+  ),
+});
+
+type HostsFormValues = z.infer<typeof hostsFormSchema>;
 
 const Error = chakra(FormErrorMessage, {
   baseStyle: {
@@ -167,22 +173,25 @@ const Error = chakra(FormErrorMessage, {
 });
 
 type AccordionInboundType = {
-  hostKey: string;
+  inboundIndex: number;
+  tag: string;
   isOpen: boolean;
   toggleAccordion: () => void;
 };
 
 const AccordionInbound: FC<AccordionInboundType> = ({
-  hostKey,
+  inboundIndex,
+  tag,
   isOpen,
   toggleAccordion,
 }) => {
   const { inbounds } = useDashboard();
-  const inbound = [...inbounds.values()]
+  const inbound = [...(inbounds?.values?.() || [])]
     .flat()
-    .filter((inbound) => inbound.tag === hostKey)[0];
+    .find((inbound) => inbound?.tag === tag);
 
-  const form = useFormContext<z.infer<typeof hostsSchema>>();
+  const form = useFormContext<HostsFormValues>();
+  const basePath = `inbounds.${inboundIndex}.hosts` as const;
   const {
     fields: hosts,
     append: addHost,
@@ -191,11 +200,11 @@ const AccordionInbound: FC<AccordionInboundType> = ({
     move: moveHost,
   } = useFieldArray({
     control: form.control,
-    name: hostKey,
+    name: basePath,
   });
   const { errors } = form.formState;
   const { t } = useTranslation();
-  const accordionErrors = errors[hostKey];
+  const accordionErrors = errors?.inbounds?.[inboundIndex]?.hosts;
   const handleAddHost = () => {
     addHost({
       host: "",
@@ -222,7 +231,9 @@ const AccordionInbound: FC<AccordionInboundType> = ({
     insertHost(index + 1, hostToDuplicate);
   };
   useEffect(() => {
-    if (accordionErrors && !isOpen) {
+    const hasError =
+      Array.isArray(accordionErrors) && accordionErrors.some(Boolean);
+    if (hasError && !isOpen) {
       toggleAccordion();
     }
   }, [accordionErrors]);
@@ -254,13 +265,15 @@ const AccordionInbound: FC<AccordionInboundType> = ({
           color="gray.700"
           _dark={{ color: "gray.300" }}
         >
-          {hostKey}
+          {tag}
         </Text>
         <AccordionIcon />
       </AccordionButton>
       <AccordionPanel px={2} pb={2}>
         <VStack gap={3}>
           {hosts.map((host, index) => {
+            const fieldPrefix = `${basePath}.${index}` as const;
+            const hostErrors = accordionErrors?.[index];
             return (
               <motion.div
                 key={host.id}
@@ -282,8 +295,9 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                   id={host.id}
                   key={host.id}
                   border="1px solid"
-                  _dark={{ borderColor: "gray.600", bg: "#273142" }}
-                  _light={{ borderColor: "gray.200", bg: "#fcfbfb" }}
+                  className="host-config-card"
+                  _dark={{ borderColor: "var(--theme-card-border)", bg: "var(--theme-card-bg)" }}
+                  _light={{ borderColor: "var(--theme-card-border)", bg: "var(--theme-card-bg)" }}
                   p={2}
                   w="full"
                   borderRadius="4px"
@@ -292,13 +306,11 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                     <FormControl
                       position="relative"
                       zIndex={10}
-                      isInvalid={
-                        !!(accordionErrors && accordionErrors[index]?.remark)
-                      }
+                      isInvalid={!!hostErrors?.remark}
                     >
                       <InputGroup>
                         <Input
-                          {...form.register(hostKey + "." + index + ".remark")}
+                          {...form.register(`${fieldPrefix}.remark`)}
                           size="sm"
                           borderRadius="4px"
                           placeholder="Remark"
@@ -410,22 +422,20 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                           </Popover>
                         </InputRightElement>
                       </InputGroup>
-                      {accordionErrors && accordionErrors[index]?.remark && (
-                        <Error>{accordionErrors[index]?.remark?.message}</Error>
+                      {hostErrors?.remark && (
+                        <Error>{hostErrors.remark.message}</Error>
                       )}
                     </FormControl>
                   </HStack>
                   <FormControl
-                    isInvalid={
-                      !!(accordionErrors && accordionErrors[index]?.address)
-                    }
+                    isInvalid={!!hostErrors?.address}
                   >
                     <InputGroup>
                       <Input
                         size="sm"
                         borderRadius="4px"
                         placeholder="Address (e.g. example.com)"
-                        {...form.register(hostKey + "." + index + ".address")}
+                        {...form.register(`${fieldPrefix}.address`)}
                       />
                       <InputRightElement>
                         <Popover isLazy placement="right">
@@ -532,8 +542,8 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                         </Popover>
                       </InputRightElement>
                     </InputGroup>
-                    {accordionErrors && accordionErrors[index]?.address && (
-                      <Error>{accordionErrors[index]?.address?.message}</Error>
+                    {hostErrors?.address && (
+                      <Error>{hostErrors.address.message}</Error>
                     )}
                   </FormControl>
 
@@ -562,7 +572,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                           <Container flex="1" px="0" display={"contents"}>
                             <Controller
                               control={form.control}
-                              name={`${hostKey}.${index}.is_disabled`}
+                              name={`${fieldPrefix}.is_disabled`}
                               render={({ field }) => {
                                 return (
                                   <Switch
@@ -572,7 +582,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                     value={undefined}
                                     isChecked={!field.value}
                                     onChange={(e) => {
-                                      console.log(e.target.checked);
                                       field.onChange(!e.target.checked);
                                     }}
                                   />
@@ -596,7 +605,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                           <IconButton
                             aria-label="Duplicate"
                             size="sm"
-                            colorScheme="white"
                             variant="ghost"
                             onClick={() => duplicateHost(index)}
                           >
@@ -608,7 +616,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             <IconButton
                               aria-label="DownIcon"
                               size="sm"
-                              colorScheme="white"
                               variant="ghost"
                               onClick={() => moveHostPosition(index, "down")}
                             >
@@ -621,7 +628,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             <IconButton
                               aria-label="UpIcon"
                               size="sm"
-                              colorScheme="white"
                               variant="ghost"
                               onClick={() => moveHostPosition(index, "up")}
                             >
@@ -633,11 +639,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                       <AccordionPanel w="full" p={1}>
                         <VStack key={index} w="full" borderRadius="4px">
                           <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors && accordionErrors[index]?.port
-                              )
-                            }
+                            isInvalid={!!hostErrors?.port}
                           >
                             <FormLabel
                               display="flex"
@@ -666,17 +668,13 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             <Input
                               size="sm"
                               borderRadius="4px"
-                              placeholder={String(inbound.port || "8080")}
+                              placeholder={String(inbound?.port || "8080")}
                               type="number"
-                              {...form.register(
-                                hostKey + "." + index + ".port"
-                              )}
+                              {...form.register(`${fieldPrefix}.port`)}
                             />
                           </FormControl>
                           <FormControl
-                            isInvalid={
-                              !!(accordionErrors && accordionErrors[index]?.sni)
-                            }
+                            isInvalid={!!hostErrors?.sni}
                           >
                             <FormLabel
                               display="flex"
@@ -723,20 +721,16 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               size="sm"
                               borderRadius="4px"
                               placeholder="SNI (e.g. example.com)"
-                              {...form.register(hostKey + "." + index + ".sni")}
+                              {...form.register(`${fieldPrefix}.sni`)}
                             />
-                            {accordionErrors && accordionErrors[index]?.sni && (
+                            {hostErrors?.sni && (
                               <Error>
-                                {accordionErrors[index]?.sni?.message}
+                                {hostErrors.sni.message}
                               </Error>
                             )}
                           </FormControl>
                           <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors && accordionErrors[index]?.host
-                              )
-                            }
+                            isInvalid={!!hostErrors?.host}
                           >
                             <FormLabel
                               display="flex"
@@ -783,24 +777,17 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               size="sm"
                               borderRadius="4px"
                               placeholder="Host (e.g. example.com)"
-                              {...form.register(
-                                hostKey + "." + index + ".host"
-                              )}
+                              {...form.register(`${fieldPrefix}.host`)}
                             />
-                            {accordionErrors &&
-                              accordionErrors[index]?.host && (
-                                <Error>
-                                  {accordionErrors[index]?.host?.message}
-                                </Error>
-                              )}
+                            {hostErrors?.host && (
+                              <Error>
+                                {hostErrors.host.message}
+                              </Error>
+                            )}
                           </FormControl>
 
                           <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors && accordionErrors[index]?.path
-                              )
-                            }
+                            isInvalid={!!hostErrors?.path}
                           >
                             <FormLabel
                               display="flex"
@@ -831,16 +818,13 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               size="sm"
                               borderRadius="4px"
                               placeholder="path (e.g. /vless)"
-                              {...form.register(
-                                hostKey + "." + index + ".path"
-                              )}
+                              {...form.register(`${fieldPrefix}.path`)}
                             />
-                            {accordionErrors &&
-                              accordionErrors[index]?.path && (
-                                <Error>
-                                  {accordionErrors[index]?.path?.message}
-                                </Error>
-                              )}
+                            {hostErrors?.path && (
+                              <Error>
+                                {hostErrors.path.message}
+                              </Error>
+                            )}
                           </FormControl>
 
                           <FormControl height="66px">
@@ -871,9 +855,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             </FormLabel>
                             <Select
                               size="sm"
-                              {...form.register(
-                                hostKey + "." + index + ".security"
-                              )}
+                              {...form.register(`${fieldPrefix}.security`)}
                             >
                               {proxyHostSecurity.map((s) => {
                                 return (
@@ -898,9 +880,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             </FormLabel>
                             <Select
                               size="sm"
-                              {...form.register(
-                                hostKey + "." + index + ".alpn"
-                              )}
+                              {...form.register(`${fieldPrefix}.alpn`)}
                             >
                               {proxyALPN.map((s) => {
                                 return (
@@ -925,9 +905,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             </FormLabel>
                             <Select
                               size="sm"
-                              {...form.register(
-                                hostKey + "." + index + ".fingerprint"
-                              )}
+                              {...form.register(`${fieldPrefix}.fingerprint`)}
                             >
                               {proxyFingerprint.map((s) => {
                                 return (
@@ -940,12 +918,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                           </FormControl>
 
                           <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors &&
-                                accordionErrors[index]?.fragment_setting
-                              )
-                            }
+                            isInvalid={!!hostErrors?.fragment_setting}
                           >
                             <FormLabel
                               display="flex"
@@ -988,28 +961,17 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               size="sm"
                               borderRadius="4px"
                               placeholder="Fragment settings by pattern"
-                              {...form.register(
-                                hostKey + "." + index + ".fragment_setting"
-                              )}
+                              {...form.register(`${fieldPrefix}.fragment_setting`)}
                             />
-                            {accordionErrors &&
-                              accordionErrors[index]?.fragment_setting && (
-                                <Error>
-                                  {
-                                    accordionErrors[index]?.fragment_setting
-                                      ?.message
-                                  }
-                                </Error>
-                              )}
+                            {hostErrors?.fragment_setting && (
+                              <Error>
+                                {hostErrors.fragment_setting.message}
+                              </Error>
+                            )}
                           </FormControl>
 
                           <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors &&
-                                accordionErrors[index]?.noise_setting
-                              )
-                            }
+                            isInvalid={!!hostErrors?.noise_setting}
                           >
                             <FormLabel
                               display="flex"
@@ -1052,127 +1014,78 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               size="sm"
                               borderRadius="4px"
                               placeholder="Noise settings by pattern"
-                              {...form.register(
-                                hostKey + "." + index + ".noise_setting"
-                              )}
+                              {...form.register(`${fieldPrefix}.noise_setting`)}
                             />
-                            {accordionErrors &&
-                              accordionErrors[index]?.noise_setting && (
-                                <Error>
-                                  {
-                                    accordionErrors[index]?.noise_setting
-                                      ?.message
-                                  }
-                                </Error>
-                              )}
+                            {hostErrors?.noise_setting && (
+                              <Error>
+                                {hostErrors.noise_setting.message}
+                              </Error>
+                            )}
                           </FormControl>
 
-
                           <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors &&
-                                accordionErrors[index]?.use_sni_as_host
-                              )
-                            }
+                            isInvalid={!!hostErrors?.use_sni_as_host}
                           >
                             <Checkbox
-                              {...form.register(
-                                hostKey + "." + index + ".use_sni_as_host"
-                              )}
+                              {...form.register(`${fieldPrefix}.use_sni_as_host`)}
                             >
                               <FormLabel>
                                 {t("hostsDialog.useSniAsHost")}
                               </FormLabel>
                             </Checkbox>
-                            {accordionErrors &&
-                              accordionErrors[index]?.use_sni_as_host && (
-                                <Error>
-                                  {
-                                    accordionErrors[index]?.use_sni_as_host
-                                      ?.message
-                                  }
-                                </Error>
-                              )}
-                        </FormControl>
-                         <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors &&
-                                accordionErrors[index]?.allowinsecure
-                              )
-                            }
+                            {hostErrors?.use_sni_as_host && (
+                              <Error>
+                                {hostErrors.use_sni_as_host.message}
+                              </Error>
+                            )}
+                          </FormControl>
+                          <FormControl
+                            isInvalid={!!hostErrors?.allowinsecure}
                           >
                             <Checkbox
-                              {...form.register(
-                                hostKey + "." + index + ".allowinsecure"
-                              )}
-                              name={hostKey + "." + index + ".allowinsecure"}
+                              {...form.register(`${fieldPrefix}.allowinsecure`)}
                             >
                               <FormLabel>
                                 {t("hostsDialog.allowinsecure")}
                               </FormLabel>
-                              {accordionErrors &&
-                                accordionErrors[index]?.allowinsecure && (
-                                  <Error>
-                                    {
-                                      accordionErrors[index]?.allowinsecure
-                                        ?.message
-                                    }
-                                  </Error>
-                                )}
+                              {hostErrors?.allowinsecure && (
+                                <Error>
+                                  {hostErrors.allowinsecure.message}
+                                </Error>
+                              )}
                             </Checkbox>
                           </FormControl>
                           <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors &&
-                                accordionErrors[index]?.mux_enable
-                              )
-                            }
+                            isInvalid={!!hostErrors?.mux_enable}
                           >
                             <Checkbox
-                              {...form.register(
-                                hostKey + "." + index + ".mux_enable"
-                              )}
+                              {...form.register(`${fieldPrefix}.mux_enable`)}
                             >
                               <FormLabel>
                                 {t("hostsDialog.muxEnable")}
                               </FormLabel>
                             </Checkbox>
-                            {accordionErrors &&
-                              accordionErrors[index]?.mux_enable && (
-                                <Error>
-                                  {accordionErrors[index]?.mux_enable?.message}
-                                </Error>
-                              )}
+                            {hostErrors?.mux_enable && (
+                              <Error>
+                                {hostErrors.mux_enable.message}
+                              </Error>
+                            )}
                           </FormControl>
                           <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors &&
-                                accordionErrors[index]?.random_user_agent
-                              )
-                            }
+                            isInvalid={!!hostErrors?.random_user_agent}
                           >
                             <Checkbox
-                              {...form.register(
-                                hostKey + "." + index + ".random_user_agent"
-                              )}
+                              {...form.register(`${fieldPrefix}.random_user_agent`)}
                             >
                               <FormLabel>
                                 {t("hostsDialog.randomUserAgent")}
                               </FormLabel>
                             </Checkbox>
-                            {accordionErrors &&
-                              accordionErrors[index]?.random_user_agent && (
-                                <Error>
-                                  {
-                                    accordionErrors[index]?.random_user_agent
-                                      ?.message
-                                  }
-                                </Error>
-                              )}
+                            {hostErrors?.random_user_agent && (
+                              <Error>
+                                {hostErrors.random_user_agent.message}
+                              </Error>
+                            )}
                           </FormControl>
                         </VStack>
                       </AccordionPanel>
@@ -1199,32 +1112,51 @@ const AccordionInbound: FC<AccordionInboundType> = ({
 };
 
 export const HostsDialog: FC = () => {
-  const { isEditingHosts, onEditingHosts, refetchUsers, inbounds } =
-    useDashboard();
+  const { isEditingHosts, onEditingHosts, refetchUsers } = useDashboard();
   const { isLoading, hosts, fetchHosts, isPostLoading, setHosts } = useHosts();
   const toast = useToast();
   const { t } = useTranslation();
   const [openAccordions, setOpenAccordions] = useState<any>({});
 
-  useEffect(() => {
-    if (isEditingHosts) fetchHosts();
-  }, [isEditingHosts]);
-  const form = useForm<z.infer<typeof hostsSchema>>({
-    resolver: zodResolver(hostsSchema),
+  const form = useForm<HostsFormValues>({
+    resolver: zodResolver(hostsFormSchema),
+    defaultValues: {
+      inbounds: [],
+    },
+  });
+
+  const { fields: inboundFields } = useFieldArray({
+    control: form.control,
+    name: "inbounds",
   });
 
   useEffect(() => {
-    if (hosts && isEditingHosts) {
-      form.reset(hosts);
+    if (isEditingHosts) {
+      fetchHosts();
+      fetchInbounds();
     }
-  }, [hosts]);
+  }, [isEditingHosts]);
+
+  useEffect(() => {
+    if (hosts && isEditingHosts) {
+      const inboundsList = Object.entries(hosts).map(([tag, hostList]) => ({
+        tag,
+        hosts: hostList || [],
+      }));
+      form.reset({ inbounds: inboundsList });
+    }
+  }, [hosts, isEditingHosts]);
 
   const onClose = () => {
     setOpenAccordions({});
     onEditingHosts(false);
   };
-  const handleFormSubmit = (hosts: z.infer<typeof hostsSchema>) => {
-    setHosts(hosts)
+  const handleFormSubmit = (data: HostsFormValues) => {
+    const payload: Record<string, any[]> = {};
+    for (const item of data.inbounds) {
+      payload[item.tag] = item.hosts;
+    }
+    setHosts(payload)
       .then(() => {
         toast({
           title: t("hostsDialog.savedSuccess"),
@@ -1246,15 +1178,18 @@ export const HostsDialog: FC = () => {
           });
         }
         if (err?.response?.status === 422) {
-          Object.keys(err.response._data.detail).forEach((key) => {
-            toast({
-              title: err.response._data.detail[key] + " (" + key + ")",
-              status: "error",
-              isClosable: true,
-              position: "top",
-              duration: 3000,
+          const detail = err.response?._data?.detail;
+          if (detail && typeof detail === "object") {
+            Object.keys(detail).forEach((key) => {
+              toast({
+                title: detail[key] + " (" + key + ")",
+                status: "error",
+                isClosable: true,
+                position: "top",
+                duration: 3000,
+              });
             });
-          });
+          }
         }
       });
   };
@@ -1266,6 +1201,10 @@ export const HostsDialog: FC = () => {
 
     setOpenAccordions({ ...openAccordions });
   };
+
+  const isFormPopulated = !isLoading && hosts && inboundFields.length > 0;
+  const noInboundsFound =
+    !isLoading && hosts && Object.keys(hosts).length === 0;
 
   return (
     <Modal isOpen={isEditingHosts} onClose={onClose}>
@@ -1283,32 +1222,32 @@ export const HostsDialog: FC = () => {
               <Text mb={3} opacity={0.8} fontSize="sm">
                 {t("hostsDialog.title")}
               </Text>
-              {isLoading && t("hostsDialog.loading")}
-              {!isLoading &&
-                hosts &&
-                (Object.keys(hosts).length > 0 ? (
-                  <Accordion
-                    w="full"
-                    allowToggle
-                    allowMultiple
-                    index={Object.keys(openAccordions).map((i) => parseInt(i))}
-                  >
-                    <VStack w="full">
-                      {Object.keys(hosts).map((hostKey, index) => {
-                        return (
-                          <AccordionInbound
-                            toggleAccordion={() => toggleAccordion(index)}
-                            isOpen={openAccordions[String(index)]}
-                            key={hostKey}
-                            hostKey={hostKey}
-                          />
-                        );
-                      })}
-                    </VStack>
-                  </Accordion>
-                ) : (
-                  "No inbound found. Please check your Xray config file."
-                ))}
+              {(isLoading || (!isFormPopulated && !noInboundsFound)) &&
+                t("hostsDialog.loading")}
+              {noInboundsFound &&
+                "No inbound found. Please check your Xray config file."}
+              {isFormPopulated && (
+                <Accordion
+                  w="full"
+                  allowToggle
+                  allowMultiple
+                  index={Object.keys(openAccordions).map((i) => parseInt(i))}
+                >
+                  <VStack w="full">
+                    {inboundFields.map((field, index) => {
+                      return (
+                        <AccordionInbound
+                          toggleAccordion={() => toggleAccordion(index)}
+                          isOpen={!!openAccordions[String(index)]}
+                          key={field.id}
+                          inboundIndex={index}
+                          tag={field.tag}
+                        />
+                      );
+                    })}
+                  </VStack>
+                </Accordion>
+              )}
 
               <HStack justifyContent="flex-end" py={2}>
                 <Button
