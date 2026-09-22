@@ -1,10 +1,23 @@
 import { BoxProps, Link, Text, VStack } from "@chakra-ui/react";
 import { ORGANIZATION_URL, REPO_URL } from "constants/Project";
 import { useDashboard } from "contexts/DashboardContext";
-import { FC } from "react";
+import { FC, useEffect } from "react";
+import { fetch } from "service/http";
 
 export const Footer: FC<BoxProps> = (props) => {
   const { version } = useDashboard();
+
+  useEffect(() => {
+    if (!version) {
+      fetch("/version")
+        .then((data: any) => {
+          if (data?.version) {
+            useDashboard.setState({ version: data.version });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [version]);
   return (
     <VStack
       w="full"
