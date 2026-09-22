@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-docker-image:
@@ -59,3 +59,14 @@ jobs:
           tags: |
             mehrwizard/marzdar:latest
             mehrwizard/marzdar:${{ github.ref_name }}
+
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "${{ github.ref_name }}" >/dev/null 2>&1 || \
+          gh release create "${{ github.ref_name }}" \
+            --title="Marzdar ${{ github.ref_name }}" \
+            --generate-notes \
+            --verify-tag
