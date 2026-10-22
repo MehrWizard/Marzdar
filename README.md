@@ -54,64 +54,31 @@
 
 ## What is Marzdar?
 
-**Marzdar** is a seamless, drop-in replacement for [Marzban](https://github.com/gozargah/marzban).
+**Marzdar** is a seamless, 100% compatible drop-in fork of [Marzban](https://github.com/gozargah/marzban) dedicated to completing the web user interface based on existing backend capabilities.
 
-Upstream Marzban already implemented many essential REST API endpoints and database features that never received corresponding buttons or controls in its web panel. **Marzdar completes this user interface**, unlocking all existing backend functionality without modifying core architecture or breaking compatibility.
+While upstream Marzban implemented many backend APIs without corresponding frontend controls, **Marzdar unlocks this functionality directly in the web panel** while guaranteeing zero breaking changes and full interchangeability:
 
----
-
-## Feature Comparison: Marzban vs. Marzdar
-
-| Area | Marzban (Upstream) | Marzdar |
-| :--- | :--- | :--- |
-| **Compatibility** | Standard Marzban | 100% drop-in compatible (same DB, CLI, and core) |
-| **Complete Web UI** | CLI / API only | Full web UI (Create, Edit, Delete, Sudo, Usage tracking/reset) |
-| **ASGI Web Engine** | Uvicorn (Python) | ⚡ **Granian (Rust/Tokio) + Uvicorn fallback** |
-| **Subscription Caching** | ❌ None (recomputed per poll) | ⚡ **In-Memory Thread-Safe TTL Cache** |
-| **Database Indexing** | Standard | ⚡ **Strategic Composite Indexes** |
-| **User Templates** | API only | Full web UI (Manage templates + 1-click prefill when creating users) |
-| **Queued Renewal Plans** | API only (`next_plan`) | Full web UI (Configure next plan + instant manual activation) |
-| **Expired Users Cleanup** | Manual SQL / API only | Safe on-demand bulk deletion modal with date-range filters |
-| **User Ownership** | API only | Web UI transfer ownership between admins |
-| **Theme & Accents** | Fixed Dark / Light | Light, Dark, and true OLED Black + 8 accent color palettes |
-| **Migration** | - | Simple 1-line Docker image swap |
-
----
-
-## Project Scope
-
-### ✅ What Marzdar Aims to Do
-- **Complete the User Interface**: Build clean, intuitive web controls for features already supported by the backend API.
-- **Maintain 100% Interchangeability**: Zero breaking changes to the database, configuration files, or CLI commands. You can switch between Marzban and Marzdar at any time.
-- **Enhance UI/UX**: Provide modern themes (Light, Dark, OLED Black), accent palettes, and full localization parity across English, Persian, Russian, and Chinese.
-- **High Concurrency Performance**: Adopt high-throughput Rust ASGI engine and memory caching for ultra-low latency response times.
-
-### ❌ What is Not Planned (Out of Scope)
-- **No breaking architectural changes**: We do not rewrite the backend engine or alter core database tables.
-- **No incompatible protocols**: We follow standard Xray-core conventions.
-- **No unnecessary bloat**: Features outside Marzban's original scope that compromise compatibility will not be introduced.
+- 🎨 **Complete Web Interface**: Build clean, intuitive web controls for features already supported by the backend API: User Templates (1-click prefill), Queued Renewal Plans (`next_plan` configuration & manual activation), Safe Expired Users Bulk Cleanup with date-range filters, and Admin User Ownership Transfer.
+- ⚡ **High Concurrency Performance**: Adopt a high-throughput Rust ASGI engine ([Granian](https://github.com/emmett-framework/granian)) with the Tokio runtime, in-memory thread-safe subscription caching (30s TTL with auto-invalidation), and strategic composite database indexes for ultra-low latency response times.
+- 🌓 **Modern UI/UX & Themes**: Modern Light, Dark, and true OLED Black themes with 8 accent palettes, plus full localization parity across English, Persian, Russian, and Chinese.
+- 🔄 **100% Drop-In Interchangeability**: Zero breaking changes to the database, configuration files, or CLI commands. You can switch between Marzban and Marzdar at any time with a simple 1-line Docker image swap.
 
 ---
 
 ## Setup & Migration
 
-After installing the original version of Marzban, swap the marzban docker image to marzdar:
+Simply update the image in `docker-compose.yml`:
 
-From:
-```yaml
-services:  
-  marzban:  
-    image: gozargah/marzban:latest
-```
-
-To:
 ```yaml
 services:  
   marzban:  
     image: mehrwizard/marzdar:latest
 ```
 
-Finally run `marzban update` in order to complete the `marzdar` setup.
+Then restart:
+```bash
+marzban update
+```
 
 ---
 
@@ -135,18 +102,14 @@ Both **Marzdar** and **Marzyar** incorporate high-performance architectural opti
 - 🗄️ **31.7% Lower Database Load**: MySQL peak CPU spikes reduced from 53.62% down to 36.64% under active query traffic thanks to in-memory caching and compound indexes.
 - 🛡️ **25.6% Tail Spike Suppression**: Maximum latency spike suppressed from 604.36 ms down to 449.63 ms under continuous saturation.
 
----
-
-### Detailed Benchmark Reports
-
-<details open>
-<summary><b>1. Subscription Response Latency (8.6x Faster Median)</b></summary>
-
 <p align="center">
-  <img src="docs/assets/benchmark-latency.png" alt="Subscription Response Latency Benchmark" width="850" height="auto">
+  <img src="docs/assets/benchmark.png" alt="Comprehensive Benchmark Dashboard" width="900" height="auto">
 </p>
 
-Measured across high-frequency production telemetry on a live production server under active user traffic and continuous query load:
+<details>
+<summary><b>Detailed Metrics & Percentile Tables</b></summary>
+
+#### 1. Subscription Response Latency (Live Production Telemetry)
 
 | Latency Percentile | Marzban (Original / Baseline) | Marzdar & Marzyar (Optimized) | Improvement |
 | :--- | :--- | :--- | :--- |
@@ -156,47 +119,15 @@ Measured across high-frequency production telemetry on a live production server 
 | **p95** | **93.08 ms** | **23.35 ms** | **-74.9% (4.0x faster)** |
 | **Mean (Average)** | **53.38 ms** | **12.25 ms** | **-77.1% (4.4x faster)** |
 
-```
-Subscription Latency Percentiles (Lower is better):
-
-p50 Median:
-  Marzban:            ████████████████████████ 46.27 ms
-  Marzdar & Marzyar:  ███ 5.37 ms (-88.4%)
-
-p95 Tail:
-  Marzban:            ██████████████████████████████████████████████ 93.08 ms
-  Marzdar & Marzyar:  ████████████ 23.35 ms (-74.9%)
-
-Mean Latency:
-  Marzban:            ███████████████████████████ 53.38 ms
-  Marzdar & Marzyar:  ██████ 12.25 ms (-77.1%)
-```
-</details>
-
-<details>
-<summary><b>2. Production Stability & Resource Efficiency</b></summary>
-
-<p align="center">
-  <img src="docs/assets/benchmark-stability.png" alt="Production Stability & CPU Benchmark" width="850" height="auto">
-</p>
-
-Continuous metrics recorded under active live production load:
+#### 2. Production Stability & Resource Efficiency
 
 | Telemetry Metric | Marzban (Original / Baseline) | Marzdar & Marzyar (Optimized) | Impact |
 | :--- | :--- | :--- | :--- |
 | **Peak MySQL CPU Spike** | 53.62% | **36.64%** | **31.7% lower DB query burden** |
 | **Max Tail Latency Spike** | 604.36 ms | **449.63 ms** | **25.6% lower tail spike** |
 | **Panel Memory Footprint** | ~125 MB | ~175 MB | Highly efficient bounded memory cache |
-</details>
 
-<details>
-<summary><b>3. High-Concurrency Stress & Cache Saturation Benchmark (23.3x Throughput)</b></summary>
-
-<p align="center">
-  <img src="docs/assets/benchmark-stress.png" alt="High Concurrency Stress Benchmark" width="850" height="auto">
-</p>
-
-Standardized burst test evaluating subscription endpoint capacity under sustained concurrency with in-memory caching (15 worker threads, 10 seconds continuous load):
+#### 3. High-Concurrency Stress & Cache Saturation (15 Workers, 10s Burst)
 
 | Benchmark Metric | Marzban (Baseline: Uvicorn / No Cache) | Marzdar & Marzyar (Granian + Cache + Indexes) | Impact |
 | :--- | :--- | :--- | :--- |
@@ -206,24 +137,6 @@ Standardized burst test evaluating subscription endpoint capacity under sustaine
 | **p95 Latency under Load** | **695.22 ms** | **38.62 ms** | **-94.4% Latency (18.0x faster)** |
 | **p99 Latency under Load** | **767.31 ms** | **55.85 ms** | **-92.7% Latency (13.7x faster)** |
 | **Total Completed Requests (10s)**| 341 requests | **7,764 requests** | **22.8x Total Serviced Reqs** |
-
-```
-Concurrent Throughput (Higher is better):
-  Marzban:            █ 33.2 req/s
-  Marzdar & Marzyar:  ███████████████████████ 775.2 req/s (+2,235% / 23.3x)
-
-Latency Under Stress Load (Lower is better):
-  Marzban:            ████████████████████████ 447.66 ms
-  Marzdar & Marzyar:  █ 17.53 ms (-96.1% / 25.5x faster)
-```
-</details>
-
-<details>
-<summary><b>4. Comprehensive Benchmark Dashboard (Combined Overview)</b></summary>
-
-<p align="center">
-  <img src="docs/assets/benchmark.png" alt="Comprehensive Benchmark Dashboard" width="900" height="auto">
-</p>
 </details>
 
 ---
