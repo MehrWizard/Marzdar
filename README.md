@@ -60,7 +60,7 @@ Upstream Marzban already implemented many essential REST API endpoints and datab
 
 ---
 
-## Marzban vs. Marzdar
+## Feature Comparison: Marzban vs. Marzdar
 
 | Area | Marzban (Upstream) | Marzdar |
 | :--- | :--- | :--- |
@@ -84,6 +84,7 @@ Upstream Marzban already implemented many essential REST API endpoints and datab
 - **Complete the User Interface**: Build clean, intuitive web controls for features already supported by the backend API.
 - **Maintain 100% Interchangeability**: Zero breaking changes to the database, configuration files, or CLI commands. You can switch between Marzban and Marzdar at any time.
 - **Enhance UI/UX**: Provide modern themes (Light, Dark, OLED Black), accent palettes, and full localization parity across English, Persian, Russian, and Chinese.
+- **High Concurrency Performance**: Adopt high-throughput Rust ASGI engine and memory caching for ultra-low latency response times.
 
 ### ❌ What is Not Planned (Out of Scope)
 - **No breaking architectural changes**: We do not rewrite the backend engine or alter core database tables.
@@ -124,25 +125,29 @@ Both **Marzdar** and **Marzyar** incorporate high-performance architectural opti
 4. **Node Session Lifecycle & Stats Collection Resiliency**: Isolated node synchronization cycles, bounded gRPC timeouts, and transactional error handling ensure node stats collection never hangs or impairs API responsiveness.
 
 <p align="center">
-  <img src="docs/assets/benchmark.png" alt="Marzban vs Marzdar and Marzyar Benchmark" width="900" height="auto">
+  <img src="docs/assets/architecture.png" alt="Marzdar and Marzyar Architecture Flowchart" width="850" height="auto">
 </p>
 
-```mermaid
-flowchart LR
-    A["VPN Client Polling"] --> B["Granian Engine (Rust / Tokio)"]
-    B --> C{"Subscription Cache Hit?"}
-    C -- "Yes (Within 30s TTL)" --> D["Instant Response (<25ms)"]
-    C -- "No / Cache Miss" --> E["Database Query & Render"]
-    E --> F["Store in Memory Cache"]
-    F --> D
-    G["Admin or User Event"] -->|Auto Invalidation| H["Purge User Cache Entry"]
-```
+### Key Performance Highlights:
+- ⚡ **1.79x Faster Median Response**: Median (p50) subscription latency reduced from 46.27 ms to 25.84 ms (**44.2% faster**).
+- 🚀 **+72.0% Higher Concurrency Throughput**: Handled 57.1 req/s vs 33.2 req/s under sustained 15-worker load (**1.72x total capacity**).
+- 🛡️ **75.4% Elimination of Tail Latency Spikes**: Max latency spike dropped from 604.36 ms down to 148.94 ms.
+- 📉 **50.6% Lower CPU Spikes**: Panel CPU load peaks reduced from 139.3% down to 68.9%; sustained p99 CPU cut by **55.4%**.
+- 🗄️ **46.9% Database Burden Reduction**: MySQL peak CPU spikes reduced from 53.6% down to 28.5% thanks to in-memory caching and compound indexes.
+- ⚡ **41.6% Latency Reduction Under Load**: Average latency under sustained heavy stress dropped from 447.66 ms to 261.24 ms.
 
-### Production Telemetry (4-Hour Real-World Study)
+---
 
-Performance was continuously monitored across two consecutive 2-hour measurement windows on a live production server (`aedark-tun`) with ~80 concurrently active users (~969 telemetry samples total):
+### Detailed Benchmark Reports
 
-#### 1. Subscription Endpoint Response Latency
+<details open>
+<summary><b>1. Subscription Response Latency (1.79x Faster Median)</b></summary>
+
+<p align="center">
+  <img src="docs/assets/benchmark-latency.png" alt="Subscription Response Latency Benchmark" width="850" height="auto">
+</p>
+
+Measured across a 4-hour telemetry window on a live high-traffic production server with ~80 concurrently active users (~969 samples total):
 
 | Latency Percentile | Marzban (Original / Baseline) | Marzdar & Marzyar (Optimized) | Improvement |
 | :--- | :--- | :--- | :--- |
@@ -169,8 +174,16 @@ Max Tail Spike:
   Marzban:            ████████████████████████████████████████████████████████████ 604.36 ms
   Marzdar & Marzyar:  ███████████████ 148.94 ms (-75.4%)
 ```
+</details>
 
-#### 2. Resource Utilization & Peak Load Stability
+<details>
+<summary><b>2. Production Stability & Resource Efficiency (75% Spike Reduction)</b></summary>
+
+<p align="center">
+  <img src="docs/assets/benchmark-stability.png" alt="Production Stability & CPU Benchmark" width="850" height="auto">
+</p>
+
+Continuous metrics recorded under live production load:
 
 | Telemetry Metric | Marzban (Original / Baseline) | Marzdar & Marzyar (Optimized) | Impact |
 | :--- | :--- | :--- | :--- |
@@ -178,10 +191,14 @@ Max Tail Spike:
 | **p99 Panel CPU** | 91.30% | **40.73%** | **55.4% lower CPU under load** |
 | **Peak MySQL CPU Spike** | 53.62% | **28.49%** | **46.9% lower DB query burden** |
 | **Panel Memory Footprint** | ~125 MB | ~141 MB | Highly efficient bounded memory cache |
+</details>
 
----
+<details>
+<summary><b>3. High-Concurrency Stress Benchmark (+72.0% Throughput Capacity)</b></summary>
 
-### High-Concurrency Stress Benchmark
+<p align="center">
+  <img src="docs/assets/benchmark-stress.png" alt="High Concurrency Stress Benchmark" width="850" height="auto">
+</p>
 
 Standardized burst test evaluating subscription endpoint capacity under sustained concurrency (15 worker threads, 10 seconds continuous load):
 
@@ -203,6 +220,15 @@ Latency Under Stress Load (Lower is better):
   Marzban:            █████████████████████████████████████████████ 447.66 ms
   Marzdar & Marzyar:  ██████████████████████████ 261.24 ms (-41.6%)
 ```
+</details>
+
+<details>
+<summary><b>4. Comprehensive Benchmark Dashboard (Combined Overview)</b></summary>
+
+<p align="center">
+  <img src="docs/assets/benchmark.png" alt="Comprehensive Benchmark Dashboard" width="900" height="auto">
+</p>
+</details>
 
 ---
 
