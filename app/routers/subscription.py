@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Any, Optional
 try:
     from packaging.version import Version as LooseVersion
 except ImportError:
@@ -9,15 +10,16 @@ except ImportError:
         def LooseVersion(v):
             return [int(x) if x.isdigit() else x for x in re.split(r'(\d+)', str(v))]
 
-from fastapi import APIRouter, Depends, Header, Path, Request, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Path, Request, Response
 from fastapi.responses import HTMLResponse
 
-from app.db import Session, crud, get_db
+from app.db import GetDB, Session, crud, get_db
 from app.dependencies import get_validated_sub, validate_dates
 from app.models.user import SubscriptionUserResponse, UserResponse
 from app.subscription.cache import get_cached_subscription, set_cached_subscription
 from app.subscription.share import encode_title, generate_subscription
 from app.templates import render_template
+from app.utils.jwt import get_subscription_payload
 from config import (
     SUB_PROFILE_TITLE,
     SUB_SUPPORT_URL,
@@ -65,33 +67,23 @@ def get_subscription_user_info(user: UserResponse) -> dict:
     }
 
 
-@router.get("/{token}/")
-@router.get("/{token}", include_in_schema=False)
-def user_subscription(
+def _render_user_subscription(
     request: Request,
-    db: Session = Depends(get_db),
-    dbuser: UserResponse = Depends(get_validated_sub),
-    user_agent: str = Header(default="")
-):
-    """Provides a subscription link based on the user agent (Clash, V2Ray, etc.)."""
+    db: Session,
+    dbuser: UserResponse,
+    user_agent: str,
+    is_html: bool,
+    client_key: str
+) -> Response:
     user: UserResponse = UserResponse.model_validate(dbuser)
 
-    accept_header = request.headers.get("Accept", "")
-    if "text/html" in accept_header:
-        cached_html = get_cached_subscription(user.username, "__html__")
-        if cached_html:
-            return HTMLResponse(content=cached_html[0])
+    if is_html:
         html_content = render_template(
             SUBSCRIPTION_PAGE_TEMPLATE,
             {"user": user}
         )
         set_cached_subscription(user.username, "__html__", html_content, "text/html", {})
         return HTMLResponse(html_content)
-
-    client_key = f"ua:{user_agent}"
-    cached = get_cached_subscription(user.username, client_key)
-    if cached:
-        return Response(content=cached[0], media_type=cached[1], headers=cached[2])
 
     _safe_update_user_sub(db, dbuser, user_agent)
     response_headers = {
@@ -168,6 +160,85 @@ def user_subscription(
     return Response(content=conf, media_type=media_type, headers=response_headers)
 
 
+def _render_subscription_with_client_type(
+    request: Request,
+    db: Session,
+    dbuser: UserResponse,
+    client_type: str,
+    user_agent: str,
+    client_key: str
+) -> Response:
+    user: UserResponse = UserResponse.model_validate(dbuser)
+
+    _safe_update_user_sub(db, dbuser, user_agent)
+    response_headers = {
+        "content-disposition": f'attachment; filename="{user.username}"',
+        "profile-web-page-url": str(request.url),
+        "support-url": SUB_SUPPORT_URL,
+        "profile-title": encode_title(SUB_PROFILE_TITLE),
+        "profile-update-interval": SUB_UPDATE_INTERVAL,
+        "subscription-userinfo": "; ".join(
+            f"{key}={val}"
+            for key, val in get_subscription_user_info(user).items()
+        )
+    }
+
+    config = client_config.get(client_type)
+    conf = generate_subscription(user=user,
+                                 config_format=config["config_format"],
+                                 as_base64=config["as_base64"],
+                                 reverse=config["reverse"])
+
+    set_cached_subscription(user.username, client_key, conf, config["media_type"], response_headers)
+    return Response(content=conf, media_type=config["media_type"], headers=response_headers)
+
+
+@router.get("/{token}/")
+@router.get("/{token}", include_in_schema=False)
+def user_subscription(
+    request: Request,
+    user_agent: str = Header(default=""),
+    dbuser: Any = None,
+    db: Any = None,
+):
+    """Provides a subscription link based on the user agent (Clash, V2Ray, etc.)."""
+    accept_header = request.headers.get("Accept", "")
+    is_html = "text/html" in accept_header
+    client_key = "__html__" if is_html else f"ua:{user_agent}"
+
+    # Direct pass (tests or explicit callers with dbuser)
+    if dbuser is not None:
+        session = db if db is not None else GetDB().__enter__()
+        cached = get_cached_subscription(dbuser.username, client_key)
+        if cached:
+            if is_html:
+                return HTMLResponse(content=cached[0])
+            return Response(content=cached[0], media_type=cached[1], headers=cached[2])
+        return _render_user_subscription(request, session, dbuser, user_agent, is_html, client_key)
+
+    # Fast Zero-DB Path via in-memory cryptographic verification
+    token = request.path_params.get("token", "")
+    sub = get_subscription_payload(token)
+    if not sub:
+        raise HTTPException(status_code=404, detail="Not Found")
+    username = sub["username"]
+
+    cached = get_cached_subscription(username, client_key)
+    if cached:
+        if is_html:
+            return HTMLResponse(content=cached[0])
+        return Response(content=cached[0], media_type=cached[1], headers=cached[2])
+
+    with GetDB() as session:
+        dbuser = crud.get_user(session, username)
+        if not dbuser or dbuser.created_at > sub['created_at']:
+            raise HTTPException(status_code=404, detail="Not Found")
+        if dbuser.sub_revoked_at and dbuser.sub_revoked_at > sub['created_at']:
+            raise HTTPException(status_code=404, detail="Not Found")
+
+        return _render_user_subscription(request, session, dbuser, user_agent, is_html, client_key)
+
+
 @router.get("/{token}/info", response_model=SubscriptionUserResponse)
 def user_subscription_info(
     dbuser: UserResponse = Depends(get_validated_sub),
@@ -194,38 +265,38 @@ def user_get_usage(
 @router.get("/{token}/{client_type}")
 def user_subscription_with_client_type(
     request: Request,
-    dbuser: UserResponse = Depends(get_validated_sub),
     client_type: str = Path(..., regex="sing-box|clash-meta|clash|outline|v2ray|v2ray-json"),
-    db: Session = Depends(get_db),
-    user_agent: str = Header(default="")
+    user_agent: str = Header(default=""),
+    dbuser: Any = None,
+    db: Any = None,
 ):
     """Provides a subscription link based on the specified client type (e.g., Clash, V2Ray)."""
-    user: UserResponse = UserResponse.model_validate(dbuser)
-
     client_key = f"type:{client_type}:{user_agent}"
-    cached = get_cached_subscription(user.username, client_key)
+
+    # Direct pass (tests or explicit callers with dbuser)
+    if dbuser is not None:
+        session = db if db is not None else GetDB().__enter__()
+        cached = get_cached_subscription(dbuser.username, client_key)
+        if cached:
+            return Response(content=cached[0], media_type=cached[1], headers=cached[2])
+        return _render_subscription_with_client_type(request, session, dbuser, client_type, user_agent, client_key)
+
+    # Fast Zero-DB Path via in-memory cryptographic verification
+    token = request.path_params.get("token", "")
+    sub = get_subscription_payload(token)
+    if not sub:
+        raise HTTPException(status_code=404, detail="Not Found")
+    username = sub["username"]
+
+    cached = get_cached_subscription(username, client_key)
     if cached:
         return Response(content=cached[0], media_type=cached[1], headers=cached[2])
 
-    _safe_update_user_sub(db, dbuser, user_agent)
+    with GetDB() as session:
+        dbuser = crud.get_user(session, username)
+        if not dbuser or dbuser.created_at > sub['created_at']:
+            raise HTTPException(status_code=404, detail="Not Found")
+        if dbuser.sub_revoked_at and dbuser.sub_revoked_at > sub['created_at']:
+            raise HTTPException(status_code=404, detail="Not Found")
 
-    response_headers = {
-        "content-disposition": f'attachment; filename="{user.username}"',
-        "profile-web-page-url": str(request.url),
-        "support-url": SUB_SUPPORT_URL,
-        "profile-title": encode_title(SUB_PROFILE_TITLE),
-        "profile-update-interval": SUB_UPDATE_INTERVAL,
-        "subscription-userinfo": "; ".join(
-            f"{key}={val}"
-            for key, val in get_subscription_user_info(user).items()
-        )
-    }
-
-    config = client_config.get(client_type)
-    conf = generate_subscription(user=user,
-                                 config_format=config["config_format"],
-                                 as_base64=config["as_base64"],
-                                 reverse=config["reverse"])
-
-    set_cached_subscription(user.username, client_key, conf, config["media_type"], response_headers)
-    return Response(content=conf, media_type=config["media_type"], headers=response_headers)
+        return _render_subscription_with_client_type(request, session, dbuser, client_type, user_agent, client_key)

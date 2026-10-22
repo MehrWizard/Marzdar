@@ -12,12 +12,21 @@ from config import ALLOWED_ORIGINS, DOCS, XRAY_SUBSCRIPTION_PATH
 
 from app.version import __version__, get_version
 
+try:
+    import orjson  # noqa
+    from fastapi.responses import ORJSONResponse
+    DefaultResponseClass = ORJSONResponse
+except ImportError:
+    from fastapi.responses import JSONResponse
+    DefaultResponseClass = JSONResponse
+
 app = FastAPI(
     title="MarzbanAPI",
     description="Unified GUI Censorship Resistant Solution Powered by Xray",
     version=__version__,
     docs_url="/docs" if DOCS else None,
     redoc_url="/redoc" if DOCS else None,
+    default_response_class=DefaultResponseClass,
 )
 
 scheduler = BackgroundScheduler(

@@ -20,6 +20,7 @@ grpcio-tools==1.67.1
 grpcio==1.67.1
 httptools==0.6.4
 jdatetime==4.1.1
+orjson>=3.9.0
 passlib==1.7.4
 psutil==5.9.4
 pyOpenSSL==24.2.1

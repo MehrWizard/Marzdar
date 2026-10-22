@@ -1,11 +1,13 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy.orm import Session
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import Session, joinedload
 
 from app import logger, scheduler, xray
 from app.db import (GetDB, get_notification_reminder, get_users,
                     start_user_expire, update_user_status, reset_user_by_next)
+from app.db.models import User
 from app.models.user import ReminderType, UserResponse, UserStatus
 from app.utils import report
 from app.utils.helpers import (calculate_expiration_days,
@@ -55,7 +57,22 @@ def review():
     now = datetime.utcnow()
     now_ts = now.timestamp()
     with GetDB() as db:
-        for user in get_users(db, status=UserStatus.active):
+        if WEBHOOK_ADDRESS:
+            active_users = get_users(db, status=UserStatus.active)
+        else:
+            # High-performance targeted query: only fetch candidate active users that have expired or reached limit
+            active_users = db.query(User).options(
+                joinedload(User.admin),
+                joinedload(User.next_plan)
+            ).filter(
+                User.status == UserStatus.active,
+                or_(
+                    and_(User.data_limit.isnot(None), User.used_traffic >= User.data_limit),
+                    and_(User.expire.isnot(None), User.expire <= now_ts)
+                )
+            ).all()
+
+        for user in active_users:
 
             limited = user.data_limit and user.used_traffic >= user.data_limit
             expired = user.expire and user.expire <= now_ts

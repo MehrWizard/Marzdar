@@ -152,8 +152,12 @@ def record_user_usages():
     if not users_usage:
         return
 
+    active_uids = [int(u['uid']) for u in users_usage if str(u.get('uid', '')).isdigit()]
     with GetDB() as db:
-        user_admin_map = dict(db.query(User.id, User.admin_id).all())
+        if active_uids:
+            user_admin_map = dict(db.query(User.id, User.admin_id).filter(User.id.in_(active_uids)).all())
+        else:
+            user_admin_map = {}
 
     admin_usage = defaultdict(int)
     for user_usage in users_usage:
