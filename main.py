@@ -2,13 +2,17 @@ import click
 import logging
 import os
 import ssl
+from pathlib import Path
 
 import uvicorn
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
 from app import app, logger
-from config import (DEBUG, UVICORN_HOST, UVICORN_PORT, UVICORN_SSL_CERTFILE,
+from config import (DEBUG, GRANIAN_HOST, GRANIAN_PORT, GRANIAN_SSL_CERTFILE,
+                    GRANIAN_SSL_KEYFILE, GRANIAN_SSL_CA_TYPE, GRANIAN_UDS,
+                    GRANIAN_THREADS, GRANIAN_BLOCKING_THREADS,
+                    UVICORN_HOST, UVICORN_PORT, UVICORN_SSL_CERTFILE,
                     UVICORN_SSL_KEYFILE, UVICORN_SSL_CA_TYPE, UVICORN_UDS)
 
 
@@ -93,12 +97,34 @@ Then, navigate to {click.style(f'http://127.0.0.1:{UVICORN_PORT}', bold=True)} o
         bind_args['host'] = '0.0.0.0'
 
     try:
-        uvicorn.run(
+        from granian import Granian
+        from granian.constants import Interfaces
+
+        server = Granian(
             "main:app",
-            **bind_args,
+            address=bind_args.get("host", "127.0.0.1"),
+            port=bind_args.get("port", 8000),
+            uds=Path(bind_args["uds"]) if bind_args.get("uds") else None,
+            interface=Interfaces.ASGI,
             workers=1,
+            runtime_threads=GRANIAN_THREADS,
+            ssl_cert=Path(bind_args["ssl_certfile"]) if bind_args.get("ssl_certfile") else None,
+            ssl_key=Path(bind_args["ssl_keyfile"]) if bind_args.get("ssl_keyfile") else None,
+            websockets=True,
             reload=DEBUG,
-            log_level=logging.DEBUG if DEBUG else logging.INFO
+            log_level="debug" if DEBUG else "info",
         )
-    except FileNotFoundError:  # to prevent error on removing unix sock
+        server.serve()
+    except ImportError:
+        try:
+            uvicorn.run(
+                "main:app",
+                **bind_args,
+                workers=1,
+                reload=DEBUG,
+                log_level=logging.DEBUG if DEBUG else logging.INFO
+            )
+        except FileNotFoundError:  # to prevent error on removing unix sock
+            pass
+    except (FileNotFoundError, KeyboardInterrupt):
         pass

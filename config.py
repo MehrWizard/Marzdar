@@ -8,12 +8,21 @@ SQLALCHEMY_DATABASE_URL = config("SQLALCHEMY_DATABASE_URL", default="sqlite:///d
 SQLALCHEMY_POOL_SIZE = config("SQLALCHEMY_POOL_SIZE", cast=int, default=10)
 SQLIALCHEMY_MAX_OVERFLOW = config("SQLIALCHEMY_MAX_OVERFLOW", cast=int, default=30)
 
-UVICORN_HOST = config("UVICORN_HOST", default="0.0.0.0")
-UVICORN_PORT = config("UVICORN_PORT", cast=int, default=8000)
-UVICORN_UDS = config("UVICORN_UDS", default=None)
-UVICORN_SSL_CERTFILE = config("UVICORN_SSL_CERTFILE", default=None)
-UVICORN_SSL_KEYFILE = config("UVICORN_SSL_KEYFILE", default=None)
-UVICORN_SSL_CA_TYPE = config("UVICORN_SSL_CA_TYPE", default="public").lower()
+GRANIAN_HOST = config("GRANIAN_HOST", default=config("UVICORN_HOST", default="0.0.0.0"))
+GRANIAN_PORT = config("GRANIAN_PORT", cast=int, default=config("UVICORN_PORT", cast=int, default=8000))
+GRANIAN_UDS = config("GRANIAN_UDS", default=config("UVICORN_UDS", default=None))
+GRANIAN_SSL_CERTFILE = config("GRANIAN_SSL_CERTFILE", default=config("UVICORN_SSL_CERTFILE", default=None))
+GRANIAN_SSL_KEYFILE = config("GRANIAN_SSL_KEYFILE", default=config("UVICORN_SSL_KEYFILE", default=None))
+GRANIAN_SSL_CA_TYPE = config("GRANIAN_SSL_CA_TYPE", default=config("UVICORN_SSL_CA_TYPE", default="public")).lower()
+GRANIAN_THREADS = config("GRANIAN_THREADS", cast=int, default=4)
+GRANIAN_BLOCKING_THREADS = config("GRANIAN_BLOCKING_THREADS", cast=int, default=2)
+
+UVICORN_HOST = GRANIAN_HOST
+UVICORN_PORT = GRANIAN_PORT
+UVICORN_UDS = GRANIAN_UDS
+UVICORN_SSL_CERTFILE = GRANIAN_SSL_CERTFILE
+UVICORN_SSL_KEYFILE = GRANIAN_SSL_KEYFILE
+UVICORN_SSL_CA_TYPE = GRANIAN_SSL_CA_TYPE
 DASHBOARD_PATH = config("DASHBOARD_PATH", default="/dashboard/")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
@@ -135,6 +144,7 @@ DISABLE_RECORDING_NODE_USAGE = config("DISABLE_RECORDING_NODE_USAGE", cast=bool,
 SUB_UPDATE_INTERVAL = config("SUB_UPDATE_INTERVAL", default="12")
 SUB_SUPPORT_URL = config("SUB_SUPPORT_URL", default="https://t.me/")
 SUB_PROFILE_TITLE = config("SUB_PROFILE_TITLE", default="Subscription")
+SUB_CACHE_TTL = config("SUB_CACHE_TTL", cast=int, default=30)
 
 # discord webhook log
 DISCORD_WEBHOOK_URL = config("DISCORD_WEBHOOK_URL", default="")
