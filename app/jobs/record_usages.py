@@ -53,7 +53,7 @@ def safe_execute(db: Session, stmt, params=None):
             except catches as err:
                 orig = getattr(err, 'orig', err)
                 err_code = getattr(orig, 'args', [None])[0] if getattr(orig, 'args', None) else None
-                if err_code in (1213, 1205) and tries < 3:  # Deadlock or Lock Wait Timeout
+                if err_code in (1213, 1205, 1020) and tries < 3:  # Deadlock, Lock Wait Timeout, or Concurrent Read-Conflict
                     db.rollback()
                     tries += 1
                     continue
