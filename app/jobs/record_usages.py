@@ -114,7 +114,7 @@ def get_users_stats(api: XRayAPI):
             params[stat.name.split('.', 1)[0]] += stat.value
         params = list({"uid": uid, "value": value} for uid, value in params.items())
         return params
-    except xray_exc.XrayError:
+    except Exception:
         return []
 
 
@@ -123,7 +123,7 @@ def get_outbounds_stats(api: XRayAPI):
         params = [{"up": stat.value, "down": 0} if stat.link == "uplink" else {"up": 0, "down": stat.value}
                   for stat in filter(attrgetter('value'), api.get_outbounds_stats(reset=True, timeout=10))]
         return params
-    except xray_exc.XrayError:
+    except Exception:
         return []
 
 
@@ -132,9 +132,12 @@ def record_user_usages():
     usage_coefficient = {None: 1}  # default usage coefficient for the main api instance
 
     for node_id, node in list(xray.nodes.items()):
-        if node.connected and node.started:
-            api_instances[node_id] = node.api
-            usage_coefficient[node_id] = node.usage_coefficient  # fetch the usage coefficient
+        try:
+            if node.connected and node.started:
+                api_instances[node_id] = node.api
+                usage_coefficient[node_id] = node.usage_coefficient  # fetch the usage coefficient
+        except Exception:
+            continue
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         futures = {node_id: executor.submit(get_users_stats, api) for node_id, api in api_instances.items()}
@@ -186,8 +189,11 @@ def record_user_usages():
 def record_node_usages():
     api_instances = {None: xray.api}
     for node_id, node in list(xray.nodes.items()):
-        if node.connected and node.started:
-            api_instances[node_id] = node.api
+        try:
+            if node.connected and node.started:
+                api_instances[node_id] = node.api
+        except Exception:
+            continue
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         futures = {node_id: executor.submit(get_outbounds_stats, api) for node_id, api in api_instances.items()}

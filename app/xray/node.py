@@ -111,7 +111,8 @@ class ReSTXRayNode:
         if res.status_code == 200:
             return data
         else:
-            exc = NodeAPIError(res.status_code, data['detail'])
+            detail = data.get('detail', 'Unknown error') if isinstance(data, dict) else str(data)
+            exc = NodeAPIError(res.status_code, detail)
             raise exc
 
     @property
@@ -121,13 +122,18 @@ class ReSTXRayNode:
         try:
             self.make_request("/ping", timeout=3)
             return True
-        except NodeAPIError:
+        except Exception:
             return False
 
     @property
     def started(self):
-        res = self.make_request("/", timeout=3)
-        return res.get('started', False)
+        if not self._session_id:
+            return False
+        try:
+            res = self.make_request("/", timeout=3)
+            return res.get('started', False) if isinstance(res, dict) else False
+        except Exception:
+            return False
 
     @property
     def api(self):
@@ -135,7 +141,8 @@ class ReSTXRayNode:
             raise ConnectionError("Node is not connected")
 
         if not self._api:
-            if self._started is True:
+            if self._started is True or self.started:
+                self._started = True
                 self._api = XRayAPI(
                     address=self.address,
                     port=self.api_port,
@@ -156,12 +163,20 @@ class ReSTXRayNode:
         self._session_id = res['session_id']
 
     def disconnect(self):
-        self.make_request("/disconnect", timeout=3)
+        try:
+            self.make_request("/disconnect", timeout=3)
+        except Exception:
+            pass
         self._session_id = None
+        self._started = False
+        self._api = None
 
     def get_version(self):
-        res = self.make_request("/", timeout=3)
-        return res.get('core_version')
+        try:
+            res = self.make_request("/", timeout=3)
+            return res.get('core_version') if isinstance(res, dict) else None
+        except Exception:
+            return None
 
     def start(self, config: XRayConfig):
         if not self.connected:
