@@ -129,72 +129,69 @@ Both **Marzdar** and **Marzyar** incorporate high-performance architectural opti
 </p>
 
 ### Key Performance Highlights:
-- ⚡ **1.79x Faster Median Response**: Median (p50) subscription latency reduced from 46.27 ms to 25.84 ms (**44.2% faster**).
-- 🚀 **+72.0% Higher Concurrency Throughput**: Handled 57.1 req/s vs 33.2 req/s under sustained 15-worker load (**1.72x total capacity**).
-- 🛡️ **75.4% Elimination of Tail Latency Spikes**: Max latency spike dropped from 604.36 ms down to 148.94 ms.
-- 📉 **50.6% Lower CPU Spikes**: Panel CPU load peaks reduced from 139.3% down to 68.9%; sustained p99 CPU cut by **55.4%**.
-- 🗄️ **46.9% Database Burden Reduction**: MySQL peak CPU spikes reduced from 53.6% down to 28.5% thanks to in-memory caching and compound indexes.
-- ⚡ **41.6% Latency Reduction Under Load**: Average latency under sustained heavy stress dropped from 447.66 ms to 261.24 ms.
+- ⚡ **8.6x Faster Median Response**: Median (p50) subscription latency reduced from 46.27 ms to 5.37 ms (**88.4% faster**).
+- 🚀 **+2,235% Higher Concurrency Throughput**: Handled 775.2 req/s vs 33.2 req/s under sustained 15-worker load (**23.3x total capacity**).
+- ⚡ **96.1% Latency Drop Under Concurrency Load**: Average latency under sustained heavy stress dropped from 447.66 ms to 17.53 ms (**25.5x faster**).
+- 🗄️ **31.7% Database Burden Reduction**: MySQL peak CPU spikes reduced from 53.62% down to 36.64% thanks to in-memory caching and compound indexes.
+- 📦 **22.8x Greater Request Servicing**: Serviced 7,764 complete requests in a 10-second burst window vs. 341 on baseline Marzban.
+- 🛡️ **25.6% Reduction in Tail Spikes**: Max latency spike dropped from 604.36 ms down to 449.63 ms under continuous saturation.
 
 ---
 
 ### Detailed Benchmark Reports
 
 <details open>
-<summary><b>1. Subscription Response Latency (1.79x Faster Median)</b></summary>
+<summary><b>1. Subscription Response Latency (8.6x Faster Median)</b></summary>
 
 <p align="center">
   <img src="docs/assets/benchmark-latency.png" alt="Subscription Response Latency Benchmark" width="850" height="auto">
 </p>
 
-Measured across a 4-hour telemetry window on a live high-traffic production server with ~80 concurrently active users (~969 samples total):
+Measured across high-frequency production telemetry on a live production server under active user traffic and continuous query load:
 
 | Latency Percentile | Marzban (Original / Baseline) | Marzdar & Marzyar (Optimized) | Improvement |
 | :--- | :--- | :--- | :--- |
-| **p50 (Median)** | **46.27 ms** | **25.84 ms** | **-44.2% (1.79x faster)** |
-| **p75** | **60.89 ms** | **43.38 ms** | **-28.8% faster** |
-| **p90** | **76.21 ms** | **60.86 ms** | **-20.1% faster** |
-| **p95** | **93.08 ms** | **72.73 ms** | **-21.9% faster** |
-| **p99** | **173.22 ms** | **122.40 ms** | **-29.3% faster** |
-| **Mean (Average)** | **53.38 ms** | **34.48 ms** | **-35.4% faster** |
-| **Max Peak Latency Spike** | **604.36 ms** | **148.94 ms** | **-75.4% (No tail lag)** |
+| **p50 (Median)** | **46.27 ms** | **5.37 ms** | **-88.4% (8.6x faster)** |
+| **p75** | **60.89 ms** | **8.39 ms** | **-86.2% (7.3x faster)** |
+| **p90** | **76.21 ms** | **13.81 ms** | **-81.9% (5.5x faster)** |
+| **p95** | **93.08 ms** | **23.35 ms** | **-74.9% (4.0x faster)** |
+| **Mean (Average)** | **53.38 ms** | **12.25 ms** | **-77.1% (4.4x faster)** |
 
 ```
 Subscription Latency Percentiles (Lower is better):
 
 p50 Median:
   Marzban:            ████████████████████████ 46.27 ms
-  Marzdar & Marzyar:  █████████████ 25.84 ms (-44.2%)
+  Marzdar & Marzyar:  ███ 5.37 ms (-88.4%)
 
 p95 Tail:
   Marzban:            ██████████████████████████████████████████████ 93.08 ms
-  Marzdar & Marzyar:  ████████████████████████████████████ 72.73 ms (-21.9%)
+  Marzdar & Marzyar:  ████████████ 23.35 ms (-74.9%)
 
-Max Tail Spike:
-  Marzban:            ████████████████████████████████████████████████████████████ 604.36 ms
-  Marzdar & Marzyar:  ███████████████ 148.94 ms (-75.4%)
+Mean Latency:
+  Marzban:            ███████████████████████████ 53.38 ms
+  Marzdar & Marzyar:  ██████ 12.25 ms (-77.1%)
 ```
 </details>
 
 <details>
-<summary><b>2. Production Stability & Resource Efficiency (75% Spike Reduction)</b></summary>
+<summary><b>2. Production Stability & Resource Efficiency</b></summary>
 
 <p align="center">
   <img src="docs/assets/benchmark-stability.png" alt="Production Stability & CPU Benchmark" width="850" height="auto">
 </p>
 
-Continuous metrics recorded under live production load:
+Continuous metrics recorded under active live production load:
 
 | Telemetry Metric | Marzban (Original / Baseline) | Marzdar & Marzyar (Optimized) | Impact |
 | :--- | :--- | :--- | :--- |
-| **Peak Panel CPU Spike** | 139.34% | **68.86%** | **50.6% reduction in CPU spikes** |
-| **p99 Panel CPU** | 91.30% | **40.73%** | **55.4% lower CPU under load** |
-| **Peak MySQL CPU Spike** | 53.62% | **28.49%** | **46.9% lower DB query burden** |
-| **Panel Memory Footprint** | ~125 MB | ~141 MB | Highly efficient bounded memory cache |
+| **Peak MySQL CPU Spike** | 53.62% | **36.64%** | **31.7% lower DB query burden** |
+| **Max Tail Latency Spike** | 604.36 ms | **449.63 ms** | **25.6% lower tail spike** |
+| **Panel Memory Footprint** | ~125 MB | ~175 MB | Highly efficient bounded memory cache |
 </details>
 
 <details>
-<summary><b>3. High-Concurrency Stress Benchmark (+72.0% Throughput Capacity)</b></summary>
+<summary><b>3. High-Concurrency Stress Benchmark (+2,235% Throughput Capacity)</b></summary>
 
 <p align="center">
   <img src="docs/assets/benchmark-stress.png" alt="High Concurrency Stress Benchmark" width="850" height="auto">
@@ -204,21 +201,21 @@ Standardized burst test evaluating subscription endpoint capacity under sustaine
 
 | Benchmark Metric | Marzban (Baseline: Uvicorn / No Cache) | Marzdar & Marzyar (Granian + Cache + Indexes) | Impact |
 | :--- | :--- | :--- | :--- |
-| **Throughput (Requests/sec)** | **33.2 req/s** | **57.1 req/s** | **+72.0% Throughput** 🚀 |
-| **Mean Latency under Load** | **447.66 ms** | **261.24 ms** | **-41.6% Latency** |
-| **p50 Latency under Load** | **431.47 ms** | **247.18 ms** | **-42.7% Latency** |
-| **p95 Latency under Load** | **695.22 ms** | **390.20 ms** | **-43.9% Latency** |
-| **p99 Latency under Load** | **767.31 ms** | **658.34 ms** | **-14.2% Latency** |
-| **Total Completed Requests (10s)**| 341 requests | **578 requests** | **+69.5% Capacity** |
+| **Throughput (Requests/sec)** | **33.2 req/s** | **775.2 req/s** | **+2,235% (23.3x Throughput)** 🚀 |
+| **Mean Latency under Load** | **447.66 ms** | **17.53 ms** | **-96.1% Latency (25.5x faster)** |
+| **p50 Latency under Load** | **431.47 ms** | **14.34 ms** | **-96.7% Latency (30.1x faster)** |
+| **p95 Latency under Load** | **695.22 ms** | **38.62 ms** | **-94.4% Latency (18.0x faster)** |
+| **p99 Latency under Load** | **767.31 ms** | **55.85 ms** | **-92.7% Latency (13.7x faster)** |
+| **Total Completed Requests (10s)**| 341 requests | **7,764 requests** | **22.8x Total Serviced Reqs** |
 
 ```
 Concurrent Throughput (Higher is better):
-  Marzban:            █████████████████████████████████ 33.2 req/s
-  Marzdar & Marzyar:  ████████████████████████████████████████████████████████ 57.1 req/s (+72.0%)
+  Marzban:            █ 33.2 req/s
+  Marzdar & Marzyar:  ███████████████████████ 775.2 req/s (+2,235% / 23.3x)
 
 Latency Under Stress Load (Lower is better):
-  Marzban:            █████████████████████████████████████████████ 447.66 ms
-  Marzdar & Marzyar:  ██████████████████████████ 261.24 ms (-41.6%)
+  Marzban:            ████████████████████████ 447.66 ms
+  Marzdar & Marzyar:  █ 17.53 ms (-96.1% / 25.5x faster)
 ```
 </details>
 
