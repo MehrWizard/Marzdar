@@ -46,17 +46,17 @@ def safe_execute(db: Session, stmt, params=None):
 
 
 def record_user_stats(params: list, node_id: Union[int, None],
-                      consumption_factor: int = 1):
+                      consumption_factor: int = 1, db: Session = None):
     if not params:
         return
 
     created_at = datetime.fromisoformat(datetime.utcnow().strftime('%Y-%m-%dT%H:00:00'))
 
-    with GetDB() as db:
+    def _exec(session: Session):
         # make user usage row if doesn't exist
         select_stmt = select(NodeUserUsage.user_id) \
             .where(and_(NodeUserUsage.node_id == node_id, NodeUserUsage.created_at == created_at))
-        existings = [r[0] for r in db.execute(select_stmt).fetchall()]
+        existings = {r[0] for r in session.execute(select_stmt).fetchall()}
         uids_to_insert = set()
 
         for p in params:
@@ -72,7 +72,7 @@ def record_user_stats(params: list, node_id: Union[int, None],
                 node_id=node_id,
                 used_traffic=0
             )
-            safe_execute(db, stmt, [{'uid': uid} for uid in uids_to_insert])
+            safe_execute(session, stmt, [{'uid': uid} for uid in uids_to_insert])
 
         # record
         stmt = update(NodeUserUsage) \
@@ -80,7 +80,13 @@ def record_user_stats(params: list, node_id: Union[int, None],
             .where(and_(NodeUserUsage.user_id == bindparam('uid'),
                         NodeUserUsage.node_id == node_id,
                         NodeUserUsage.created_at == created_at))
-        safe_execute(db, stmt, params)
+        safe_execute(session, stmt, params)
+
+    if db is not None:
+        _exec(db)
+    else:
+        with GetDB() as session:
+            _exec(session)
 
 
 def record_node_stats(params: dict, node_id: Union[int, None]):
@@ -159,14 +165,13 @@ def record_user_usages():
         else:
             user_admin_map = {}
 
-    admin_usage = defaultdict(int)
-    for user_usage in users_usage:
-        admin_id = user_admin_map.get(int(user_usage["uid"]))
-        if admin_id:
-            admin_usage[admin_id] += user_usage["value"]
+        admin_usage = defaultdict(int)
+        for user_usage in users_usage:
+            admin_id = user_admin_map.get(int(user_usage["uid"]))
+            if admin_id:
+                admin_usage[admin_id] += user_usage["value"]
 
-    # record users usage
-    with GetDB() as db:
+        # record users usage
         stmt = update(User). \
             where(User.id == bindparam('uid')). \
             values(
@@ -183,11 +188,9 @@ def record_user_usages():
                 values(users_usage=Admin.users_usage + bindparam('value'))
             safe_execute(db, admin_update_stmt, admin_data)
 
-    if DISABLE_RECORDING_NODE_USAGE:
-        return
-
-    for node_id, params in api_params.items():
-        record_user_stats(params, node_id, usage_coefficient[node_id])
+        if not DISABLE_RECORDING_NODE_USAGE:
+            for node_id, params in api_params.items():
+                record_user_stats(params, node_id, usage_coefficient[node_id], db=db)
 
 
 def record_node_usages():

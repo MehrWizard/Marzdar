@@ -296,8 +296,16 @@ class UserResponse(User):
     @model_validator(mode="after")
     def validate_links(self):
         if not self.links:
+            extra_data = {
+                "status": self.status,
+                "expire": self.expire,
+                "on_hold_expire_duration": self.on_hold_expire_duration,
+                "used_traffic": self.used_traffic,
+                "data_limit": self.data_limit,
+                "username": self.username,
+            }
             self.links = generate_v2ray_links(
-                self.proxies, self.inbounds, extra_data=self.model_dump(), reverse=False,
+                self.proxies, self.inbounds, extra_data=extra_data, reverse=False,
             )
         return self
 
