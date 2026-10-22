@@ -129,12 +129,11 @@ Both **Marzdar** and **Marzyar** incorporate high-performance architectural opti
 </p>
 
 ### Key Performance Highlights:
-- ⚡ **8.6x Faster Median Response**: Median (p50) subscription latency reduced from 46.27 ms to 5.37 ms (**88.4% faster**).
-- 🚀 **+2,235% Higher Concurrency Throughput**: Handled 775.2 req/s vs 33.2 req/s under sustained 15-worker load (**23.3x total capacity**).
-- ⚡ **96.1% Latency Drop Under Concurrency Load**: Average latency under sustained heavy stress dropped from 447.66 ms to 17.53 ms (**25.5x faster**).
-- 🗄️ **31.7% Database Burden Reduction**: MySQL peak CPU spikes reduced from 53.62% down to 36.64% thanks to in-memory caching and compound indexes.
-- 📦 **22.8x Greater Request Servicing**: Serviced 7,764 complete requests in a 10-second burst window vs. 341 on baseline Marzban.
-- 🛡️ **25.6% Reduction in Tail Spikes**: Max latency spike dropped from 604.36 ms down to 449.63 ms under continuous saturation.
+- ⚡ **8.6x Faster Median Response**: Live telemetry median (p50) subscription latency reduced from 46.27 ms down to 5.37 ms (-88.4% lower latency).
+- 🚀 **23.3x Cache Saturation Throughput**: Serviced **775.2 req/s** (7,764 requests in 10s) vs **33.2 req/s** (341 requests) under sustained 15-worker concurrency (+2,235% capacity via in-memory caching).
+- ⚡ **96.1% Lower Latency Under Load**: Average latency under sustained heavy concurrency dropped from 447.66 ms down to 17.53 ms (25.5x faster response).
+- 🗄️ **31.7% Lower Database Load**: MySQL peak CPU spikes reduced from 53.62% down to 36.64% under active query traffic thanks to in-memory caching and compound indexes.
+- 🛡️ **25.6% Tail Spike Suppression**: Maximum latency spike suppressed from 604.36 ms down to 449.63 ms under continuous saturation.
 
 ---
 
@@ -191,13 +190,13 @@ Continuous metrics recorded under active live production load:
 </details>
 
 <details>
-<summary><b>3. High-Concurrency Stress Benchmark (+2,235% Throughput Capacity)</b></summary>
+<summary><b>3. High-Concurrency Stress & Cache Saturation Benchmark (23.3x Throughput)</b></summary>
 
 <p align="center">
   <img src="docs/assets/benchmark-stress.png" alt="High Concurrency Stress Benchmark" width="850" height="auto">
 </p>
 
-Standardized burst test evaluating subscription endpoint capacity under sustained concurrency (15 worker threads, 10 seconds continuous load):
+Standardized burst test evaluating subscription endpoint capacity under sustained concurrency with in-memory caching (15 worker threads, 10 seconds continuous load):
 
 | Benchmark Metric | Marzban (Baseline: Uvicorn / No Cache) | Marzdar & Marzyar (Granian + Cache + Indexes) | Impact |
 | :--- | :--- | :--- | :--- |
