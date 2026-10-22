@@ -52,6 +52,9 @@ use_route_names_as_operation_ids(app)
 
 @app.on_event("startup")
 def on_startup():
+    from app.db.base import init_db_indexes
+    init_db_indexes()
+
     paths = [f"{r.path}/" for r in app.routes]
     paths.append("/api/")
     if f"/{XRAY_SUBSCRIPTION_PATH}/" in paths:

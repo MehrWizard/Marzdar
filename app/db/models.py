@@ -10,6 +10,7 @@ from sqlalchemy import (
     Enum,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Table,
@@ -315,6 +316,7 @@ class NodeUserUsage(Base):
     __tablename__ = "node_user_usages"
     __table_args__ = (
         UniqueConstraint('created_at', 'user_id', 'node_id'),
+        Index('ix_node_user_usages_node_created', 'node_id', 'created_at'),
     )
 
     id = Column(Integer, primary_key=True)
@@ -330,6 +332,7 @@ class NodeUsage(Base):
     __tablename__ = "node_usages"
     __table_args__ = (
         UniqueConstraint('created_at', 'node_id'),
+        Index('ix_node_usages_node_created', 'node_id', 'created_at'),
     )
 
     id = Column(Integer, primary_key=True)
