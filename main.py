@@ -108,7 +108,6 @@ Then, navigate to {click.style(f'http://127.0.0.1:{UVICORN_PORT}', bold=True)} o
             interface=Interfaces.ASGI,
             workers=1,
             runtime_threads=GRANIAN_THREADS,
-            blocking_threads=GRANIAN_BLOCKING_THREADS,
             ssl_cert=Path(bind_args["ssl_certfile"]) if bind_args.get("ssl_certfile") else None,
             ssl_key=Path(bind_args["ssl_keyfile"]) if bind_args.get("ssl_keyfile") else None,
             websockets=True,
