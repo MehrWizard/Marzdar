@@ -8,7 +8,7 @@ from jinja2.exceptions import TemplateNotFound
 
 from app.subscription.funcs import get_grpc_gun
 from app.templates import render_template
-from app.utils.helpers import yml_uuid_representer
+from app.utils.helpers import yml_uuid_representer, SafeLoader, SafeDumper, json_loads
 from config import (
     CLASH_SETTINGS_TEMPLATE,
     CLASH_SUBSCRIPTION_TEMPLATE,
@@ -27,7 +27,7 @@ class ClashConfiguration(object):
         }
         self.proxy_remarks = []
         self.mux_template = render_template(MUX_TEMPLATE)
-        user_agent_data = json.loads(render_template(USER_AGENT_TEMPLATE))
+        user_agent_data = json_loads(render_template(USER_AGENT_TEMPLATE))
 
         if 'list' in user_agent_data and isinstance(user_agent_data['list'], list):
             self.user_agent_list = user_agent_data['list']
@@ -35,7 +35,7 @@ class ClashConfiguration(object):
             self.user_agent_list = []
 
         try:
-            self.settings = yaml.load(render_template(CLASH_SETTINGS_TEMPLATE), Loader=yaml.SafeLoader)
+            self.settings = yaml.load(render_template(CLASH_SETTINGS_TEMPLATE), Loader=SafeLoader)
         except TemplateNotFound:
             self.settings = {}
 
@@ -45,16 +45,17 @@ class ClashConfiguration(object):
         if reverse:
             self.data['proxies'].reverse()
 
-        yaml.add_representer(UUID, yml_uuid_representer)
+        yaml.add_representer(UUID, yml_uuid_representer, Dumper=SafeDumper)
         return yaml.dump(
             yaml.load(
                 render_template(
                     CLASH_SUBSCRIPTION_TEMPLATE,
                     {"conf": self.data, "proxy_remarks": self.proxy_remarks}
                 ),
-                Loader=yaml.SafeLoader
+                Loader=SafeLoader
 
             ),
+            Dumper=SafeDumper,
             sort_keys=False,
             allow_unicode=True,
         )
@@ -245,7 +246,7 @@ class ClashConfiguration(object):
 
         node[f'{network}-opts'] = net_opts
 
-        mux_json = json.loads(self.mux_template)
+        mux_json = json_loads(self.mux_template)
         mux_config = mux_json["clash"]
 
         if mux_enable:

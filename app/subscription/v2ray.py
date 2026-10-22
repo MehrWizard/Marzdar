@@ -11,7 +11,7 @@ from jinja2.exceptions import TemplateNotFound
 
 from app.subscription.funcs import get_grpc_gun, get_grpc_multi
 from app.templates import render_template
-from app.utils.helpers import UUIDEncoder
+from app.utils.helpers import UUIDEncoder, json_dumps, json_dumps_bytes, json_loads
 from config import (
     EXTERNAL_CONFIG,
     GRPC_USER_AGENT_TEMPLATE,
@@ -255,7 +255,7 @@ class V2rayShareLink(str):
         return (
             "vmess://"
             + base64.b64encode(
-                json.dumps(payload, sort_keys=True).encode("utf-8")
+                json_dumps_bytes(payload, sort_keys=True)
             ).decode()
         )
 
@@ -326,7 +326,7 @@ class V2rayShareLink(str):
                 extra["keepAlivePeriod"] = keepAlivePeriod
             if xmux:
                 extra["xmux"] = xmux
-            payload["extra"] = json.dumps(extra)
+            payload["extra"] = json_dumps(extra)
 
         elif net == 'kcp':
             payload['seed'] = path
@@ -430,7 +430,7 @@ class V2rayShareLink(str):
                 extra["keepAlivePeriod"] = keepAlivePeriod
             if xmux:
                 extra["xmux"] = xmux
-            payload["extra"] = json.dumps(extra)
+            payload["extra"] = json_dumps(extra)
 
         elif net == 'quic':
             payload['key'] = path
@@ -491,14 +491,14 @@ class V2rayJsonConfig(str):
         self.config = []
         self.template = render_template(V2RAY_SUBSCRIPTION_TEMPLATE)
         self.mux_template = render_template(MUX_TEMPLATE)
-        user_agent_data = json.loads(render_template(USER_AGENT_TEMPLATE))
+        user_agent_data = json_loads(render_template(USER_AGENT_TEMPLATE))
 
         if 'list' in user_agent_data and isinstance(user_agent_data['list'], list):
             self.user_agent_list = user_agent_data['list']
         else:
             self.user_agent_list = []
 
-        grpc_user_agent_data = json.loads(render_template(GRPC_USER_AGENT_TEMPLATE))
+        grpc_user_agent_data = json_loads(render_template(GRPC_USER_AGENT_TEMPLATE))
 
         if 'list' in grpc_user_agent_data and isinstance(grpc_user_agent_data['list'], list):
             self.grpc_user_agent_data = grpc_user_agent_data['list']
@@ -506,14 +506,14 @@ class V2rayJsonConfig(str):
             self.grpc_user_agent_data = []
 
         try:
-            self.settings = json.loads(render_template(V2RAY_SETTINGS_TEMPLATE))
+            self.settings = json_loads(render_template(V2RAY_SETTINGS_TEMPLATE))
         except TemplateNotFound:
             self.settings = {}
 
         del user_agent_data, grpc_user_agent_data
 
     def add_config(self, remarks, outbounds):
-        json_template = json.loads(self.template)
+        json_template = json_loads(self.template)
         json_template["remarks"] = remarks
         json_template["outbounds"] = outbounds + json_template["outbounds"]
         self.config.append(json_template)
@@ -521,7 +521,7 @@ class V2rayJsonConfig(str):
     def render(self, reverse=False):
         if reverse:
             self.config.reverse()
-        return json.dumps(self.config, indent=4, cls=UUIDEncoder)
+        return json_dumps(self.config, indent=True)
 
     @staticmethod
     def tls_config(sni=None, fp=None, alpn=None, ais: bool = False) -> dict:
@@ -1072,7 +1072,7 @@ class V2rayJsonConfig(str):
             keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
         )
 
-        mux_json = json.loads(self.mux_template)
+        mux_json = json_loads(self.mux_template)
         mux_config = mux_json["v2ray"]
 
         if inbound.get('mux_enable', False):

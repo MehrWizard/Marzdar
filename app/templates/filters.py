@@ -3,6 +3,7 @@ from datetime import datetime
 
 import yaml
 
+from app.utils.helpers import SafeDumper
 from app.utils.system import readable_size
 
 
@@ -10,7 +11,7 @@ def to_yaml(obj):
     if not obj:
         return ""
 
-    return yaml.dump(obj, allow_unicode=True, indent=2)
+    return yaml.dump(obj, Dumper=SafeDumper, allow_unicode=True, indent=2)
 
 
 def exclude_keys(obj, *target_keys):

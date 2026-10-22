@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /code
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential curl unzip gcc python3-dev libpq-dev default-libmysqlclient-dev pkg-config \
+    && apt-get install -y --no-install-recommends build-essential curl unzip gcc python3-dev libpq-dev default-libmysqlclient-dev pkg-config libyaml-dev \
     && curl -L https://github.com/Gozargah/Marzban-scripts/raw/master/install_latest_xray.sh | bash \
     && rm -rf /var/lib/apt/lists/*
 
@@ -21,7 +21,7 @@ ENV PYTHON_LIB_PATH=/usr/local/lib/python${PYTHON_VERSION%.*}/site-packages
 WORKDIR /code
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libmariadb3 \
+    && apt-get install -y --no-install-recommends libmariadb3 libyaml-0-2 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN rm -rf $PYTHON_LIB_PATH/*

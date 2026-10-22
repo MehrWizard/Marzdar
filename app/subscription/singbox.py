@@ -2,7 +2,7 @@ import copy
 import json
 from random import choice
 
-from app.utils.helpers import UUIDEncoder
+from app.utils.helpers import UUIDEncoder, json_dumps, json_loads
 from jinja2.exceptions import TemplateNotFound
 
 from app.subscription.funcs import get_grpc_gun
@@ -19,9 +19,9 @@ class SingBoxConfiguration(str):
 
     def __init__(self):
         self.proxy_remarks = []
-        self.config = json.loads(render_template(SINGBOX_SUBSCRIPTION_TEMPLATE))
+        self.config = json_loads(render_template(SINGBOX_SUBSCRIPTION_TEMPLATE))
         self.mux_template = render_template(MUX_TEMPLATE)
-        user_agent_data = json.loads(render_template(USER_AGENT_TEMPLATE))
+        user_agent_data = json_loads(render_template(USER_AGENT_TEMPLATE))
 
         if 'list' in user_agent_data and isinstance(user_agent_data['list'], list):
             self.user_agent_list = user_agent_data['list']
@@ -29,7 +29,7 @@ class SingBoxConfiguration(str):
             self.user_agent_list = []
 
         try:
-            self.settings = json.loads(render_template(SINGBOX_SETTINGS_TEMPLATE))
+            self.settings = json_loads(render_template(SINGBOX_SETTINGS_TEMPLATE))
         except TemplateNotFound:
             self.settings = {}
 
@@ -66,7 +66,7 @@ class SingBoxConfiguration(str):
 
         if reverse:
             self.config["outbounds"].reverse()
-        return json.dumps(self.config, indent=4,cls=UUIDEncoder)
+        return json_dumps(self.config, indent=True)
 
     @staticmethod
     def tls_config(sni=None, fp=None, tls=None, pbk=None,
@@ -274,7 +274,7 @@ class SingBoxConfiguration(str):
                                             pbk=pbk, sid=sid, alpn=alpn,
                                             ais=ais)
 
-        mux_json = json.loads(self.mux_template)
+        mux_json = json_loads(self.mux_template)
         mux_config = mux_json["sing-box"]
 
         config['multiplex'] = mux_config

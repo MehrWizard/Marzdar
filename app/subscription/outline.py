@@ -1,4 +1,4 @@
-import json
+from app.utils.helpers import json_dumps
 
 
 class OutlineConfiguration:
@@ -13,7 +13,7 @@ class OutlineConfiguration:
             items = list(self.config.items())
             items.reverse()
             self.config = dict(items)
-        return json.dumps(self.config, indent=0)
+        return json_dumps(self.config)
 
     def make_outbound(
         self, remark: str, address: str, port: int, password: str, method: str
