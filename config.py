@@ -8,6 +8,14 @@ SQLALCHEMY_DATABASE_URL = config("SQLALCHEMY_DATABASE_URL", default="sqlite:///d
 SQLALCHEMY_POOL_SIZE = config("SQLALCHEMY_POOL_SIZE", cast=int, default=10)
 SQLIALCHEMY_MAX_OVERFLOW = config("SQLIALCHEMY_MAX_OVERFLOW", cast=int, default=30)
 
+# Transparently auto-upgrade PyMySQL connection string to compiled C-native mysqlclient (MySQLdb)
+if SQLALCHEMY_DATABASE_URL.startswith("mysql+pymysql://"):
+    try:
+        import MySQLdb  # noqa: F401
+        SQLALCHEMY_DATABASE_URL = "mysql+mysqldb://" + SQLALCHEMY_DATABASE_URL[len("mysql+pymysql://"):]
+    except ImportError:
+        pass
+
 GRANIAN_HOST = config("GRANIAN_HOST", default=config("UVICORN_HOST", default="0.0.0.0"))
 GRANIAN_PORT = config("GRANIAN_PORT", cast=int, default=config("UVICORN_PORT", cast=int, default=8000))
 GRANIAN_UDS = config("GRANIAN_UDS", default=config("UVICORN_UDS", default=None))
