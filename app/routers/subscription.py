@@ -1,5 +1,13 @@
 import re
-from distutils.version import LooseVersion
+from datetime import datetime
+try:
+    from packaging.version import Version as LooseVersion
+except ImportError:
+    try:
+        from distutils.version import LooseVersion
+    except ImportError:
+        def LooseVersion(v):
+            return [int(x) if x.isdigit() else x for x in re.split(r'(\d+)', str(v))]
 
 from fastapi import APIRouter, Depends, Header, Path, Request, Response
 from fastapi.responses import HTMLResponse
@@ -7,6 +15,7 @@ from fastapi.responses import HTMLResponse
 from app.db import Session, crud, get_db
 from app.dependencies import get_validated_sub, validate_dates
 from app.models.user import SubscriptionUserResponse, UserResponse
+from app.subscription.cache import get_cached_subscription, set_cached_subscription
 from app.subscription.share import encode_title, generate_subscription
 from app.templates import render_template
 from config import (
@@ -35,6 +44,17 @@ client_config = {
 router = APIRouter(tags=['Subscription'], prefix=f'/{XRAY_SUBSCRIPTION_PATH}')
 
 
+def _safe_update_user_sub(db: Session, dbuser: UserResponse, user_agent: str):
+    now = datetime.utcnow()
+    last_updated = getattr(dbuser, "sub_updated_at", None)
+    last_ua = getattr(dbuser, "sub_last_user_agent", None)
+    if (not last_updated) or ((now - last_updated).total_seconds() > 60) or (last_ua != user_agent):
+        try:
+            crud.update_user_sub(db, dbuser, user_agent)
+        except Exception:
+            pass
+
+
 def get_subscription_user_info(user: UserResponse) -> dict:
     """Retrieve user subscription information including upload, download, total data, and expiry."""
     return {
@@ -58,14 +78,22 @@ def user_subscription(
 
     accept_header = request.headers.get("Accept", "")
     if "text/html" in accept_header:
-        return HTMLResponse(
-            render_template(
-                SUBSCRIPTION_PAGE_TEMPLATE,
-                {"user": user}
-            )
+        cached_html = get_cached_subscription(user.username, "__html__")
+        if cached_html:
+            return HTMLResponse(content=cached_html[0])
+        html_content = render_template(
+            SUBSCRIPTION_PAGE_TEMPLATE,
+            {"user": user}
         )
+        set_cached_subscription(user.username, "__html__", html_content, "text/html", {})
+        return HTMLResponse(html_content)
 
-    crud.update_user_sub(db, dbuser, user_agent)
+    client_key = f"ua:{user_agent}"
+    cached = get_cached_subscription(user.username, client_key)
+    if cached:
+        return Response(content=cached[0], media_type=cached[1], headers=cached[2])
+
+    _safe_update_user_sub(db, dbuser, user_agent)
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',
         "profile-web-page-url": str(request.url),
@@ -80,63 +108,64 @@ def user_subscription(
 
     if re.match(r'^([Cc]lash-verge|[Cc]lash[-\.]?[Mm]eta|[Ff][Ll][Cc]lash|[Mm]ihomo)', user_agent):
         conf = generate_subscription(user=user, config_format="clash-meta", as_base64=False, reverse=False)
-        return Response(content=conf, media_type="text/yaml", headers=response_headers)
+        media_type = "text/yaml"
 
     elif re.match(r'^([Cc]lash|[Ss]tash)', user_agent):
         conf = generate_subscription(user=user, config_format="clash", as_base64=False, reverse=False)
-        return Response(content=conf, media_type="text/yaml", headers=response_headers)
+        media_type = "text/yaml"
 
     elif re.match(r'^(SFA|SFI|SFM|SFT|[Kk]aring|[Hh]iddify[Nn]ext)', user_agent):
         conf = generate_subscription(user=user, config_format="sing-box", as_base64=False, reverse=False)
-        return Response(content=conf, media_type="application/json", headers=response_headers)
+        media_type = "application/json"
 
     elif re.match(r'^(SS|SSR|SSD|SSS|Outline|Shadowsocks|SSconf)', user_agent):
         conf = generate_subscription(user=user, config_format="outline", as_base64=False, reverse=False)
-        return Response(content=conf, media_type="application/json", headers=response_headers)
+        media_type = "application/json"
 
     elif (USE_CUSTOM_JSON_DEFAULT or USE_CUSTOM_JSON_FOR_V2RAYN) and re.match(r'^v2rayN/(\d+\.\d+)', user_agent):
         version_str = re.match(r'^v2rayN/(\d+\.\d+)', user_agent).group(1)
         if LooseVersion(version_str) >= LooseVersion("6.40"):
             conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False, reverse=False)
-            return Response(content=conf, media_type="application/json", headers=response_headers)
+            media_type = "application/json"
         else:
             conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)
-            return Response(content=conf, media_type="text/plain", headers=response_headers)
+            media_type = "text/plain"
 
     elif (USE_CUSTOM_JSON_DEFAULT or USE_CUSTOM_JSON_FOR_V2RAYNG) and re.match(r'^v2rayNG/(\d+\.\d+\.\d+)', user_agent):
         version_str = re.match(r'^v2rayNG/(\d+\.\d+\.\d+)', user_agent).group(1)
         if LooseVersion(version_str) >= LooseVersion("1.8.29"):
             conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False, reverse=False)
-            return Response(content=conf, media_type="application/json", headers=response_headers)
+            media_type = "application/json"
         elif LooseVersion(version_str) >= LooseVersion("1.8.18"):
             conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False, reverse=True)
-            return Response(content=conf, media_type="application/json", headers=response_headers)
+            media_type = "application/json"
         else:
             conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)
-            return Response(content=conf, media_type="text/plain", headers=response_headers)
+            media_type = "text/plain"
 
     elif re.match(r'^[Ss]treisand', user_agent):
         if USE_CUSTOM_JSON_DEFAULT or USE_CUSTOM_JSON_FOR_STREISAND:
             conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False, reverse=False)
-            return Response(content=conf, media_type="application/json", headers=response_headers)
+            media_type = "application/json"
         else:
             conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)
-            return Response(content=conf, media_type="text/plain", headers=response_headers)
+            media_type = "text/plain"
 
     elif (USE_CUSTOM_JSON_DEFAULT or USE_CUSTOM_JSON_FOR_HAPP) and re.match(r'^Happ/(\d+\.\d+\.\d+)', user_agent):
         version_str = re.match(r'^Happ/(\d+\.\d+\.\d+)', user_agent).group(1)
         if LooseVersion(version_str) >= LooseVersion("1.63.1"):
             conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False, reverse=False)
-            return Response(content=conf, media_type="application/json", headers=response_headers)
+            media_type = "application/json"
         else:
             conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)
-            return Response(content=conf, media_type="text/plain", headers=response_headers)
-
-
+            media_type = "text/plain"
 
     else:
         conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)
-        return Response(content=conf, media_type="text/plain", headers=response_headers)
+        media_type = "text/plain"
+
+    set_cached_subscription(user.username, client_key, conf, media_type, response_headers)
+    return Response(content=conf, media_type=media_type, headers=response_headers)
 
 
 @router.get("/{token}/info", response_model=SubscriptionUserResponse)
@@ -173,6 +202,13 @@ def user_subscription_with_client_type(
     """Provides a subscription link based on the specified client type (e.g., Clash, V2Ray)."""
     user: UserResponse = UserResponse.model_validate(dbuser)
 
+    client_key = f"type:{client_type}:{user_agent}"
+    cached = get_cached_subscription(user.username, client_key)
+    if cached:
+        return Response(content=cached[0], media_type=cached[1], headers=cached[2])
+
+    _safe_update_user_sub(db, dbuser, user_agent)
+
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',
         "profile-web-page-url": str(request.url),
@@ -191,4 +227,5 @@ def user_subscription_with_client_type(
                                  as_base64=config["as_base64"],
                                  reverse=config["reverse"])
 
+    set_cached_subscription(user.username, client_key, conf, config["media_type"], response_headers)
     return Response(content=conf, media_type=config["media_type"], headers=response_headers)
