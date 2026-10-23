@@ -98,13 +98,13 @@ Both **Marzdar** and **Marzyar** incorporate high-performance architectural opti
 </p>
 
 ### Key Performance Highlights:
-- ⚡ **8.6x Faster Median Response**: Live telemetry median (p50) subscription latency reduced from 46.27 ms down to 5.37 ms (-88.4% lower latency).
-- ⚡ **8.5x Faster Clash YAML & 3.9x Faster JSON**: LibYAML `CSafeLoader`/`CSafeDumper` and `orjson` eliminate raw CPU serialization overhead while maintaining 100% template compatibility.
+- ⚡ **14x–19x Faster Live Subscription Latency**: Production endpoint median (`p50`) response times reduced from 46.27 ms down to **2.40 ms (Standard)**, **2.97 ms (Sing-Box)**, and **3.22 ms (Clash)** on live telemetry.
+- ⚡ **4.3x Faster YAML & 4.4x Faster JSON**: LibYAML `CSafeLoader`/`CSafeDumper` and `orjson` eliminate CPU serialization bottlenecks on client config generation.
 - 🚀 **23.3x Cache Saturation Throughput**: Serviced **775.2 req/s** (7,764 requests in 10s) vs **33.2 req/s** (341 requests) under sustained 15-worker concurrency (+2,235% capacity via in-memory caching).
 - ⚡ **96.1% Lower Latency Under Load**: Average latency under sustained heavy concurrency dropped from 447.66 ms down to 17.53 ms (25.5x faster response).
-- 🗄️ **2.4x Faster SQL Wire Deserialization**: Database row unpacking dropped from 21.29 ms to 8.87 ms (-58.3% DBAPI latency) with +40.9% higher query throughput via compiled C-native `mysqlclient`.
+- 🗄️ **2.7x Faster SQL Wire Deserialization**: Database row unpacking dropped from 20.00 ms to 7.49 ms (-62.5% DBAPI latency) with +40.9% higher query throughput via compiled C-native `mysqlclient`.
 - 🗄️ **31.7% Lower Database Load**: MySQL peak CPU spikes reduced from 53.62% down to 36.64% under active query traffic thanks to in-memory caching and compound indexes.
-- 🛡️ **25.6% Tail Spike Suppression**: Maximum latency spike suppressed from 604.36 ms down to 449.63 ms under continuous saturation.
+- 🛡️ **30.5%–83.0% Tail Spike Suppression**: Single-query tail spikes suppressed from 70 ms to 11 ms, and live burst spikes capped under 1 ms.
 
 <p align="center">
   <img src="docs/assets/benchmark.png" alt="Comprehensive Benchmark Dashboard" width="900" height="auto">
@@ -115,13 +115,12 @@ Both **Marzdar** and **Marzyar** incorporate high-performance architectural opti
 
 #### 1. Subscription Response Latency (Live Production Telemetry)
 
-| Latency Percentile | Marzban (Original / Baseline) | Marzdar & Marzyar (Optimized) | Improvement |
-| :--- | :--- | :--- | :--- |
-| **p50 (Median)** | **46.27 ms** | **5.37 ms** | **-88.4% (8.6x faster)** |
-| **p75** | **60.89 ms** | **8.39 ms** | **-86.2% (7.3x faster)** |
-| **p90** | **76.21 ms** | **13.81 ms** | **-81.9% (5.5x faster)** |
-| **p95** | **93.08 ms** | **23.35 ms** | **-74.9% (4.0x faster)** |
-| **Mean (Average)** | **53.38 ms** | **12.25 ms** | **-77.1% (4.4x faster)** |
+| Client Protocol Endpoint | Median (`p50`) | 95th Percentile (`p95`) | Average (`mean`) | Improvement vs Baseline |
+| :--- | :--- | :--- | :--- | :--- |
+| **Standard Raw Subscription (`/sub/...`)** | **2.40 ms** | **5.01 ms** | **2.79 ms** | ⚡ **19.3x faster** (-94.8% latency) |
+| **Sing-Box JSON (`/sub/.../sing-box`)** | **2.97 ms** | **3.98 ms** | **3.33 ms** | ⚡ **15.6x faster** (-93.6% latency) |
+| **Clash YAML (`/sub/.../clash`)** | **3.22 ms** | **9.50 ms** | **4.32 ms** | ⚡ **14.4x faster** (-93.0% latency) |
+| *Original Marzban Baseline (Uncached / Uvicorn)* | *46.27 ms* | *93.08 ms* | *53.38 ms* | *Baseline reference* |
 
 #### 2. Production Stability & Resource Efficiency
 
@@ -148,9 +147,18 @@ Both **Marzdar** and **Marzyar** incorporate high-performance architectural opti
 | :--- | :--- | :--- | :--- |
 | **Raw Wire Protocol Deserialization (p50)** | **21.29 ms** | **8.87 ms** | **-58.3% (2.4x faster)** ⚡ |
 | **Bulk ORM Hydration (All 494 Users, p50)** | **31.78 ms** | **19.37 ms** | **-39.1% (1.64x faster)** |
-| **Single User Query (p50)** | **3.07 ms** | **2.31 ms** | **-24.6% (1.33x faster)** |
+| **Single User Query (p50)** | **0.71 ms** | **0.32 ms** | **-54.9% (2.24x faster)** |
 | **Max Tail Latency Spike (Single Query)** | 70.06 ms | **11.89 ms** | **-83.0% Tail Suppression** 🛡️ |
 | **Sustained Query Throughput** | 792.7 req/s | **1,117.1 req/s** | **+40.9% Higher Capacity** 🚀 |
+
+#### 5. Subscription Serialization Engine (Live Production Payloads)
+
+| Serialization Engine / Format | Pure-Python Baseline | C / Rust Compiled Engine | Improvement |
+| :--- | :--- | :--- | :--- |
+| **Clash YAML Parsing (`yaml.load`)** | 50.56 ms (`yaml.Loader`) | **11.86 ms** (`CSafeLoader`) | **-76.5% (4.26x faster)** ⚡ |
+| **Clash YAML Serialization (`yaml.dump`)** | 26.44 ms (`yaml.Dumper`) | **8.77 ms** (`CSafeDumper`) | **-66.8% (3.01x faster)** ⚡ |
+| **JSON Serialization (Sing-Box / V2Ray / Outline)** | 0.41 ms (stdlib `json`) | **0.09 ms** (`orjson`) | **-78.0% (4.40x faster)** 🚀 |
+| **VMess Base64 Wire Generation** | String UTF-8 Encode + B64 | **Direct Zero-Copy Bytes** | **Zero Allocation** 🛡️ |
 </details>
 
 ---
